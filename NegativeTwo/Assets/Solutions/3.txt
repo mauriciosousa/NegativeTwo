@@ -1,0 +1,5 @@
+YellowCube ontopof box(3,3)
+GreenCube ontopof box(2,3)
+BlueCube ontopof box(1,4)
+PinkCube ontopof box(2,4)
+RedCube ontopof PinkCube

@@ -1,0 +1,9 @@
+%Config File created in 2018-03-09 16:24:23
+udp.listenport=5103
+udp.broadcastport=5502
+udp.sensor.listener=5107
+udp.sendinterval=50
+tracker.mergedistance=0.3
+tracker.confidencethreshold=10
+kinect.AVESTRUZ=AVESTRUZ;0.05147503;1.735505;2.311986;0.01937005;-0.9706821;0.2287293;0.07130185
+kinect.ZELEONEL=ZELEONEL;0.4397987;0.5588373;-2.013232;-0.007162096;0.04536904;-0.01318714;0.9988576

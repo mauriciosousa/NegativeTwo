@@ -1,0 +1,8 @@
+udp.listenport=5003
+udp.broadcastport=5002
+udp.sensor.listener=5007
+udp.sendinterval=50
+tracker.mergedistance=0.3
+tracker.confidencethreshold=10
+kinect.DICAPRIO=DICAPRIO;-1.179841;1.096568;-0.94335;0.03975642;0.2043612;-0.02097861;0.9778629
+kinect.AVESTRUZ=AVESTRUZ;0.06070192;1.77499;1.818362;-0.005850563;-0.9768145;0.2129951;0.02079044
