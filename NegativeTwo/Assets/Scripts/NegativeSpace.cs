@@ -8,6 +8,11 @@ public class PointingDistortionInfo
     public Matrix4x4 matrix;
     public Vector3 midPoint;
     public float distance;
+    public Vector3 Elbow;
+    public Vector3 Wrist;
+    public Vector3 Hand;
+    public Vector3 HandTip;
+    internal bool pointing;
 }
 
 public class NegativeSpace : MonoBehaviour {
@@ -19,7 +24,9 @@ public class NegativeSpace : MonoBehaviour {
     private bool _spaceCreated = false;
     private Location _location;
     private SurfaceRectangle _localSurface;
+    public SurfaceRectangle LocalSurface { get { return _localSurface; } }
     private SurfaceRectangle _remoteSurfaceProxy;
+    public SurfaceRectangle RemoteSurface { get { return _remoteSurfaceProxy; } }
     private float _negativeSpaceLength;
 
     public Material negativeSpaceMaterial;
@@ -41,14 +48,6 @@ public class NegativeSpace : MonoBehaviour {
 
     public PointingDistortionInfo rightPointingInfo;
     public PointingDistortionInfo leftPointingInfo;
-
-    public SurfaceRectangle LocalSurface
-    {
-        get
-        {
-            return _localSurface;
-        }
-    }
 
     void Awake()
     {
@@ -92,16 +91,8 @@ public class NegativeSpace : MonoBehaviour {
         GameObject workspace = new GameObject("workspaceCollider");
         workspace.AddComponent<BoxCollider>();
         workspace.transform.position = (_localSurface.SurfaceBottomLeft + _remoteSurfaceProxy.SurfaceBottomRight) * 0.5f;
-
-
-
-        //workspace.transform.localPosition = 0.5f*(_localSurface.SurfaceBottomLeft + _remoteSurfaceProxy.SurfaceBottomRight);
-        //Plane bottomWallPlane = new Plane(_localSurface.SurfaceBottomLeft, _localSurface.SurfaceBottomRight, _remoteSurfaceProxy.SurfaceBottomRight);
-        //workspace.transform.up = bottomWallPlane.normal;
-
-        
-        workspace.transform.localScale = new Vector3(Vector3.Distance(_localSurface.SurfaceBottomLeft, _localSurface.SurfaceBottomRight) * 1.5f, 0.001f, 1.5f);
-        //workspace.transform.parent = bottomWall.transform;
+        workspace.transform.localScale = new Vector3(Vector3.Distance(_localSurface.SurfaceBottomLeft, _localSurface.SurfaceBottomRight) * 1.2f, 0.001f, 2f);
+        //workspace.transform.position += Vector3.back * 0.5f * Vector3.Distance(_localSurface.SurfaceBottomLeft, _remoteSurfaceProxy.SurfaceBottomLeft);
         workspaceCollider = workspace;
 
         NegativeSpaceCenter = new GameObject("NegativeSpaceCenter");
@@ -218,8 +209,8 @@ public class NegativeSpace : MonoBehaviour {
     private void updateDebugBody(Human human, GameObject go)
     {
         Vector3 head = human.body.Joints[BodyJointType.head];
-        Vector3 leftHand = human.body.Joints[BodyJointType.leftWrist];
-        Vector3 rightHand = human.body.Joints[BodyJointType.rightWrist];
+        Vector3 leftHand = human.body.Joints[BodyJointType.leftHand];
+        Vector3 rightHand = human.body.Joints[BodyJointType.rightHand];
 
         //_handCursor.transform.position = _handheldListener.Message.Hand == HandType.Left ? leftHand : rightHand;
         _filteredHandPosition.Value = _handheldListener.Message.Hand == HandType.Left ? leftHand : rightHand;
@@ -237,8 +228,6 @@ public class NegativeSpace : MonoBehaviour {
             go.transform.Find("HEAD").localPosition = head;
             go.transform.Find("LEFTHAND").localPosition = leftHand;
             go.transform.Find("RIGHTHAND").localPosition = rightHand;
-            go.transform.Find("RIGHTHAND").localPosition = rightHand;
-
             go.transform.Find("NECK").localPosition = human.body.Joints[BodyJointType.neck];
             go.transform.Find("SPINESHOULDER").localPosition = human.body.Joints[BodyJointType.spineShoulder];
             go.transform.Find("LEFTSHOULDER").localPosition = human.body.Joints[BodyJointType.leftShoulder];
@@ -255,6 +244,8 @@ public class NegativeSpace : MonoBehaviour {
             go.transform.Find("RIGHTKNEE").localPosition = human.body.Joints[BodyJointType.rightKnee];
             go.transform.Find("LEFTFOOT").localPosition = human.body.Joints[BodyJointType.leftFoot];
             go.transform.Find("RIGHTFOOT").localPosition = human.body.Joints[BodyJointType.rightFoot];
+            go.transform.Find("LEFTHANDTIP").localPosition = human.body.Joints[BodyJointType.leftHandTip];
+            go.transform.Find("RIGHTHANDTIP").localPosition = human.body.Joints[BodyJointType.rightHandTip];
 
 
             if (go.name == "RemoteBody")
@@ -267,78 +258,104 @@ public class NegativeSpace : MonoBehaviour {
 
     private void _applyDisplacement(Human human, GameObject go)
     {
+        Vector3 leftPointingA = go.transform.Find("LEFTELBOW").position;
+        Vector3 leftPointingB = go.transform.Find("LEFTHANDTIP").position;
 
-        Transform leftHand = go.transform.Find("LEFTHAND");
-        Transform rightHand = go.transform.Find("RIGHTHAND");
-
-        Transform leftElbow = go.transform.Find("LEFTELBOW");
-        Transform rightElbow = go.transform.Find("RIGHTELBOW");
-
-        //Vector3 leftShoulder = go.transform.Find("LEFTSHOULDER").position;
-        //Vector3 rightShoulder = go.transform.Find("RIGHTSHOULDER").position;
+        Vector3 rightPointingA = go.transform.Find("RIGHTELBOW").position;
+        Vector3 rightPointingB = go.transform.Find("RIGHTHANDTIP").position;
 
         Vector3 leftHit = Vector3.zero;
-        bool leftPointing = _isPointing(new Ray(leftHand.position, leftHand.position - leftElbow.position), workspaceCollider, out leftHit);
+        bool leftPointing = _isPointing(new Ray(leftPointingB, leftPointingB - leftPointingA), workspaceCollider, out leftHit);
 
         Vector3 rightHit = Vector3.zero;
-        bool rightPointing = _isPointing(new Ray(rightHand.position, rightHand.position - rightElbow.position), workspaceCollider, out rightHit);
+        bool rightPointing = _isPointing(new Ray(rightPointingB, rightPointingB - rightPointingA), workspaceCollider, out rightHit);
 
 
 
         Plane bottomWallPlane = new Plane(_localSurface.SurfaceBottomLeft, _localSurface.SurfaceBottomRight, _remoteSurfaceProxy.SurfaceBottomRight);
 
         Transform leftHand_d = go.transform.Find("LEFTHAND_D");
-        leftHand_d.position = leftHand.position;
-        leftHand_d.rotation = leftHand.rotation;
+        leftHand_d.position = leftPointingB;
+
         Transform rightHand_d = go.transform.Find("RIGHTHAND_D");
-        rightHand_d.position = rightHand.position;
-        rightHand_d.rotation = rightHand.rotation;
+        rightHand_d.position = rightPointingB;
 
         Matrix4x4 rM = Matrix4x4.identity;
 
+        if (leftPointing)
+        {
+            Vector3 leftHitToLocal = workspaceCollider.transform.InverseTransformPoint(leftHit);
+            Vector3 reflectedPoint = new Vector3(leftHitToLocal.x, leftHitToLocal.y, -leftHitToLocal.z);
+            Vector3 reflectedPointWorld = workspaceCollider.transform.TransformPoint(reflectedPoint);
+
+            Debug.DrawLine(leftPointingA, leftHit, Color.cyan);
+            Debug.DrawLine(leftPointingA, reflectedPointWorld, Color.yellow);
+
+            Vector3 oldVector = leftHit - leftPointingA;
+            Vector3 newVector = reflectedPointWorld - leftPointingA;
+
+            Vector3 axis = Vector3.Cross(oldVector, newVector);
+            float angle = Vector3.Angle(oldVector, newVector);
+
+            rM = Matrix4x4.Translate(leftPointingA) * Matrix4x4.TRS(Vector3.zero, Quaternion.AngleAxis(angle, axis), Vector3.one) * Matrix4x4.Translate(-leftPointingA);
+            leftHand_d.position = rM.MultiplyPoint(leftHand_d.position);
+
+            leftPointingInfo.matrix = rM;
+            leftPointingInfo.midPoint = (leftPointingA + leftPointingB) * 0.5f;
+            leftPointingInfo.distance = 0.15f; //(leftPointingB - leftPointingA).magnitude * 0.5f + 0.1f;
+            leftPointingInfo.Elbow = leftPointingA;
+            leftPointingInfo.Elbow = go.transform.Find("LEFTELBOW").transform.position;
+            leftPointingInfo.Wrist = go.transform.Find("LEFTWRIST").transform.position;
+            leftPointingInfo.Hand = go.transform.Find("LEFTHAND").transform.position;
+            leftPointingInfo.HandTip = go.transform.Find("LEFTHANDTIP").transform.position;
+            leftPointingInfo.pointing = true;
+        }
+        else leftPointingInfo.pointing = false;
+
+
+
         if (rightPointing)
         {
-
             Vector3 rightHitToLocal = workspaceCollider.transform.InverseTransformPoint(rightHit);
             Vector3 reflectedPoint = new Vector3(rightHitToLocal.x, rightHitToLocal.y, -rightHitToLocal.z);
             Vector3 reflectedPointWorld = workspaceCollider.transform.TransformPoint(reflectedPoint);
 
-            Debug.DrawLine(rightElbow.position, rightHit, Color.cyan);
-            Debug.DrawLine(rightElbow.position, reflectedPointWorld, Color.yellow);
+            Debug.DrawLine(rightPointingA, rightHit, Color.cyan);
+            Debug.DrawLine(rightPointingA, reflectedPointWorld, Color.yellow);
 
-            Vector3 oldVector = rightHit - rightElbow.position;
-            Vector3 newVector = reflectedPointWorld - rightElbow.position;
+            Vector3 oldVector = rightHit - rightPointingA;
+            Vector3 newVector = reflectedPointWorld - rightPointingA;
 
             Vector3 axis = Vector3.Cross(oldVector, newVector);
             float angle = Vector3.Angle(oldVector, newVector);
             
-            rM = Matrix4x4.Translate(rightElbow.position) * Matrix4x4.TRS(Vector3.zero, Quaternion.AngleAxis(angle, axis), Vector3.one) * Matrix4x4.Translate(-rightElbow.position);
+            rM = Matrix4x4.Translate(rightPointingA) * Matrix4x4.TRS(Vector3.zero, Quaternion.AngleAxis(angle, axis), Vector3.one) * Matrix4x4.Translate(-rightPointingA);
             rightHand_d.position = rM.MultiplyPoint(rightHand_d.position);
+
+
+            rightPointingInfo.matrix = rM;
+            rightPointingInfo.midPoint = (rightPointingA + rightPointingB) * 0.5f;
+            rightPointingInfo.distance = 0.15f;//(rightPointingB - rightPointingA).magnitude * 0.5f + 0.1f;
+            rightPointingInfo.Elbow = go.transform.Find("RIGHTELBOW").transform.position;
+            rightPointingInfo.Wrist = go.transform.Find("RIGHTWRIST").transform.position;
+            rightPointingInfo.Hand = go.transform.Find("RIGHTHAND").transform.position;
+            rightPointingInfo.HandTip = go.transform.Find("RIGHTHANDTIP").transform.position;
+            rightPointingInfo.pointing = true;
         }
+        else rightPointingInfo.pointing = false;
+    }
 
-        rightPointingInfo.matrix = rM;
-        rightPointingInfo.midPoint = (rightElbow.position + human.body.Joints[BodyJointType.rightHandTip]) * 0.5f;
-        rightPointingInfo.distance = (human.body.Joints[BodyJointType.rightHandTip] - rightElbow.position).magnitude * 0.5f;
+    private List<Vector3> _calcPoints(Vector3 A, Vector3 B, float inc)
+    {
+        List<Vector3> points = new List<Vector3>();
 
-
-        if (leftPointing)
+        Vector3 dir = B - A;
+        for (float i = 0f; i*inc <= Vector3.Distance(A, B); i += 1)
         {
-
+            points.Add(A + dir.normalized * i * inc);
+            print(A + dir * i);
         }
-        
-
-
-
-
-        // todo: mudar as vars para as vars_D
-        //go.transform.Find("LEFTSHOULDER_D").localPosition = leftShoulder;
-        //go.transform.Find("RIGHTSHOULDER_D").localPosition = rightShoulder;
-
-        //go.transform.Find("LEFTELBOW_D").localPosition = leftElbow;
-        //go.transform.Find("RIGHTELBOW_D").localPosition = rightElbow;
-
-        //go.transform.Find("LEFTHAND_D").localPosition = leftHand;
-        //go.transform.Find("RIGHTHAND_D").localPosition = rightHand;
+        return points;
     }
 
     private static bool _isPointing(Ray ray, GameObject workspace, out Vector3 hitpoint)

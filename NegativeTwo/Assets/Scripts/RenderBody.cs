@@ -5,7 +5,7 @@ using UnityEngine;
 
 public class RenderBody : MonoBehaviour {
 
-    private bool _enabled = false;
+    private bool _enabled = true; // TODO: start false when not debuging
     public bool Enabled
     {
         get

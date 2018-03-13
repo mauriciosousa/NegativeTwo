@@ -63,10 +63,20 @@ Shader "Custom/Depth Billboard"
 				float4x4 _RightTransform;
 				float3 _RightMidPoint;
 				float _RightDistance;
+				float3 _RightElbow;
+				float3 _RightWrist;
+				float3 _RightHand;
+				float3 _RightHandTip;
+				int _RightPointing;
 
 				float4x4 _LeftTransform;
 				float3 _LeftMidPoint;
 				float _LeftDistance;
+				float3 _LeftElbow;
+				float3 _LeftWrist;
+				float3 _LeftHand;
+				float3 _LeftHandTip;
+				int _LeftPointing;
 
 				// **************************************************************
 				// Shader Programs												*
@@ -99,17 +109,63 @@ Shader "Custom/Depth Billboard"
 					if(dValue == 0)		
 						c.a = 0; 
 
-					//DISTORCER O BRACINHO - direito
 
 					float4 worldPos = mul(unity_ObjectToWorld, pos);
 
-					if (length(worldPos - float4(_RightMidPoint, 1.0)) < _RightDistance)
+					// RIGHT ARM
+					float inc = 0.10f;
+					float4 A = float4(_RightElbow, 1.0);
+					float4 B = float4(_RightWrist, 1.0);
+					int i;
+					float4 p;
+					if (_RightPointing == 1)
 					{
-						pos = mul(unity_WorldToObject, mul(_RightTransform, worldPos));
-						//c.r = 1;
+						for (i = 1; i <= (distance(A, B) / inc); i++)
+						{
+							p = A + normalize(B - A) * i * inc;
+							if (distance(worldPos, p) < _RightDistance)
+							{
+								pos = mul(unity_WorldToObject, mul(_RightTransform, worldPos));
+								//c.r = 1; c.g = 0; c.b = 0;
+								break;
+							}
+						}
+						if (distance(worldPos, float4(_RightHand, 1.0)) < _RightDistance
+							|| distance(worldPos, float4(_RightHandTip, 1.0)) < _RightDistance)
+						{
+							pos = mul(unity_WorldToObject, mul(_RightTransform, worldPos));
+							//c.r = 0; c.g = 1; c.b = 0;
+						}
 					}
 
-					//FIM DO DISTORCER O BRACINHO
+					// LEFT ARM
+					inc = 0.10f;
+					A = float4(_LeftElbow, 1.0);
+					B = float4(_LeftWrist, 1.0);
+					
+					if (_LeftPointing == 1)
+					{
+						for (i = 1; i <= (distance(A, B) / inc); i++)
+						{
+							p = A + normalize(B - A) * i * inc;
+							if (distance(worldPos, p) < _LeftDistance)
+							{
+								pos = mul(unity_WorldToObject, mul(_LeftTransform, worldPos));
+								//c.r = 1; c.g = 0; c.b = 0;
+								break;
+							}
+						}
+						if (distance(worldPos, float4(_LeftHand, 1.0)) < _LeftDistance
+							|| distance(worldPos, float4(_LeftHandTip, 1.0)) < _LeftDistance)
+						{
+							pos = mul(unity_WorldToObject, mul(_LeftTransform, worldPos));
+							//c.r = 0; c.g = 1; c.b = 0;
+						}
+					}
+
+
+					
+
 
 
 					output.pos = pos;

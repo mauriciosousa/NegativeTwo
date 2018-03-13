@@ -20,7 +20,10 @@ public class Highlight : MonoBehaviour {
 	
 	void Update ()
     {
-		
+        if (Input.GetKeyDown(KeyCode.H))
+        {
+            setHighlight(!highlighted);
+        }
 	}
 
     public void setHighlight(bool setValue)
