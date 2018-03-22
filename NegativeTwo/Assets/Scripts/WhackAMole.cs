@@ -10,9 +10,19 @@ public enum WhackAMoleSessionType
     SIXTEEN = 16
 }
 
+public enum EvaluationConditionType
+{
+    NONE,
+    SIMULATED_SIDE_SIDE, 
+    MIRRORED_PERSON,
+    SIMULATED_SIDE_SIDE_Depth,
+    MIRRORED_PERSON_Depth
+}
+
 public class WhackAMole : MonoBehaviour {
 
     private bool _init = false;
+    public bool IsInit { get { return _init; } }
 
     private Transform _workspace;
     private NegativeSpace _negativeSpace;
@@ -20,21 +30,22 @@ public class WhackAMole : MonoBehaviour {
     public GameObject cubePrefab;
     public Vector3 CubesScale;
 
-    private List<GameObject> _availableCubes; 
+    private List<GameObject> _availableCubes;
 
+    private EvaluationConditionType condition = EvaluationConditionType.NONE;
 
     void Start()
     {
         _availableCubes = null;
     }
 
+
+
     internal void Init()
     {
         _negativeSpace = GameObject.Find("Main").GetComponent<NegativeSpace>();
         transform.position = (_negativeSpace.LocalSurface.SurfaceBottomLeft + _negativeSpace.RemoteSurface.SurfaceBottomRight) * 0.5f;
         transform.rotation = _negativeSpace.NegativeSpaceCenter.transform.rotation;
-
-        _setupWorkspace(WhackAMoleSessionType.SIXTEEN);
 
         _init = true;
     }
@@ -43,7 +54,18 @@ public class WhackAMole : MonoBehaviour {
     {
         if (!_init) return;
 
-
+        if (Input.GetKeyDown(KeyCode.Alpha1))
+        {
+            _setupWorkspace(WhackAMoleSessionType.FOUR);
+        }
+        if (Input.GetKeyDown(KeyCode.Alpha2))
+        {
+            _setupWorkspace(WhackAMoleSessionType.EIGHT);
+        }
+        if (Input.GetKeyDown(KeyCode.Alpha3))
+        {
+            _setupWorkspace(WhackAMoleSessionType.SIXTEEN);
+        }
         if (Input.GetKeyDown(KeyCode.C))
         {
             _cleanCubes();
@@ -61,18 +83,76 @@ public class WhackAMole : MonoBehaviour {
             _availableCubes.Add(_instantiateNewCube("cube_" + i));
         }
 
-        Vector3 O = _negativeSpace.RemoteSurface.SurfaceBottomRight;
-        Vector3 length = _negativeSpace.RemoteSurface.SurfaceBottomLeft - O;
-        Vector3 depth = _negativeSpace.LocalSurface.SurfaceBottomRight - O;
+        Vector3 origin = _negativeSpace.RemoteSurface.SurfaceBottomRight;
+        Vector3 length = _negativeSpace.RemoteSurface.SurfaceBottomLeft - origin;
+        Vector3 depth = _negativeSpace.LocalSurface.SurfaceBottomRight - origin;
 
-        if (session == WhackAMoleSessionType.FOUR) _distribute2x2(O, length, depth);
-        else if (session == WhackAMoleSessionType.EIGHT) _distribute4x2(O, length, depth);
-        else if (session == WhackAMoleSessionType.SIXTEEN) _distribute4x4(O, length, depth);
+        if (session == WhackAMoleSessionType.FOUR) _distribute2x2(origin, length, depth);
+        else if (session == WhackAMoleSessionType.EIGHT) _distribute4x2(origin, length, depth);
+        else if (session == WhackAMoleSessionType.SIXTEEN) _distribute4x4(origin, length, depth);
     }
 
     private void _cleanCubes()
     {
         if (_availableCubes != null) _availableCubes.RemoveAll(delegate (GameObject o) { Destroy(o); return o == null; });
+    }
+
+    internal void PointingEvent(Vector3 origin, Vector3 direction)
+    {
+        if (!_init) return;
+
+        RaycastHit hit;
+        Ray ray = new Ray(origin, direction);
+        if (Physics.Raycast(ray, out hit, float.PositiveInfinity))
+        {
+            Debug.DrawLine(origin, hit.point, Color.red);
+
+            float distance = float.PositiveInfinity;
+            GameObject selectedCube = null;
+            foreach (GameObject cube in _availableCubes)
+            {
+                float newDistance = Vector3.Distance(hit.point, cube.transform.position);
+                if ( newDistance < distance)
+                {
+                    selectedCube = cube;
+                    distance = newDistance;
+                }
+            }
+            print(selectedCube.ToString());
+        }   
+    }
+
+    public bool IAmPointing(Ray ray, bool click, out Vector3 hitPoint)
+    {
+        print("POINT_NIG YEAHHH");
+
+        hitPoint = Vector3.zero;
+        bool didHit = false;
+
+        if (!_init) return didHit;
+
+        RaycastHit hit;
+        if (Physics.Raycast(ray, out hit, float.PositiveInfinity))
+        {
+            didHit = true;
+            hitPoint = hit.point;
+
+            Highlight h = hit.transform.gameObject.GetComponent<Highlight>();
+            if (h != null)
+            {
+                print("I pointed to a " + hit.transform.gameObject.name + " and I liked it!!!");
+            }
+        }
+        else
+        {
+
+        }
+
+        if (click)
+        {
+            
+        }
+        return didHit;
     }
 
     private GameObject _instantiateNewCube(string cubeName)
@@ -84,6 +164,8 @@ public class WhackAMole : MonoBehaviour {
         newCube.transform.localRotation = Quaternion.identity;
         return newCube;
     }
+
+
 
     private void _upTheCubes()
     {

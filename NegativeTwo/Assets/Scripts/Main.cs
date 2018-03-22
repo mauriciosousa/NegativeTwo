@@ -182,8 +182,7 @@ public class Main : MonoBehaviour {
 
 
 
-                GameObject.Find("Whack-a-mole").GetComponent<WhackAMole>().Init();
-
+                GameObject.Find("WhackAMole").GetComponent<WhackAMole>().Init();
 
                 GameObject localbody = GameObject.Find("LocalBody");
                 localbody.transform.parent = _localOrigin.transform;

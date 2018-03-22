@@ -40,23 +40,33 @@ public class HandCursor : MonoBehaviour {
 
     private ClickEvent clickEvent;
 
-    private Checkerboard _checkerboard;
-
     private AdaptiveDoubleExponentialQuaternion _filteredRotation;
 
+    private WhackAMole _waka;
+
+    private bool _init = false;
+    
 	void Start ()
     {
-        Debug.LogError("TODO: " + this);
-        //_checkerboard = GameObject.Find("Checkerboard").GetComponent<Checkerboard>();
         clickEvent = new ClickEvent();
         attitude = Quaternion.identity;
-
         _filteredRotation = new AdaptiveDoubleExponentialQuaternion();
+        _waka = GameObject.Find("WhackAMole").GetComponent<WhackAMole>();
 	}
+
+    public void Init()
+    {
+        print(this.ToString() + ": starting yeah");
+        _init = true;
+    }
 	
 	void Update ()
     {
-        if (message == null) return;
+        if (!_init) return;
+
+        /*if (message == null) return;
+
+        print(this.ToString() + ": updatings");
 
         if (message.Reset)
         {
@@ -65,16 +75,10 @@ public class HandCursor : MonoBehaviour {
         }
 
         attitude = message.Attitude;
-        //transform.localRotation = Quaternion.AngleAxis(yawOffset, Vector3.up) * new Quaternion(-attitude.x, -attitude.z, -attitude.y, attitude.w);
         _filteredRotation.Value = attitude;
         transform.localRotation = Quaternion.AngleAxis(yawOffset, Vector3.up) * new Quaternion(-_filteredRotation.Value.x, -_filteredRotation.Value.z, -_filteredRotation.Value.y, _filteredRotation.Value.w);
 
         Ray ray = new Ray(transform.position, transform.forward);
-        //Debug.DrawRay(transform.position, transform.forward);
-
-        //Debug.DrawLine(transform.position, transform.position + transform.forward * 1000.0f, Color.cyan);
-
-        /* cenas do daniel... se calhar é apra ir cos porcos */
 
         SimpleProjector sp = GameObject.Find("Projector").GetComponent<SimpleProjector>();
         Transform screenCenter = GameObject.Find("localScreenCenter").transform;
@@ -96,11 +100,9 @@ public class HandCursor : MonoBehaviour {
         else
             sp.didHit = false;
 
-
-        /* fim cenas do daniel */
-
         Vector3 hit = Vector3.zero;
-        _checkerboard.IAmPointing(ray, clickEvent.raiseEvent(message.Click), out hit);
+        
+        _waka.IAmPointing(ray, clickEvent.raiseEvent(message.Click), out hit);
 
         if (clickEvent.raiseEvent(message.Click))
         {
@@ -109,8 +111,10 @@ public class HandCursor : MonoBehaviour {
         else
         {
 
-        }
-	}
+        }*/
+
+        //_waka.IAmPointing(ray, clickEvent.raiseEvent(message.Click), out hit);
+    }
 
     internal void Update(HandheldMessage message)
     {
