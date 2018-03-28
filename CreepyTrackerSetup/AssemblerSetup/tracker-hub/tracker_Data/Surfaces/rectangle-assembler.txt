@@ -1,0 +1,11 @@
+% 2018/03/27 16:09:57
+surface.name=Assembler Surface
+surface.kinect=DICAPRIO
+surface.bottom.left=-0.3456995:-0.2246772:3.157
+surface.bottom.right=0.2688765:-0.2510749:2.872
+surface.top.left=-0.3624357:0.9714786:3.010118
+surface.top.right=0.2521403:0.9450809:2.725118
+tracker.surface.bottom.left=0.3803161:0.5916981:1.785689
+tracker.surface.bottom.right=-0.2973291:0.6052389:1.770224
+tracker.surface.top.left=0.4056928:1.795285:1.727571
+tracker.surface.top.right=-0.2719524:1.808826:1.712106
