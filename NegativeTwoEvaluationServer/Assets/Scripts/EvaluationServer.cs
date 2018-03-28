@@ -17,6 +17,10 @@ public class EvaluationServer : MonoBehaviour {
     void Start ()
     {
         Application.runInBackground = true;
+
+        Screen.SetResolution(800, 800, true);
+        Screen.fullScreen = false;
+
         _networkView = GetComponent<NetworkView>();
 
         Network.InitializeServer(2, port, false);
@@ -38,6 +42,11 @@ public class EvaluationServer : MonoBehaviour {
         int left = 10;
         int top = 10;
         int lineSize = 30;
+
+        GUI.Label(new Rect(left, top, 50, lineSize), "Network Port: ", HugeStyle); left += 160;
+        GUI.Label(new Rect(left, top, 50, lineSize), "" + port, ValueStyle); left = 10;
+
+        top += lineSize;
 
         GUI.Label(new Rect(left, top, 50, lineSize), "Server running: ", HugeStyle); left += 160;
         GUI.Label(new Rect(left, top, 50, lineSize), "" + Network.peerType, ValueStyle); left = 10;
@@ -88,7 +97,7 @@ public class EvaluationServer : MonoBehaviour {
         {
             _networkView.RPC("RPC_startHabituationTask", RPCMode.Others, condition);
         }
-        top += 3 * lineSize;
+        top += 6 * lineSize;
 
         left += 50;
 
@@ -119,10 +128,12 @@ public class EvaluationServer : MonoBehaviour {
 
         left += 50;
 
+        /*
         if (GUI.Button(new Rect(left, top, 300, lineSize * 2), "CLEAR BOARD"))
         {
             _networkView.RPC("RPC_clearBoard", RPCMode.Others);
         }
+        */
 
     }
 
