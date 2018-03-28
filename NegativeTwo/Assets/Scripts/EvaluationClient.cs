@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -50,10 +51,43 @@ public class EvaluationClient : MonoBehaviour {
     }
 
     [RPC]
+    void RPC_updateCube(string gameObjectName, int state)
+    {
+        if (_main.location == Location.Instructor)
+        {
+            _whackAMole.updateCube(gameObjectName, state);
+        }
+    }
+    public void updateCube(string gameObjectName, int state)
+    {
+        _networkView.RPC("RPC_updateCube", RPCMode.Others, gameObjectName, state);
+    }
+
+    [RPC]
     void RPC_clearBoard()
     {
         Debug.Log("[RPC_clearBoard]");
         _whackAMole.clearBoard();
+    }
+
+    [RPC]
+    void RPC_microtaskStarted(int microtask)
+    {
+        if (_main.location == Location.Instructor) _whackAMole.INSTRUCTOR_microtaskStarted(microtask);
+    }
+    internal void reportToInstructorMicroTaskStarted(int microTask)
+    {
+        _networkView.RPC("RPC_microtaskEnded", RPCMode.Others, microTask);
+    }
+
+    [RPC]
+    void RPC_microtaskEnded(int microtask)
+    {
+        if (_main.location == Location.Instructor) _whackAMole.INSTRUCTOR_microtaskEnded(microtask);
+    }
+    internal void reportToInstructorMicroTaskEnded(int microTask)
+    {
+        _networkView.RPC("RPC_microtaskStarted", RPCMode.Others, microTask);
     }
     #endregion
 }

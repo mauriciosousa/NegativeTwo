@@ -117,6 +117,7 @@ public class WhackAMole : MonoBehaviour {
 
     private Transform _workspace;
     private NegativeSpace _negativeSpace;
+    private Main _main;
 
     public GameObject cubePrefab;
     public Vector3 CubesScale;
@@ -124,7 +125,6 @@ public class WhackAMole : MonoBehaviour {
     private List<GameObject> _availableCubes;
 
     private EvaluationConditionType evaluationCondition = EvaluationConditionType.NONE;
-
 
     public bool trialInProgress = false;
 
@@ -147,6 +147,7 @@ public class WhackAMole : MonoBehaviour {
         _negativeSpace = GameObject.Find("Main").GetComponent<NegativeSpace>();
         transform.position = (_negativeSpace.LocalSurface.SurfaceBottomLeft + _negativeSpace.RemoteSurface.SurfaceBottomRight) * 0.5f;
         transform.rotation = _negativeSpace.NegativeSpaceCenter.transform.rotation;
+        _main = GameObject.Find("Main").GetComponent<Main>();
 
         _init = true;
     }
@@ -160,77 +161,91 @@ public class WhackAMole : MonoBehaviour {
 
         if (trialInProgress)
         {
-            if (microTask <= MaxRepetitions)
+            EvaluationClient client = GetComponent<EvaluationClient>();
+            if (_main.location == Location.Assembler)
             {
-                if (microTask == 1 && !microtasking)
+
+                if (microTask <= MaxRepetitions)
                 {
-                    //STARTMICRO
-                    microtasking = true;
-
-                    _setWorkspace(taskType);
-                    MicroTaskData m = new MicroTaskData(evaluationCondition, taskType, microTask); // START FIRST MICROTASK
-                    _microtaskData.Push(m);
-                    m.START();
-                }
-
-                #region MICROTASK
-                _microtaskData.Peek().addPointing(_negativeSpace.isUsingDeitics);
-
-                if (selectedCube != null)
-                {
-                    if (selectedCube == targetCube && !_microtaskData.Peek().success)
+                    if (microTask == 1 && !microtasking)
                     {
-                        _microtaskData.Peek().success = true;
-                        selectedCube.GetComponent<CubeSelection>().correctSelection();
-                        print("SELECTED CORRECTLY                  " + selectedCube + "  ----   " + targetCube);
-                    }
-                    else
-                    {
-                        _microtaskData.Peek().incErrors();
-                        selectedCube.GetComponent<CubeSelection>().wrongSelection();
-                        lastWronglySelectedCube = selectedCube.name;
-                        print("SELECTED WRONGLYYY                  " + selectedCube + "  ----   " + targetCube);
+                        //STARTMICRO
+                        microtasking = true;
 
-                    }
-                }
-                selectedCube = null;
-
-                foreach (GameObject cube in _availableCubes)
-                {
-                }
-                #endregion
-
-                if (_microtaskData.Peek().startTime.AddMilliseconds(timelimit) < DateTime.Now )
-                {
-                    //END micro
-                    if (microTask == MaxRepetitions)
-                    {
-                        microtasking = false;
-                        microTask = 1;
-                        trialInProgress = false;
-
-                        _microtaskData.Peek().END(); // end last one
-                        print("END EVERythings");
-
-                        _processMicroTaskData();
-                        _cleanCubes();
-                    }
-                    else
-                    {
-                        // end current task
-                        _microtaskData.Peek().END();
-
-                        microTask += 1;
-
-                        // star new task
                         _setWorkspace(taskType);
-                        MicroTaskData m = new MicroTaskData(evaluationCondition, taskType, microTask); // START OTHER MICROTASKS
+                        MicroTaskData m = new MicroTaskData(evaluationCondition, taskType, microTask); // START FIRST MICROTASK
                         _microtaskData.Push(m);
+                        client.reportToInstructorMicroTaskStarted(_microtaskData.Peek().microtaskID);
                         m.START();
+                    }
+
+                    #region MICROTASK
+                    _microtaskData.Peek().addPointing(_negativeSpace.isUsingDeitics);
+
+                    if (selectedCube != null)
+                    {
+                        if (selectedCube == targetCube && !_microtaskData.Peek().success)
+                        {
+                            _microtaskData.Peek().success = true;
+                            selectedCube.GetComponent<CubeSelection>().correctSelection();
+                            print("SELECTED CORRECTLY                  " + selectedCube + "  ----   " + targetCube);
+                        }
+                        else
+                        {
+                            _microtaskData.Peek().incErrors();
+                            selectedCube.GetComponent<CubeSelection>().wrongSelection();
+                            lastWronglySelectedCube = selectedCube.name;
+                            print("SELECTED WRONGLYYY                  " + selectedCube + "  ----   " + targetCube);
+
+                        }
+                    }
+                    selectedCube = null;
+
+                    foreach (GameObject cube in _availableCubes)
+                    {
+                        client.updateCube(cube.name, (int) cube.GetComponent<CubeSelection>().state);
+                    }
+                    #endregion
+
+                    if (_microtaskData.Peek().startTime.AddMilliseconds(timelimit) < DateTime.Now)
+                    {
+                        //END micro
+                        if (microTask == MaxRepetitions)
+                        {
+                            microtasking = false;
+                            microTask = 1;
+                            trialInProgress = false;
+
+                            client.reportToInstructorMicroTaskEnded(_microtaskData.Peek().microtaskID);
+                            _microtaskData.Peek().END(); // end last one
+                            print("END EVERythings");
+
+                            _processMicroTaskData();
+                            _cleanCubes();
+                        }
+                        else
+                        {
+                            // end current task
+                            client.reportToInstructorMicroTaskEnded(_microtaskData.Peek().microtaskID);
+                            _microtaskData.Peek().END();
+
+
+                            microTask += 1;
+
+                            // star new task
+                            _setWorkspace(taskType);
+                            MicroTaskData m = new MicroTaskData(evaluationCondition, taskType, microTask); // START OTHER MICROTASKS
+                            _microtaskData.Push(m);
+                            client.reportToInstructorMicroTaskStarted(_microtaskData.Peek().microtaskID);
+                            m.START();
+                        }
                     }
                 }
             }
-            
+            else if (_main.location == Location.Instructor)
+            {
+
+            }
         }
  	}
 
@@ -449,5 +464,29 @@ public class WhackAMole : MonoBehaviour {
     {
         evaluationCondition = (EvaluationConditionType)condition;
         //_setWorkspace(WhackAMoleSessionType.FOUR);
+    }
+
+    internal void updateCube(string gameObjectName, int state)
+    {
+        if (_availableCubes == null) return;
+
+        foreach (GameObject cube in _availableCubes)
+        {
+            if (cube.name == gameObjectName)
+            {
+                cube.GetComponent<CubeSelection>().state = (CubeSTATE) state;
+                break;
+            }
+        }
+    }
+
+    internal void INSTRUCTOR_microtaskStarted(int microtask)
+    {
+        throw new NotImplementedException();
+    }
+
+    internal void INSTRUCTOR_microtaskEnded(int microtask)
+    {
+        throw new NotImplementedException();
     }
 }

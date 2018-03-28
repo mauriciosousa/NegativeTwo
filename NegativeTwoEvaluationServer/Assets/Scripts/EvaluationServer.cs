@@ -28,10 +28,7 @@ public class EvaluationServer : MonoBehaviour {
 
     void Update()
     {
-        if (Input.GetKeyDown(KeyCode.Space))
-        {
-            _networkView.RPC("RPC_receiveMessage", RPCMode.Others, "Oiiiiiiiiii");
-        }
+
     }
 
     void OnGUI()
@@ -150,5 +147,13 @@ public class EvaluationServer : MonoBehaviour {
     [RPC]
     void RPC_clearBoard() { }
 
+    [RPC]
+    void RPC_updateCube(string gameObjectName, int state) { }
+
+    [RPC]
+    void RPC_microtaskStarted(int microtask) { }
+
+    [RPC]
+    void RPC_microtaskEnded(int microtask) { }
     #endregion
 }
