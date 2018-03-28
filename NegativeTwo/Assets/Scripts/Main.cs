@@ -177,7 +177,7 @@ public class Main : MonoBehaviour {
 
                 __everythingIsNiceAndWellConfigured = true;
 
-                //GameObject.Find("Checkerboard").GetComponent<Checkerboard>().Init();
+                GameObject.Find("EvaluationClient").GetComponent<EvaluationClient>().Init();
                 //GameObject.Find("Projector").GetComponent<SimpleProjector>().init(remoteScreenCenter.transform);
 
 

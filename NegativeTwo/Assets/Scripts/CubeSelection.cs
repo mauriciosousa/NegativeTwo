@@ -3,46 +3,80 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
+public enum CubeSTATE
+{
+    NONE = 0,
+    SELECT = 1,
+    SELECT_WRONG = 2,
+    SELECT_CORRECT = 3
+}
+
 public class CubeSelection : MonoBehaviour {
 
+    public CubeSTATE state = CubeSTATE.NONE;
+  
     public Material normalMaterial;
     public Material highlightedMaterial;
     public Material selectedMaterial_CORRECT;
     public Material selectedMaterial_WRONG;
 
-    public bool selected { get; private set; }
     private DateTime _selectedTime;
-    public double notificationTime; //ms
+    private double notificationTime = 500; //ms
+
+    private Location _location;
 
     void Start()
     {
+        _location = GameObject.Find("Main").GetComponent<Main>().location;
+    }
+
+    void setMaterial(Material material)
+    {
+        GetComponent<Renderer>().material = material;
     }
 
     void Update()
     {
-        if (this.name == "cube_1")
+        if (state == CubeSTATE.NONE)
         {
-            if (Input.GetKeyDown(KeyCode.Q))
-            {
-                _select(true);
-            }
-
-            if (Input.GetKeyDown(KeyCode.W))
-            {
-                _select(false);
-            }
+            setMaterial(normalMaterial);
         }
-
-        //
-        if (selected && (DateTime.Now >= _selectedTime.AddMilliseconds(notificationTime)))
+        else if (state == CubeSTATE.SELECT)
         {
-            print(selected);
-            GetComponent<Renderer>().material = normalMaterial;
-            selected = false;
-            // RAISE END TASK
+            //setMaterial(_location == Location.Instructor ? highlightedMaterial : normalMaterial);
+            setMaterial(highlightedMaterial);
+        }
+        else if (state == CubeSTATE.SELECT_CORRECT)
+        {
+            setMaterial(selectedMaterial_CORRECT);
+        }
+        else if (state == CubeSTATE.SELECT_WRONG)
+        {
+            if (_selectedTime.AddMilliseconds(notificationTime) > DateTime.Now)
+            {
+                print("RED");
+                setMaterial(selectedMaterial_WRONG);
+            }
+            else
+            {
+                state = CubeSTATE.NONE;
+                setMaterial(normalMaterial);
+            }
         }
     }
 
+    internal void correctSelection()
+    {
+        state = CubeSTATE.SELECT_CORRECT;
+    }
+
+    internal void wrongSelection()
+    {
+        state = CubeSTATE.SELECT_WRONG;
+        _selectedTime = DateTime.Now;
+    }
+
+    /*
     private void _select(bool correct)
     {
         if (selected) return;
@@ -50,4 +84,5 @@ public class CubeSelection : MonoBehaviour {
         _selectedTime = DateTime.Now;
         GetComponent<Renderer>().material = correct ? selectedMaterial_CORRECT : selectedMaterial_WRONG;
     }
+    */
 }

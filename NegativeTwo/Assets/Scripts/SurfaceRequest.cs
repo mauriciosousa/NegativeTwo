@@ -28,6 +28,16 @@ public class SurfaceRectangle
 
     public Vector3 Center { get { return (_bl + _tr) * 0.5f; } }
 
+    public Vector3 Normal
+    {
+        get
+        {
+            Vector3 up = _tl - _bl;
+            Vector3 right = _br - _bl;
+            return Vector3.Cross(up, right);
+        }
+    }
+
     public Quaternion Perpendicular
     {
         get

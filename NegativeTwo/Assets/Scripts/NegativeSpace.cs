@@ -45,8 +45,13 @@ public class NegativeSpace : MonoBehaviour {
 
     private GameObject workspaceCollider = null;
 
+    private GameObject _screen = null;
+
     public PointingDistortionInfo rightPointingInfo;
     public PointingDistortionInfo leftPointingInfo;
+
+
+    public bool isUsingDeitics = false;
 
 
     void Awake()
@@ -83,10 +88,15 @@ public class NegativeSpace : MonoBehaviour {
         _negativeSpaceLength = length;
 
         //_createNegativeSpaceMesh();
-        GameObject bottomWall = _negativeSpaceWalls("bottomWall", _localSurface.SurfaceBottomLeft, _localSurface.SurfaceBottomRight, _remoteSurfaceProxy.SurfaceBottomRight, _remoteSurfaceProxy.SurfaceBottomLeft);
-        GameObject leftWall = _negativeSpaceWalls("leftWall", _localSurface.SurfaceBottomLeft, _remoteSurfaceProxy.SurfaceBottomLeft, _remoteSurfaceProxy.SurfaceTopLeft, _localSurface.SurfaceTopLeft);
-        GameObject rightWall = _negativeSpaceWalls("rightWall", _remoteSurfaceProxy.SurfaceBottomRight, _localSurface.SurfaceBottomRight, _localSurface.SurfaceTopRight, _remoteSurfaceProxy.SurfaceTopRight);
-        GameObject topWall =  _negativeSpaceWalls("topWall", _remoteSurfaceProxy.SurfaceTopLeft, _remoteSurfaceProxy.SurfaceTopRight, _localSurface.SurfaceTopRight, _localSurface.SurfaceTopLeft);
+        GameObject bottomWall = _negativeSpaceWalls("bottomWall", _localSurface.SurfaceBottomLeft, _localSurface.SurfaceBottomRight, _remoteSurfaceProxy.SurfaceBottomRight, _remoteSurfaceProxy.SurfaceBottomLeft, true);
+        GameObject leftWall = _negativeSpaceWalls("leftWall", _localSurface.SurfaceBottomLeft, _remoteSurfaceProxy.SurfaceBottomLeft, _remoteSurfaceProxy.SurfaceTopLeft, _localSurface.SurfaceTopLeft, true);
+        GameObject rightWall = _negativeSpaceWalls("rightWall", _remoteSurfaceProxy.SurfaceBottomRight, _localSurface.SurfaceBottomRight, _localSurface.SurfaceTopRight, _remoteSurfaceProxy.SurfaceTopRight, true);
+        GameObject topWall =  _negativeSpaceWalls("topWall", _remoteSurfaceProxy.SurfaceTopLeft, _remoteSurfaceProxy.SurfaceTopRight, _localSurface.SurfaceTopRight, _localSurface.SurfaceTopLeft, true);
+        GameObject screen = _negativeSpaceWalls("Screen", _localSurface.SurfaceBottomLeft, _localSurface.SurfaceBottomRight, _localSurface.SurfaceTopRight, _localSurface.SurfaceTopLeft, false);
+        
+        MeshCollider collider = screen.AddComponent(typeof(MeshCollider)) as MeshCollider;
+        _screen = screen;
+
 
         GameObject workspace = new GameObject("workspaceCollider");
         workspace.AddComponent<BoxCollider>();
@@ -100,6 +110,8 @@ public class NegativeSpace : MonoBehaviour {
         NegativeSpaceCenter.transform.rotation = workspace.transform.rotation = GameObject.Find("localScreenCenter").transform.rotation;
 
         bottomCenterPosition = (_localSurface.SurfaceBottomLeft + _remoteSurfaceProxy.SurfaceBottomRight) * 0.5f;
+
+
 
         /*_handCursor = new GameObject("HandCursor");
         _handCursor.transform.position = Vector3.zero;
@@ -116,10 +128,12 @@ public class NegativeSpace : MonoBehaviour {
 
 
         
+
+
         _spaceCreated = true;
     }
 
-    private GameObject _negativeSpaceWalls(string name, Vector3 a, Vector3 b, Vector3 c, Vector3 d)
+    private GameObject _negativeSpaceWalls(string name, Vector3 a, Vector3 b, Vector3 c, Vector3 d, bool haveRenderer)
     {
         GameObject o = new GameObject(name);
         o.transform.position = Vector3.zero;
@@ -147,9 +161,12 @@ public class NegativeSpace : MonoBehaviour {
         m.RecalculateBounds();
 
         meshFilter.mesh = m;
-        MeshRenderer renderer = o.AddComponent(typeof(MeshRenderer)) as MeshRenderer;
-        renderer.material = negativeSpaceMaterial;
-        //MeshCollider collider = o.AddComponent(typeof(MeshCollider)) as MeshCollider;
+        if (haveRenderer)
+        {
+            MeshRenderer renderer = o.AddComponent(typeof(MeshRenderer)) as MeshRenderer;
+            renderer.material = negativeSpaceMaterial;
+        }
+            //MeshCollider collider = o.AddComponent(typeof(MeshCollider)) as MeshCollider;
         //Rigidbody rigidbody = o.AddComponent(typeof(Rigidbody)) as Rigidbody;
         //rigidbody.useGravity = false;
         //rigidbody.isKinematic = true;
@@ -205,6 +222,18 @@ public class NegativeSpace : MonoBehaviour {
 
             if (_bodiesManager.human != null) updateBody(_bodiesManager.human, GameObject.Find("LocalBody"));
             if (_bodiesManager.remoteHuman != null) updateBody(_bodiesManager.remoteHuman, GameObject.Find("RemoteBody"));
+
+
+            Vector3 head = _bodiesManager.human.body.Joints[BodyJointType.head];
+            Vector3 leftElbow = _bodiesManager.human.body.Joints[BodyJointType.leftElbow];
+            Vector3 leftHand = _bodiesManager.human.body.Joints[BodyJointType.leftHand];
+            Vector3 rightElbow = _bodiesManager.human.body.Joints[BodyJointType.rightElbow];
+            Vector3 rightHand = _bodiesManager.human.body.Joints[BodyJointType.rightHand];
+
+            isUsingDeitics = _isLocalPointingToScreen(head, leftHand) 
+                            || _isLocalPointingToScreen(head, rightHand) 
+                            || _isLocalPointingToScreen(leftElbow, leftHand) 
+                            || _isLocalPointingToScreen(rightElbow, rightHand);
         }
     }
 
@@ -268,10 +297,10 @@ public class NegativeSpace : MonoBehaviour {
         Vector3 rightPointingB = go.transform.Find("RIGHTHANDTIP").position;
 
         Vector3 leftHit = Vector3.zero;
-        bool leftPointing = _isPointing(new Ray(leftPointingB, leftPointingB - leftPointingA), workspaceCollider, out leftHit);
+        bool leftPointing = _isRemotePointingToWorkspace(new Ray(leftPointingB, leftPointingB - leftPointingA), workspaceCollider, out leftHit);
 
         Vector3 rightHit = Vector3.zero;
-        bool rightPointing = _isPointing(new Ray(rightPointingB, rightPointingB - rightPointingA), workspaceCollider, out rightHit);
+        bool rightPointing = _isRemotePointingToWorkspace(new Ray(rightPointingB, rightPointingB - rightPointingA), workspaceCollider, out rightHit);
 
 
         Plane bottomWallPlane = new Plane(_localSurface.SurfaceBottomLeft, _localSurface.SurfaceBottomRight, _remoteSurfaceProxy.SurfaceBottomRight);
@@ -313,6 +342,7 @@ public class NegativeSpace : MonoBehaviour {
             leftPointingInfo.Hand = go.transform.Find("LEFTHAND").transform.position;
             leftPointingInfo.HandTip = go.transform.Find("LEFTHANDTIP").transform.position;
             leftPointingInfo.pointing = true;
+
         }
         else
         {
@@ -367,7 +397,7 @@ public class NegativeSpace : MonoBehaviour {
         return points;
     }
 
-    private static bool _isPointing(Ray ray, GameObject workspace, out Vector3 hitpoint)
+    private static bool _isRemotePointingToWorkspace(Ray ray, GameObject workspace, out Vector3 hitpoint)
     {
         hitpoint = Vector3.zero;
         RaycastHit hit;
@@ -378,6 +408,22 @@ public class NegativeSpace : MonoBehaviour {
             return true;
         }
 
+        return false;
+    }
+
+    private bool _isLocalPointingToScreen(Vector3 A, Vector3 B)
+    {
+        Vector3 dir = (B - A).normalized;
+        Ray ray = new Ray(A, dir);
+
+        if (_screen != null)
+        {
+            RaycastHit hit;
+            if (_screen.GetComponent<Collider>().Raycast(ray, out hit, 1000.0f))
+            {
+                return true;
+            }
+        }
         return false;
     }
 
