@@ -172,6 +172,7 @@ public class WhackAMole : MonoBehaviour {
     {
         if (!_init) return;
 
+        EvaluationClient client = GetComponent<EvaluationClient>();
 
         if (habituationTaskInProgress)
         {
@@ -181,7 +182,6 @@ public class WhackAMole : MonoBehaviour {
 
         if (trialInProgress)
         {
-            EvaluationClient client = GetComponent<EvaluationClient>();
             if (_main.location == Location.Assembler)
             {
 
@@ -220,9 +220,13 @@ public class WhackAMole : MonoBehaviour {
                     }
                     selectedCube = null;
 
-                    foreach (GameObject cube in _availableCubes)
+                    if (_availableCubes != null)
                     {
-                        client.updateCube(cube.name, (int) cube.GetComponent<CubeSelection>().state);
+                        foreach (GameObject cube in _availableCubes)
+                        {
+                            int state = (int)cube.GetComponent<CubeSelection>().state;
+                            client.updateCube(cube.name, state);
+                        }
                     }
                     #endregion
 

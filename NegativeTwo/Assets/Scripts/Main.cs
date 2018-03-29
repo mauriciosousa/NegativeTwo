@@ -177,11 +177,10 @@ public class Main : MonoBehaviour {
 
                 __everythingIsNiceAndWellConfigured = true;
 
-                GameObject.Find("EvaluationClient").GetComponent<EvaluationClient>().Init();
                 //GameObject.Find("Projector").GetComponent<SimpleProjector>().init(remoteScreenCenter.transform);
 
 
-
+                GameObject.Find("WhackAMole").GetComponent<EvaluationClient>().Init();
                 GameObject.Find("WhackAMole").GetComponent<WhackAMole>().Init();
 
                 GameObject localbody = GameObject.Find("LocalBody");
