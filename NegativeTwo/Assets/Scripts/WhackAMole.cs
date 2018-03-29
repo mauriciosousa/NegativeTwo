@@ -224,7 +224,7 @@ public class WhackAMole : MonoBehaviour {
                     {
                         foreach (GameObject cube in _availableCubes)
                         {
-                            client.updateCube(cube.name, (int)cube.GetComponent<CubeSelection>().state);
+                            //client.updateCube(cube.name, (int)cube.GetComponent<CubeSelection>().state);
                         }
                     }
                     #endregion

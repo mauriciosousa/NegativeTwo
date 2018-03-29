@@ -77,7 +77,7 @@ public class EvaluationClient : MonoBehaviour {
     }
     internal void reportToInstructorMicroTaskStarted(int microTask, int task)
     {
-        _networkView.RPC("RPC_microtaskEnded", RPCMode.Others, microTask, task);
+        _networkView.RPC("RPC_microtaskStarted", RPCMode.Others, microTask, task);
     }
 
     [RPC]
@@ -87,7 +87,7 @@ public class EvaluationClient : MonoBehaviour {
     }
     internal void reportToInstructorMicroTaskEnded(int microTask)
     {
-        _networkView.RPC("RPC_microtaskStarted", RPCMode.Others, microTask);
+        _networkView.RPC("RPC_microtaskEnded", RPCMode.Others, microTask);
     }
     #endregion
 }

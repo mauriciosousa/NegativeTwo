@@ -153,5 +153,11 @@ public class EvaluationServer : MonoBehaviour {
 
     [RPC]
     void RPC_microtaskEnded(int microtask) { }
+
+    [RPC]
+    void reportToInstructorMicroTaskStarted(int microTask, int task) { }
+
+    [RPC]
+    void reportToInstructorMicroTaskEnded(int microTask) {  }
     #endregion
 }
