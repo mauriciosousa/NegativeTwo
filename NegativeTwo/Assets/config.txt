@@ -1,8 +1,8 @@
 ns.length=1.00
 
-rpc.server.address=127.0.0.1
+rpc.server.address=192.168.0.111
 
-Instructor.machine.address=127.0.0.1
+Instructor.machine.address=192.168.0.101
 
 Instructor.rpc.port=5000
 Instructor.rcv.handheld.port=5101
@@ -21,7 +21,7 @@ Instructor.sensors.listen=5107
 
 
 
-Assembler.machine.address=127.0.0.1
+Assembler.machine.address=192.168.0.107
 
 Assembler.rpc.port=5000
 Assembler.rcv.handheld.port=5001
