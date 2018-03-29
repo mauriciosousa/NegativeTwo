@@ -534,6 +534,7 @@ public class WhackAMole : MonoBehaviour {
     {
         if (_main.location == Location.Instructor)
         {
+            _cleanCubes();
             _storingInstructorData = false;
 
             double u = 0;
