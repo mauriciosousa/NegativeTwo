@@ -224,16 +224,19 @@ public class NegativeSpace : MonoBehaviour {
             if (_bodiesManager.remoteHuman != null) updateBody(_bodiesManager.remoteHuman, GameObject.Find("RemoteBody"));
 
 
-            Vector3 head = _bodiesManager.human.body.Joints[BodyJointType.head];
-            Vector3 leftElbow = _bodiesManager.human.body.Joints[BodyJointType.leftElbow];
-            Vector3 leftHand = _bodiesManager.human.body.Joints[BodyJointType.leftHand];
-            Vector3 rightElbow = _bodiesManager.human.body.Joints[BodyJointType.rightElbow];
-            Vector3 rightHand = _bodiesManager.human.body.Joints[BodyJointType.rightHand];
+            if (_bodiesManager.human != null)
+            {
+                Vector3 head = _bodiesManager.human.body.Joints[BodyJointType.head];
+                Vector3 leftElbow = _bodiesManager.human.body.Joints[BodyJointType.leftElbow];
+                Vector3 leftHand = _bodiesManager.human.body.Joints[BodyJointType.leftHand];
+                Vector3 rightElbow = _bodiesManager.human.body.Joints[BodyJointType.rightElbow];
+                Vector3 rightHand = _bodiesManager.human.body.Joints[BodyJointType.rightHand];
 
-            isUsingDeitics = _isLocalPointingToScreen(head, leftHand) 
-                            || _isLocalPointingToScreen(head, rightHand) 
-                            || _isLocalPointingToScreen(leftElbow, leftHand) 
-                            || _isLocalPointingToScreen(rightElbow, rightHand);
+                isUsingDeitics = _isLocalPointingToScreen(head, leftHand)
+                                || _isLocalPointingToScreen(head, rightHand)
+                                || _isLocalPointingToScreen(leftElbow, leftHand)
+                                || _isLocalPointingToScreen(rightElbow, rightHand);
+            }
         }
     }
 
