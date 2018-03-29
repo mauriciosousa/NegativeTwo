@@ -7,7 +7,7 @@ Instructor.machine.address=192.168.0.101
 Instructor.rpc.port=5000
 Instructor.rcv.handheld.port=5101
 
-Instructor.tracker.broadcast.port=5502
+Instructor.tracker.broadcast.port=5102
 
 Instructor.tracker.listen.port=5103
 
