@@ -323,20 +323,27 @@ public class WhackAMole : MonoBehaviour {
         else if (session == WhackAMoleSessionType.EIGHT) _distribute4x2(origin, length, depth);
         else if (session == WhackAMoleSessionType.SIXTEEN) _distribute4x4(origin, length, depth);
 
-
-        // select target cube
-        _availableCubes.Shuffle();
-        foreach (GameObject cube in _availableCubes)
+        if (_main.location == Location.Assembler)
         {
-            if (cube.name != lastTargetedCube && cube.name != lastWronglySelectedCube)
-            {
-                print(lastTargetedCube + " ------> " + cube.name);
-                targetCube = cube;
-                break;
-            }
-        }
-        //print("TARGET CUBE = " + targetCube.name);
 
+            // select target cube
+            _availableCubes.Shuffle();
+            foreach (GameObject cube in _availableCubes)
+            {
+                if (cube.name != lastTargetedCube && cube.name != lastWronglySelectedCube)
+                {
+                    print(lastTargetedCube + " ------> " + cube.name);
+                    targetCube = cube;
+                    break;
+                }
+            }
+            //print("TARGET CUBE = " + targetCube.name);
+        }
+        else if (_main.location == Location.Instructor)
+        {
+            Debug.Log("We GOT " + _availableCubes.Count + " cubes.");
+        }
+        
     }
 
     private void _cleanCubes()
