@@ -71,13 +71,13 @@ public class EvaluationClient : MonoBehaviour {
     }
 
     [RPC]
-    void RPC_microtaskStarted(int microtask)
+    void RPC_microtaskStarted(int microtask, int task)
     {
-        if (_main.location == Location.Instructor) _whackAMole.INSTRUCTOR_microtaskStarted(microtask);
+        if (_main.location == Location.Instructor) _whackAMole.INSTRUCTOR_microtaskStarted(microtask, task);
     }
-    internal void reportToInstructorMicroTaskStarted(int microTask)
+    internal void reportToInstructorMicroTaskStarted(int microTask, int task)
     {
-        _networkView.RPC("RPC_microtaskEnded", RPCMode.Others, microTask);
+        _networkView.RPC("RPC_microtaskEnded", RPCMode.Others, microTask, task);
     }
 
     [RPC]

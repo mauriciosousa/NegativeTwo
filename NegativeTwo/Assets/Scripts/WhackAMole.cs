@@ -195,7 +195,7 @@ public class WhackAMole : MonoBehaviour {
                         _setWorkspace(taskType);
                         MicroTaskData m = new MicroTaskData(evaluationCondition, taskType, microTask); // START FIRST MICROTASK
                         _microtaskData.Push(m);
-                        client.reportToInstructorMicroTaskStarted(_microtaskData.Peek().microtaskID);
+                        client.reportToInstructorMicroTaskStarted(_microtaskData.Peek().microtaskID, task);
                         m.START();
                     }
 
@@ -224,8 +224,7 @@ public class WhackAMole : MonoBehaviour {
                     {
                         foreach (GameObject cube in _availableCubes)
                         {
-                            int state = (int)cube.GetComponent<CubeSelection>().state;
-                            client.updateCube(cube.name, state);
+                            client.updateCube(cube.name, (int)cube.GetComponent<CubeSelection>().state);
                         }
                     }
                     #endregion
@@ -255,11 +254,11 @@ public class WhackAMole : MonoBehaviour {
 
                             microTask += 1;
 
-                            // star new task
+                            // start new task
                             _setWorkspace(taskType);
                             MicroTaskData m = new MicroTaskData(evaluationCondition, taskType, microTask); // START OTHER MICROTASKS
                             _microtaskData.Push(m);
-                            client.reportToInstructorMicroTaskStarted(_microtaskData.Peek().microtaskID);
+                            client.reportToInstructorMicroTaskStarted(_microtaskData.Peek().microtaskID, task);
                             m.START();
                         }
                     }
@@ -509,10 +508,11 @@ public class WhackAMole : MonoBehaviour {
         }
     }
 
-    internal void INSTRUCTOR_microtaskStarted(int microtask)
+    internal void INSTRUCTOR_microtaskStarted(int microtask, int task)
     {
         if (_main.location == Location.Instructor)
         {
+            _setWorkspace((WhackAMoleSessionType)task);
             if (microtask == 1)
             {
                 _instructorIsPointing.Clear();
