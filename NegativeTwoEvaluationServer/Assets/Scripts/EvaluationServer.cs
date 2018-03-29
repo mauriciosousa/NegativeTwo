@@ -33,7 +33,7 @@ public class EvaluationServer : MonoBehaviour {
 
     void OnGUI()
     {
-        GUI.Label(new Rect(2 * Screen.width / 3, Screen.height - 3.9f * Screen.height / 4, 50, 1000), "" + condition, MEGAHUGESTYLE);
+        GUI.Label(new Rect(2 * Screen.width / 3 - 100, Screen.height - 4f * Screen.height / 4, 50, 1000), "" + condition, MEGAHUGESTYLE);
 
 
         int left = 10;
@@ -84,7 +84,7 @@ public class EvaluationServer : MonoBehaviour {
         }
         left += 40;
 
-        top += 4 * lineSize;
+        top += 3 * lineSize;
 
         left = 10;
         GUI.Label(new Rect(left, top, 50, lineSize), "Start stuff: ", HugeStyle); left += 160;
@@ -123,14 +123,12 @@ public class EvaluationServer : MonoBehaviour {
 
         top += 3 * lineSize;
 
-        left += 50;
-
-        /*
-        if (GUI.Button(new Rect(left, top, 300, lineSize * 2), "CLEAR BOARD"))
+        
+        if (GUI.Button(new Rect(Screen.width - 120, 0, 120, lineSize * 2), "Reset Workspace"))
         {
             _networkView.RPC("RPC_clearBoard", RPCMode.Others);
         }
-        */
+        
 
     }
 

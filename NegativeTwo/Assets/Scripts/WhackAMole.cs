@@ -127,6 +127,7 @@ public class WhackAMole : MonoBehaviour {
     private EvaluationConditionType evaluationCondition = EvaluationConditionType.NONE;
 
     public bool trialInProgress = false;
+    public bool habituationTaskInProgress = false;
 
     public WhackAMoleSessionType taskType = WhackAMoleSessionType.FOUR;
     public int task = 1;
@@ -134,6 +135,17 @@ public class WhackAMole : MonoBehaviour {
     public bool microtasking = false;
     public int MaxRepetitions = 10;
     private double timelimit = 5 * 1000;  //ms
+
+
+    private string LogFileDir
+    {
+        get
+        {
+            string filedir = Application.dataPath + "/TASKLOGS";
+            if (!System.IO.Directory.Exists(filedir)) System.IO.Directory.CreateDirectory(filedir);
+            return filedir;
+        }
+    }
 
 
 
@@ -153,10 +165,18 @@ public class WhackAMole : MonoBehaviour {
     }
 
     private Stack<MicroTaskData> _microtaskData = new Stack<MicroTaskData>(); //never pop please... just push and peek
+    private List<string> _instructorIsPointing_LogLines = new List<String>();
+    private List<bool> _instructorIsPointing = new List<bool>();
+    private bool _storingInstructorData = false;
     void Update ()
     {
         if (!_init) return;
 
+
+        if (habituationTaskInProgress)
+        {
+            /// HABOTUATION TASKK AQUI
+        }
 
 
         if (trialInProgress)
@@ -196,7 +216,6 @@ public class WhackAMole : MonoBehaviour {
                             selectedCube.GetComponent<CubeSelection>().wrongSelection();
                             lastWronglySelectedCube = selectedCube.name;
                             print("SELECTED WRONGLYYY                  " + selectedCube + "  ----   " + targetCube);
-
                         }
                     }
                     selectedCube = null;
@@ -245,14 +264,15 @@ public class WhackAMole : MonoBehaviour {
             else if (_main.location == Location.Instructor)
             {
 
+                // store pointings
+
             }
         }
  	}
 
     private void _processMicroTaskData()
     {
-        string filedir = Application.dataPath + "/TASKLOGS";
-        if (!System.IO.Directory.Exists(filedir)) System.IO.Directory.CreateDirectory(filedir);
+        
 
         List<MicroTaskData> data = new List<MicroTaskData>(_microtaskData.ToArray());
         data.Reverse();
@@ -273,7 +293,7 @@ public class WhackAMole : MonoBehaviour {
                 line += m.usingDeictics;
                 lines.Add(line);
             }
-            Logger.save(filedir + "/" + DateTime.Now.ToString("yyyy MMMM dd HH mm ss") + ".txt", lines.ToArray());
+            Logger.save(LogFileDir + "/" + DateTime.Now.ToString("yyyy MMMM dd HH mm ss") + ".txt", lines.ToArray());
         }
         _microtaskData.Clear();
     }
@@ -445,8 +465,12 @@ public class WhackAMole : MonoBehaviour {
         _upTheCubes();
     }
 
-    internal void clearBoard()
+    internal void clearBoard() // reset button (server)
     {
+        evaluationCondition = EvaluationConditionType.NONE;
+        trialInProgress = false;
+        habituationTaskInProgress = false;
+
         _cleanCubes();
     }
 
@@ -463,6 +487,7 @@ public class WhackAMole : MonoBehaviour {
     internal void startHabituationTask(int condition)
     {
         evaluationCondition = (EvaluationConditionType)condition;
+        habituationTaskInProgress = true;
         //_setWorkspace(WhackAMoleSessionType.FOUR);
     }
 
@@ -482,11 +507,38 @@ public class WhackAMole : MonoBehaviour {
 
     internal void INSTRUCTOR_microtaskStarted(int microtask)
     {
-        throw new NotImplementedException();
+        if (_main.location == Location.Instructor)
+        {
+            if (microtask == 1)
+            {
+                _instructorIsPointing.Clear();
+                _instructorIsPointing_LogLines.Clear();
+                _instructorIsPointing_LogLines.Add("TASKID#%_DEICTICS");
+            }
+            _storingInstructorData = true;
+        }
     }
 
     internal void INSTRUCTOR_microtaskEnded(int microtask)
     {
-        throw new NotImplementedException();
+        if (_main.location == Location.Instructor)
+        {
+            _storingInstructorData = false;
+
+            double u = 0;
+            foreach (bool b in _instructorIsPointing)
+            {
+                if (b) u++;
+            }
+            u = (float)u / _instructorIsPointing.Count;
+            _instructorIsPointing_LogLines.Add("" + microTask + "#" + u);
+            _instructorIsPointing.Clear();
+
+            if (microtask == MaxRepetitions) // micro task ended
+            {
+                Logger.save(LogFileDir + "/" + DateTime.Now.ToString("yyyy MMMM dd HH mm ss") + ".txt", _instructorIsPointing_LogLines.ToArray());
+                _instructorIsPointing_LogLines.Clear();
+            }
+        }
     }
 }
