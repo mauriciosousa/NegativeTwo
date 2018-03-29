@@ -194,15 +194,18 @@ public class TcpDepthListener : MonoBehaviour
                         break;
                     }
                     //save because can't update from outside main thread
-                    if (colorFrame) {
-                        lock (myLock) {
-                            Array.Copy(_buffer, 0, kstream.colorData, kstream.sizec - size, bytesRead);
-                        }
+                    if (colorFrame)
+                    {
+                        //Wait till things are processed
+                        while (kstream.dirty) Thread.Sleep(5);
+                        Array.Copy(_buffer, 0, kstream.colorData, kstream.sizec - size, bytesRead);
                     }
-                    else {
-                        lock (myLock) { 
-                            Array.Copy(_dbuffer, 0, kstream.depthData, kstream.sized - size, bytesRead);
-                        }
+                    else
+                    {
+
+                        //Wait till things are processed
+                        while (kstream.dirty) Thread.Sleep(5);
+                        Array.Copy(_dbuffer, 0, kstream.depthData, kstream.sized - size, bytesRead);
                     }
 
                     size -= bytesRead;
@@ -243,12 +246,10 @@ public class TcpDepthListener : MonoBehaviour
 
         foreach (DepthStream k in _depthStreams)
         {
-            lock (myLock) { 
-                if (k.dirty)
-                {
-                    k.dirty = false;
-                    gameObject.GetComponent<Tracker>().setNewDepthCloud(k.name, k.colorData,k.depthData, k.lastID,k.compressed,k.sizec,k.scale);
-                }
+            if (k.dirty)
+            {
+                gameObject.GetComponent<Tracker>().setNewDepthCloud(k.name, k.colorData, k.depthData, k.lastID, k.compressed, k.sizec, k.scale);
+                k.dirty = false;
             }
         }
     }
