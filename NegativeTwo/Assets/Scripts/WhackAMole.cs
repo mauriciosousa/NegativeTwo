@@ -132,10 +132,10 @@ public class WhackAMole : MonoBehaviour {
 
     public WhackAMoleSessionType taskType = WhackAMoleSessionType.FOUR;
 
-    public int task = 1;
-    public int microTask = 1;
-    public bool microtasking = false;
-    public int MaxRepetitions = 10;
+    private int task = 1;
+    private int microTask = 1;
+    private bool microtasking = false;
+    private int MaxRepetitions = 10;
     private double timelimit = 5 * 1000;  //ms
 
     private string LogFileDir
@@ -201,15 +201,10 @@ public class WhackAMole : MonoBehaviour {
                     }
 
                     #region MICROTASK
-                    try
-                    {
-                        _microtaskData.Peek().addPointing(_negativeSpace.isUsingDeitics);
-
-                    }
-                    catch (InvalidOperationException) // kinect is offline
-                    {
-                        _microtaskData.Peek().addPointing(false);
-                    }
+                    print(_microtaskData);
+                    print(_microtaskData.Count);
+                    _microtaskData.Peek().addPointing(_negativeSpace.isUsingDeitics);
+                    print(_microtaskData.Count);
 
                     if (selectedCube != null)
                     {
@@ -231,13 +226,7 @@ public class WhackAMole : MonoBehaviour {
                     }
                     selectedCube = null;
 
-                    if (_availableCubes != null)
-                    {
-                        foreach (GameObject cube in _availableCubes)
-                        {
-                            //client.updateCube(cube.name, (int)cube.GetComponent<CubeSelection>().State);
-                        }
-                    }
+
                     #endregion
 
                     if (_microtaskData.Peek().startTime.AddMilliseconds(timelimit) < DateTime.Now)
@@ -272,22 +261,15 @@ public class WhackAMole : MonoBehaviour {
                             client.reportToInstructorMicroTaskStarted(_microtaskData.Peek().microtaskID, task, targetCube.name);
                             m.START();
                         }
-                    }
+                    } 
                 }
+                
             }
             else if (_main.location == Location.Instructor)
             {
                 if (_storingInstructorData)
                 {
-                    try
-                    {
-                        _instructorIsPointing.Add(_negativeSpace.isUsingDeitics);
-
-                    }
-                    catch (InvalidOperationException) // kinect is offline
-                    {
-                        _instructorIsPointing.Add(_negativeSpace.isUsingDeitics);
-                    }
+                    _instructorIsPointing.Add(_negativeSpace.isUsingDeitics);
                 }
             }
         }
