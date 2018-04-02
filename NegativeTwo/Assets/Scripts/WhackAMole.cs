@@ -136,7 +136,7 @@ public class WhackAMole : MonoBehaviour {
     public int microTask = 1;
     public bool microtasking = false;
     public int MaxRepetitions = 10;
-    private double timelimit = 1 * 1000;  //ms
+    private double timelimit = 5 * 1000;  //ms
 
     private string LogFileDir
     {
