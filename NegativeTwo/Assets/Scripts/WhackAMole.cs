@@ -317,9 +317,23 @@ public class WhackAMole : MonoBehaviour {
             _availableCubes.Add(_instantiateNewCube("cube_" + i));
         }
 
-        Vector3 origin = _negativeSpace.RemoteSurface.SurfaceBottomRight;
-        Vector3 length = _negativeSpace.RemoteSurface.SurfaceBottomLeft - origin;
-        Vector3 depth = _negativeSpace.LocalSurface.SurfaceBottomRight - origin;
+        Vector3 origin;
+        Vector3 length;
+        Vector3 depth;
+
+        if(_main.location == Location.Assembler)
+        {
+            origin = _negativeSpace.RemoteSurface.SurfaceBottomRight;
+            length = _negativeSpace.RemoteSurface.SurfaceBottomLeft - origin;
+            depth = _negativeSpace.LocalSurface.SurfaceBottomRight - origin;
+        }
+        else
+        {
+            origin = _negativeSpace.LocalSurface.SurfaceBottomRight;
+            length = _negativeSpace.LocalSurface.SurfaceBottomLeft - origin;
+            depth = _negativeSpace.RemoteSurface.SurfaceBottomRight - origin;
+
+        }
 
         if (session == WhackAMoleSessionType.FOUR) _distribute2x2(origin, length, depth);
         else if (session == WhackAMoleSessionType.EIGHT) _distribute4x2(origin, length, depth);
@@ -378,7 +392,7 @@ public class WhackAMole : MonoBehaviour {
         }   
     }
 
-    public bool IAmPointing(Ray ray, bool click, out Vector3 hitPoint) // who dis?
+    /*public bool IAmPointing(Ray ray, bool click, out Vector3 hitPoint) // who dis?
     {
         print("POINT_NIG YEAHHH");
 
@@ -409,7 +423,7 @@ public class WhackAMole : MonoBehaviour {
             
         }
         return didHit;
-    }
+    }*/
 
     private GameObject _instantiateNewCube(string cubeName)
     {
