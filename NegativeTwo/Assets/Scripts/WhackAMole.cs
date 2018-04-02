@@ -99,7 +99,7 @@ public class MicroTaskData
     {
         get
         {
-            return (_correctSelectionTimeStamp - startTime).TotalMilliseconds;
+            return success ? (_correctSelectionTimeStamp - startTime).TotalMilliseconds : -1;
         }
     }
 }
@@ -562,7 +562,7 @@ public class WhackAMole : MonoBehaviour {
             if (microtask == MaxRepetitions) // micro task ended
             {
                 trialInProgress = false;
-                Logger.save(LogFileDir + "/" + DateTime.Now.ToString("yyyy MMMM dd HH mm ss") + ".txt", _instructorIsPointing_LogLines.ToArray());
+                Logger.save(LogFileDir + "/instructorLog " + DateTime.Now.ToString("yyyy MMMM dd HH mm ss") + ".txt", _instructorIsPointing_LogLines.ToArray());
                 _instructorIsPointing_LogLines.Clear();
                 _cleanCubes();
             }
