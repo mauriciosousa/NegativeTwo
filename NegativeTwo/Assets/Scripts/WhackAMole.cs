@@ -329,9 +329,9 @@ public class WhackAMole : MonoBehaviour {
         }
         else
         {
-            origin = _negativeSpace.LocalSurface.SurfaceBottomRight;
+            origin = _negativeSpace.RemoteSurface.SurfaceBottomRight;
             length = _negativeSpace.LocalSurface.SurfaceBottomLeft - origin;
-            depth = _negativeSpace.RemoteSurface.SurfaceBottomRight - origin;
+            depth = _negativeSpace.LocalSurface.SurfaceBottomRight - origin;
 
         }
 
