@@ -46,7 +46,7 @@ public class EvaluationClient : MonoBehaviour {
     [RPC]
     void RPC_startTrial(int condition, int task)
     {
-        Debug.Log("[RPC_startTrial]: condition " + (EvaluationConditionType)condition);
+        Debug.Log("[RPC_START_TRIAL]:  "+ (EvaluationConditionType)condition + " " + task);
         _whackAMole.startTrial(condition, task);
     }
 
@@ -73,8 +73,13 @@ public class EvaluationClient : MonoBehaviour {
     [RPC]
     void RPC_microtaskStarted(int microtask, int task, string targetCubeName)
     {
-        if (_main.location == Location.Instructor) _whackAMole.INSTRUCTOR_microtaskStarted(microtask, task, targetCubeName);
+        if (_main.location == Location.Instructor)
+        {
+            Debug.Log("[RPC_MICROTASK_STARTED]:  " + microtask + " " + task + " " + targetCubeName);
+            _whackAMole.INSTRUCTOR_microtaskStarted(microtask, task, targetCubeName);
+        }
     }
+
     internal void reportToInstructorMicroTaskStarted(int microTask, int task, string targetCubeName)
     {
         if (task == 1) task = (int) WhackAMoleSessionType.FOUR;
@@ -88,8 +93,13 @@ public class EvaluationClient : MonoBehaviour {
     [RPC]
     void RPC_microtaskEnded(int microtask)
     {
-        if (_main.location == Location.Instructor) _whackAMole.INSTRUCTOR_microtaskEnded(microtask);
+        if (_main.location == Location.Instructor)
+        {
+            Debug.Log("[RPC_MICROTASK_ENDED]:  " + microtask);
+            _whackAMole.INSTRUCTOR_microtaskEnded(microtask);
+        }
     }
+
     internal void reportToInstructorMicroTaskEnded(int microTask)
     {
         _networkView.RPC("RPC_microtaskEnded", RPCMode.Others, microTask);
@@ -98,13 +108,16 @@ public class EvaluationClient : MonoBehaviour {
     [RPC]
     void RPC_reportToInstructorCubeSelected(string selectedCubeName, bool isItTargetCube)
     {
-        if (_main.location == Location.Instructor) _whackAMole.INSTRUCTOR_assemblerSelectedACube(selectedCubeName, isItTargetCube);
+        if (_main.location == Location.Instructor)
+        {
+            Debug.Log("[RPC_CUBE_SELECTED]:  " + selectedCubeName + " " + isItTargetCube);
+            _whackAMole.INSTRUCTOR_assemblerSelectedACube(selectedCubeName, isItTargetCube);
+        }
     }
 
     internal void reportToInstructorCubeSelected(GameObject selectedCube, bool isItTargetCube)
     {
         if (_main.location == Location.Instructor) _networkView.RPC("RPC_reportToInstructorCubeSelected", RPCMode.Others, selectedCube.name, isItTargetCube);
-
     }
     #endregion
 }
