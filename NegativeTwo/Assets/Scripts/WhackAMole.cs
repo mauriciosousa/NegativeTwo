@@ -309,30 +309,20 @@ public class WhackAMole : MonoBehaviour {
         lastWronglySelectedCube = "";
 
         _cleanCubes();
+
+        Vector3 origin = _negativeSpace.RemoteSurface.SurfaceBottomRight;
+        Vector3 length = _negativeSpace.RemoteSurface.SurfaceBottomLeft - origin;
+        Vector3 depth = _negativeSpace.LocalSurface.SurfaceBottomRight - origin;
+        Vector3 up = _negativeSpace.LocalSurface.SurfaceTopRight - _negativeSpace.LocalSurface.SurfaceBottomRight;
+
         int numberOfCubes = (int)session;
 
         _availableCubes = new List<GameObject>();
         for (int i = 1; i <= numberOfCubes; i++)
         {
-            _availableCubes.Add(_instantiateNewCube("cube_" + i));
-        }
-
-        Vector3 origin;
-        Vector3 length;
-        Vector3 depth;
-
-        if(_main.location == Location.Assembler)
-        {
-            origin = _negativeSpace.RemoteSurface.SurfaceBottomRight;
-            length = _negativeSpace.RemoteSurface.SurfaceBottomLeft - origin;
-            depth = _negativeSpace.LocalSurface.SurfaceBottomRight - origin;
-        }
-        else
-        {
-            origin = _negativeSpace.LocalSurface.SurfaceBottomLeft;
-            length = _negativeSpace.LocalSurface.SurfaceBottomRight - origin;
-            depth = _negativeSpace.RemoteSurface.SurfaceBottomLeft - origin;
-
+            GameObject cube = _instantiateNewCube("cube_" + i);
+            cube.transform.LookAt(cube.transform.position + depth, up);
+            _availableCubes.Add(cube);
         }
 
         if (session == WhackAMoleSessionType.FOUR) _distribute2x2(origin, length, depth);
