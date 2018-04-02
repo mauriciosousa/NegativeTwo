@@ -60,7 +60,7 @@ public class EvaluationClient : MonoBehaviour {
     }
     public void updateCube(string gameObjectName, int state)
     {
-        _networkView.RPC("RPC_updateCube", RPCMode.Others, gameObjectName, state);
+        //_networkView.RPC("RPC_updateCube", RPCMode.Others, gameObjectName, state);
     }
 
     [RPC]
@@ -71,18 +71,18 @@ public class EvaluationClient : MonoBehaviour {
     }
 
     [RPC]
-    void RPC_microtaskStarted(int microtask, int task)
+    void RPC_microtaskStarted(int microtask, int task, string targetCubeName)
     {
-        if (_main.location == Location.Instructor) _whackAMole.INSTRUCTOR_microtaskStarted(microtask, task);
+        if (_main.location == Location.Instructor) _whackAMole.INSTRUCTOR_microtaskStarted(microtask, task, targetCubeName);
     }
-    internal void reportToInstructorMicroTaskStarted(int microTask, int task)
+    internal void reportToInstructorMicroTaskStarted(int microTask, int task, string targetCubeName)
     {
         if (task == 1) task = (int) WhackAMoleSessionType.FOUR;
         if (task == 2) task = (int)WhackAMoleSessionType.EIGHT;
         if (task == 3) task = (int)WhackAMoleSessionType.SIXTEEN;
 
 
-        _networkView.RPC("RPC_microtaskStarted", RPCMode.Others, microTask, task);
+        _networkView.RPC("RPC_microtaskStarted", RPCMode.Others, microTask, task, targetCubeName);
     }
 
     [RPC]
@@ -93,6 +93,18 @@ public class EvaluationClient : MonoBehaviour {
     internal void reportToInstructorMicroTaskEnded(int microTask)
     {
         _networkView.RPC("RPC_microtaskEnded", RPCMode.Others, microTask);
+    }
+
+    [RPC]
+    void RPC_reportToInstructorCubeSelected(string selectedCubeName, bool isItTargetCube)
+    {
+        if (_main.location == Location.Instructor) _whackAMole.INSTRUCTOR_assemblerSelectedACube(selectedCubeName, isItTargetCube);
+    }
+
+    internal void reportToInstructorCubeSelected(GameObject selectedCube, bool isItTargetCube)
+    {
+        if (_main.location == Location.Instructor) _networkView.RPC("RPC_reportToInstructorCubeSelected", RPCMode.Others, selectedCube.name, isItTargetCube);
+
     }
     #endregion
 }

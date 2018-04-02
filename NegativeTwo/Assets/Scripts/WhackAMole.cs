@@ -66,7 +66,8 @@ public class MicroTaskData
 
     public void addPointing(bool v)
     {
-        _usingDeictics.Add(v);
+        if (!success)
+            _usingDeictics.Add(v);
     }
 
     public void START()
@@ -130,12 +131,12 @@ public class WhackAMole : MonoBehaviour {
     public bool habituationTaskInProgress = false;
 
     public WhackAMoleSessionType taskType = WhackAMoleSessionType.FOUR;
+
     public int task = 1;
     public int microTask = 1;
     public bool microtasking = false;
     public int MaxRepetitions = 10;
-    private double timelimit = 5 * 1000;  //ms
-
+    private double timelimit = 1 * 1000;  //ms
 
     private string LogFileDir
     {
@@ -192,10 +193,10 @@ public class WhackAMole : MonoBehaviour {
                         //STARTMICRO
                         microtasking = true;
 
-                        _setWorkspace(taskType);
                         MicroTaskData m = new MicroTaskData(evaluationCondition, taskType, microTask); // START FIRST MICROTASK
                         _microtaskData.Push(m);
-                        client.reportToInstructorMicroTaskStarted(_microtaskData.Peek().microtaskID, task);
+                        _selectTargetCube();
+                        client.reportToInstructorMicroTaskStarted(_microtaskData.Peek().microtaskID, task, targetCube.name);
                         m.START();
                     }
 
@@ -209,6 +210,7 @@ public class WhackAMole : MonoBehaviour {
                             _microtaskData.Peek().success = true;
                             selectedCube.GetComponent<CubeSelection>().correctSelection();
                             print("SELECTED CORRECTLY                  " + selectedCube + "  ----   " + targetCube);
+                            client.reportToInstructorCubeSelected(selectedCube, true);
                         }
                         else
                         {
@@ -216,6 +218,7 @@ public class WhackAMole : MonoBehaviour {
                             selectedCube.GetComponent<CubeSelection>().wrongSelection();
                             lastWronglySelectedCube = selectedCube.name;
                             print("SELECTED WRONGLYYY                  " + selectedCube + "  ----   " + targetCube);
+                            client.reportToInstructorCubeSelected(selectedCube, false);
                         }
                     }
                     selectedCube = null;
@@ -224,7 +227,7 @@ public class WhackAMole : MonoBehaviour {
                     {
                         foreach (GameObject cube in _availableCubes)
                         {
-                            //client.updateCube(cube.name, (int)cube.GetComponent<CubeSelection>().state);
+                            //client.updateCube(cube.name, (int)cube.GetComponent<CubeSelection>().State);
                         }
                     }
                     #endregion
@@ -255,10 +258,10 @@ public class WhackAMole : MonoBehaviour {
                             microTask += 1;
 
                             // start new task
-                            _setWorkspace(taskType);
                             MicroTaskData m = new MicroTaskData(evaluationCondition, taskType, microTask); // START OTHER MICROTASKS
                             _microtaskData.Push(m);
-                            client.reportToInstructorMicroTaskStarted(_microtaskData.Peek().microtaskID, task);
+                            _selectTargetCube();
+                            client.reportToInstructorMicroTaskStarted(_microtaskData.Peek().microtaskID, task, targetCube.name);
                             m.START();
                         }
                     }
@@ -266,9 +269,10 @@ public class WhackAMole : MonoBehaviour {
             }
             else if (_main.location == Location.Instructor)
             {
-
-                // store pointings
-
+                if (_storingInstructorData)
+                {
+                    _instructorIsPointing.Add(_negativeSpace.isUsingDeitics);
+                }
             }
         }
  	}
@@ -323,9 +327,14 @@ public class WhackAMole : MonoBehaviour {
         else if (session == WhackAMoleSessionType.EIGHT) _distribute4x2(origin, length, depth);
         else if (session == WhackAMoleSessionType.SIXTEEN) _distribute4x4(origin, length, depth);
 
+        
+
+    }
+
+    private void _selectTargetCube()
+    {
         if (_main.location == Location.Assembler)
         {
-
             // select target cube
             _availableCubes.Shuffle();
             foreach (GameObject cube in _availableCubes)
@@ -339,11 +348,6 @@ public class WhackAMole : MonoBehaviour {
             }
             //print("TARGET CUBE = " + targetCube.name);
         }
-        else if (_main.location == Location.Instructor)
-        {
-            Debug.Log("We GOT " + _availableCubes.Count + " cubes.");
-        }
-        
     }
 
     private void _cleanCubes()
@@ -492,6 +496,7 @@ public class WhackAMole : MonoBehaviour {
         if (trial == 2) taskType = WhackAMoleSessionType.EIGHT;
         if (trial == 3) taskType = WhackAMoleSessionType.SIXTEEN;
         trialInProgress = true;
+        _setWorkspace(taskType);
     }
 
     internal void startHabituationTask(int condition)
@@ -509,17 +514,22 @@ public class WhackAMole : MonoBehaviour {
         {
             if (cube.name == gameObjectName)
             {
-                cube.GetComponent<CubeSelection>().state = (CubeSTATE) state;
+                cube.GetComponent<CubeSelection>().State = (CubeSTATE) state;
                 break;
             }
         }
     }
 
-    internal void INSTRUCTOR_microtaskStarted(int microtask, int task)
+    internal void INSTRUCTOR_microtaskStarted(int microtask, int task, string targetCubeName)
     {
         if (_main.location == Location.Instructor)
         {
             _setWorkspace((WhackAMoleSessionType)task);
+            microTask = microtask;
+            targetCube = GameObject.Find(targetCubeName);
+
+            targetCube.GetComponent<CubeSelection>().State = CubeSTATE.SELECT;
+
             if (microtask == 1)
             {
                 _instructorIsPointing.Clear();
@@ -550,6 +560,26 @@ public class WhackAMole : MonoBehaviour {
             {
                 Logger.save(LogFileDir + "/" + DateTime.Now.ToString("yyyy MMMM dd HH mm ss") + ".txt", _instructorIsPointing_LogLines.ToArray());
                 _instructorIsPointing_LogLines.Clear();
+            }
+        }
+    }
+
+    internal void INSTRUCTOR_assemblerSelectedACube(string selectedCubeName, bool isItTargetCube)
+    {
+        if (_main.location == Location.Instructor)
+        {
+            GameObject cube = GameObject.Find(selectedCubeName);
+            if (cube != null)
+            {
+                if (isItTargetCube)
+                {
+                    cube.GetComponent<CubeSelection>().correctSelection();
+                    _storingInstructorData = false;
+                }
+                else
+                {
+                    cube.GetComponent<CubeSelection>().wrongSelection();
+                }
             }
         }
     }

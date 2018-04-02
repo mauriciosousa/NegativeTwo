@@ -13,8 +13,22 @@ public enum CubeSTATE
 
 public class CubeSelection : MonoBehaviour {
 
-    public CubeSTATE state = CubeSTATE.NONE;
-  
+    private CubeSTATE _state = CubeSTATE.NONE;
+    public CubeSTATE State
+    {
+        get
+        {
+            return _state;
+        }
+        set
+        {
+
+
+            _state = value;
+        }
+    }
+
+
     public Material normalMaterial;
     public Material highlightedMaterial;
     public Material selectedMaterial_CORRECT;
@@ -37,20 +51,20 @@ public class CubeSelection : MonoBehaviour {
 
     void Update()
     {
-        if (state == CubeSTATE.NONE)
+        if (_state == CubeSTATE.NONE)
         {
             setMaterial(normalMaterial);
         }
-        else if (state == CubeSTATE.SELECT)
+        else if (_state == CubeSTATE.SELECT)
         {
             //setMaterial(_location == Location.Instructor ? highlightedMaterial : normalMaterial);
             setMaterial(highlightedMaterial);
         }
-        else if (state == CubeSTATE.SELECT_CORRECT)
+        else if (_state == CubeSTATE.SELECT_CORRECT)
         {
             setMaterial(selectedMaterial_CORRECT);
         }
-        else if (state == CubeSTATE.SELECT_WRONG)
+        else if (_state == CubeSTATE.SELECT_WRONG)
         {
             if (_selectedTime.AddMilliseconds(notificationTime) > DateTime.Now)
             {
@@ -59,7 +73,7 @@ public class CubeSelection : MonoBehaviour {
             }
             else
             {
-                state = CubeSTATE.NONE;
+                _state = CubeSTATE.NONE;
                 setMaterial(normalMaterial);
             }
         }
@@ -67,12 +81,12 @@ public class CubeSelection : MonoBehaviour {
 
     internal void correctSelection()
     {
-        state = CubeSTATE.SELECT_CORRECT;
+        _state = CubeSTATE.SELECT_CORRECT;
     }
 
     internal void wrongSelection()
     {
-        state = CubeSTATE.SELECT_WRONG;
+        _state = CubeSTATE.SELECT_WRONG;
         _selectedTime = DateTime.Now;
     }
 
