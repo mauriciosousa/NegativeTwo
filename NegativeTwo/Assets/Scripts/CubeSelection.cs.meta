@@ -1,11 +1,17 @@
 fileFormatVersion: 2
 guid: 146199fe053ead247b2d76208c20c3cd
-timeCreated: 1521745679
+timeCreated: 1522667651
 licenseType: Free
 MonoImporter:
-  externalObjects: {}
   serializedVersion: 2
-  defaultReferences: []
+  defaultReferences:
+  - normalMaterial: {fileID: 2100000, guid: 3b9fe8247b17bd6408751a3ebce14cde, type: 2}
+  - highlightedMaterial: {fileID: 2100000, guid: 15be4b302dd11694184543ab3981ca34,
+      type: 2}
+  - selectedMaterial_CORRECT: {fileID: 2100000, guid: 78e0b4218f3c2d649a689af3289d9c49,
+      type: 2}
+  - selectedMaterial_WRONG: {fileID: 2100000, guid: b078a370b81d096439c523d4448c4ee8,
+      type: 2}
   executionOrder: 0
   icon: {instanceID: 0}
   userData: 

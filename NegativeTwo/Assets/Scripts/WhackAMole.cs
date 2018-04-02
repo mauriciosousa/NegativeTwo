@@ -512,7 +512,7 @@ public class WhackAMole : MonoBehaviour {
         {
             if (cube.name == gameObjectName)
             {
-                cube.GetComponent<CubeSelection>().State = (CubeSTATE) state;
+                cube.GetComponent<CubeSelection>().state = (CubeSTATE) state;
                 break;
             }
         }
@@ -522,13 +522,13 @@ public class WhackAMole : MonoBehaviour {
     {
         if (_main.location == Location.Instructor)
         {
-            _setWorkspace((WhackAMoleSessionType)task);
             microTask = microtask;
             targetCube = GameObject.Find(targetCubeName);
 
             this.task = task;
 
-            targetCube.GetComponent<CubeSelection>().State = CubeSTATE.SELECT;
+            Debug.LogError("CUBESZZCD " + (targetCube == null));
+            targetCube.GetComponent<CubeSelection>().state = CubeSTATE.SELECT;
 
             if (microtask == 1)
             {
@@ -544,7 +544,11 @@ public class WhackAMole : MonoBehaviour {
     {
         if (_main.location == Location.Instructor)
         {
-            _cleanCubes();
+            foreach (GameObject cube in _availableCubes)
+            {
+                cube.GetComponent<CubeSelection>().state = CubeSTATE.NONE;
+            }
+
             _storingInstructorData = false;
 
             double u = 0;
