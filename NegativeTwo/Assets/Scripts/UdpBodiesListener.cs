@@ -72,9 +72,11 @@ public class UdpBodiesListener : MonoBehaviour
 
                 if (stringToParse.Length != 1)
                 {
-                    foreach (string b in stringToParse.Split(MessageSeparators.L1))
+                    string[] tokens = stringToParse.Split(MessageSeparators.L1);
+                    string b;
+                    for(int i = 0; i < tokens.Length; i++)
                     {
-
+                        b = tokens[i];
                         if (b != NoneMessage)
                         {
                             bodies.Add(new Body(b));

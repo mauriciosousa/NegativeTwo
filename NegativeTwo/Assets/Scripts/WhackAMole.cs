@@ -201,8 +201,6 @@ public class WhackAMole : MonoBehaviour {
                     }
 
                     #region MICROTASK
-                    print(_microtaskData);
-                    print(_microtaskData.Count);
                     _microtaskData.Peek().addPointing(_negativeSpace.isUsingDeitics);
                     print(_microtaskData.Count);
 
@@ -305,9 +303,6 @@ public class WhackAMole : MonoBehaviour {
 
     private void _setWorkspace(WhackAMoleSessionType session)
     {
-        lastTargetedCube = targetCube == null ? "" : targetCube.name;
-        lastWronglySelectedCube = "";
-
         _cleanCubes();
 
         Vector3 origin = _negativeSpace.RemoteSurface.SurfaceBottomRight;
@@ -337,6 +332,9 @@ public class WhackAMole : MonoBehaviour {
     {
         if (_main.location == Location.Assembler)
         {
+            lastTargetedCube = targetCube == null ? "" : targetCube.name;
+            lastWronglySelectedCube = "";
+
             // select target cube
             _availableCubes.Shuffle();
             foreach (GameObject cube in _availableCubes)
