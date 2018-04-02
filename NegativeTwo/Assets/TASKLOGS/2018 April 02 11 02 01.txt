@@ -1,0 +1,11 @@
+TASKID#%_DEICTICS
+1#0
+2#NaN
+3#NaN
+4#0
+5#0
+6#NaN
+7#NaN
+8#NaN
+9#NaN
+10#NaN

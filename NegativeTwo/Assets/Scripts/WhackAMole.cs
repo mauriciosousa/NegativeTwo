@@ -528,6 +528,8 @@ public class WhackAMole : MonoBehaviour {
             microTask = microtask;
             targetCube = GameObject.Find(targetCubeName);
 
+            this.task = task;
+
             targetCube.GetComponent<CubeSelection>().State = CubeSTATE.SELECT;
 
             if (microtask == 1)
@@ -558,6 +560,7 @@ public class WhackAMole : MonoBehaviour {
 
             if (microtask == MaxRepetitions) // micro task ended
             {
+                trialInProgress = false;
                 Logger.save(LogFileDir + "/" + DateTime.Now.ToString("yyyy MMMM dd HH mm ss") + ".txt", _instructorIsPointing_LogLines.ToArray());
                 _instructorIsPointing_LogLines.Clear();
             }
