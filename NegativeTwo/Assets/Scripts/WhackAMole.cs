@@ -201,7 +201,15 @@ public class WhackAMole : MonoBehaviour {
                     }
 
                     #region MICROTASK
-                    _microtaskData.Peek().addPointing(_negativeSpace.isUsingDeitics);
+                    try
+                    {
+                        _microtaskData.Peek().addPointing(_negativeSpace.isUsingDeitics);
+
+                    }
+                    catch (InvalidOperationException) // kinect is offline
+                    {
+                        _microtaskData.Peek().addPointing(false);
+                    }
 
                     if (selectedCube != null)
                     {
@@ -271,7 +279,15 @@ public class WhackAMole : MonoBehaviour {
             {
                 if (_storingInstructorData)
                 {
-                    _instructorIsPointing.Add(_negativeSpace.isUsingDeitics);
+                    try
+                    {
+                        _instructorIsPointing.Add(_negativeSpace.isUsingDeitics);
+
+                    }
+                    catch (InvalidOperationException) // kinect is offline
+                    {
+                        _instructorIsPointing.Add(_negativeSpace.isUsingDeitics);
+                    }
                 }
             }
         }
