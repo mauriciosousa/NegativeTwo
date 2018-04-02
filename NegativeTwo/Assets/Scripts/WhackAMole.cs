@@ -527,7 +527,6 @@ public class WhackAMole : MonoBehaviour {
 
             this.task = task;
 
-            Debug.LogError("CUBESZZCD " + (targetCube == null));
             targetCube.GetComponent<CubeSelection>().state = CubeSTATE.SELECT;
 
             if (microtask == 1)
@@ -565,6 +564,7 @@ public class WhackAMole : MonoBehaviour {
                 trialInProgress = false;
                 Logger.save(LogFileDir + "/" + DateTime.Now.ToString("yyyy MMMM dd HH mm ss") + ".txt", _instructorIsPointing_LogLines.ToArray());
                 _instructorIsPointing_LogLines.Clear();
+                _cleanCubes();
             }
         }
     }
