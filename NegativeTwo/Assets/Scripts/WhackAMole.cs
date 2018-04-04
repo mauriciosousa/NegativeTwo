@@ -27,7 +27,25 @@ public class MicroTaskData
 
     private DateTime endTime;
 
-    public bool success = false;
+    private DateTime _correctSelectionTimeStamp;
+    private bool _success = false;
+    public bool success
+    {
+        get
+        {
+            return _success;
+        }
+
+        set
+        {
+            _success = value;
+            if (_success)
+            {
+                _correctSelectionTimeStamp = DateTime.Now;
+            }
+        }
+    }
+
     private int _numberOfErrors = 0;
     public int NumberOfErrors { get { return _numberOfErrors; } } 
 
@@ -37,7 +55,6 @@ public class MicroTaskData
 
     private List<bool> _usingDeictics;
 
-    private DateTime _correctSelectionTimeStamp; 
 
     public float usingDeictics
     {
@@ -89,11 +106,6 @@ public class MicroTaskData
             return (endTime - startTime).TotalMilliseconds;
             //return ((TimeSpan)(endTime - startTime)).Milliseconds;
         }
-    }
-
-    public void CORRECT_SELECTION()
-    {
-        _correctSelectionTimeStamp = DateTime.Now;
     }
 
     public double TimeToCorrectSelection
@@ -326,11 +338,12 @@ public class WhackAMole : MonoBehaviour {
         if (data.Count > 0)
         {
             List<String> lines = new List<string>();
-            lines.Add("TASKID" + "#" + "CONDITION" + "#" + "SUCCESS" + "#" + "NUMBER_OF_ERRORS" + "#" + "TIME_TILL_SUCCESS" + "#" + "TOTAL_TIME" + "#" + "%_DEICTICS");
+            lines.Add("TASKID" + "#" + "MICROTASKID" + "#" + "CONDITION" + "#" + "SUCCESS" + "#" + "NUMBER_OF_ERRORS" + "#" + "TIME_TILL_SUCCESS" + "#" + "TOTAL_TIME" + "#" + "%_DEICTICS");
 
             foreach (MicroTaskData m in data)
             {
                 string line = "";
+                line += m.taskType + "#";
                 line += m.microtaskID + "#";
                 line += m.condition + "#";
                 line += m.success + "#";
@@ -683,7 +696,7 @@ public class WhackAMole : MonoBehaviour {
             {
                 _instructorIsPointing.Clear();
                 _instructorIsPointing_LogLines.Clear();
-                _instructorIsPointing_LogLines.Add("TASKID#%_DEICTICS");
+                _instructorIsPointing_LogLines.Add("TASKID#MICROTASK#EVALUATION_CONDITION#%_DEICTICS");
             }
             _storingInstructorData = true;
         }
@@ -706,7 +719,7 @@ public class WhackAMole : MonoBehaviour {
                 if (b) u++;
             }
             u = (float)u / _instructorIsPointing.Count;
-            _instructorIsPointing_LogLines.Add("" + microTask + "#" + u);
+            _instructorIsPointing_LogLines.Add("" + task + "#" + microTask + "#" + evaluationCondition + "#" + u);
             _instructorIsPointing.Clear();
 
             _removeCubeColors();
