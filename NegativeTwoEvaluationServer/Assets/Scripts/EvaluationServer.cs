@@ -18,7 +18,7 @@ public class EvaluationServer : MonoBehaviour {
     {
         Application.runInBackground = true;
 
-        Screen.SetResolution(800, 800, true);
+        Screen.SetResolution(800, 900, true);
         Screen.fullScreen = false;
 
         _networkView = GetComponent<NetworkView>();
@@ -88,13 +88,13 @@ public class EvaluationServer : MonoBehaviour {
 
         left = 10;
         GUI.Label(new Rect(left, top, 50, lineSize), "Start stuff: ", HugeStyle); left += 160;
-        top += 2 * lineSize;
+        top += lineSize;
 
         if (GUI.Button(new Rect(left, top, 300, lineSize * 2), "START HABITUATION TASK"))
         {
             _networkView.RPC("RPC_startHabituationTask", RPCMode.Others, condition);
         }
-        top += 6 * lineSize;
+        top += 3 * lineSize;
 
         left += 50;
 
@@ -123,7 +123,15 @@ public class EvaluationServer : MonoBehaviour {
 
         top += 3 * lineSize;
 
-        
+        left += 50;
+
+        if (GUI.Button(new Rect(left, top, 300, lineSize * 2), "START TASK 4"))
+        {
+            _networkView.RPC("RPC_startTrial", RPCMode.Others, condition, 4);
+        }
+
+        top += 3 * lineSize;
+
         if (GUI.Button(new Rect(Screen.width - 120, 0, 120, lineSize * 2), "Reset Workspace"))
         {
             _networkView.RPC("RPC_clearBoard", RPCMode.Others);

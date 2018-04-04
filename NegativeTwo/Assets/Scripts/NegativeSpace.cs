@@ -50,6 +50,10 @@ public class NegativeSpace : MonoBehaviour {
     public PointingDistortionInfo rightPointingInfo;
     public PointingDistortionInfo leftPointingInfo;
 
+    private Vector3 lastRightHandPos = new Vector3(float.PositiveInfinity, float.PositiveInfinity, float.PositiveInfinity);
+    private Vector3 lastLeftHandPos = new Vector3(float.PositiveInfinity, float.PositiveInfinity, float.PositiveInfinity);
+
+    public float maxHandVelocity = 1.0f;
 
     public bool isUsingDeitics = false;
 
@@ -96,18 +100,24 @@ public class NegativeSpace : MonoBehaviour {
         
         MeshCollider collider = screen.AddComponent(typeof(MeshCollider)) as MeshCollider;
         _screen = screen;
+        _screen.SetActive(false);
 
 
         GameObject workspace = new GameObject("workspaceCollider");
         workspace.AddComponent<BoxCollider>();
         workspace.transform.position = (_localSurface.SurfaceBottomLeft + _remoteSurfaceProxy.SurfaceBottomRight) * 0.5f;
-        workspace.transform.localScale = new Vector3(Vector3.Distance(_localSurface.SurfaceBottomLeft, _localSurface.SurfaceBottomRight) * 1.2f, 0.001f, 2f);
+        workspace.transform.localScale = new Vector3(
+            Vector3.Distance(_localSurface.SurfaceBottomLeft, _localSurface.SurfaceBottomRight) * 2.0f, 
+            0.001f, 
+            Vector3.Distance(_localSurface.SurfaceBottomLeft, _localSurface.SurfaceTopLeft) * 1.2f);
         //workspace.transform.position += Vector3.back * 0.5f * Vector3.Distance(_localSurface.SurfaceBottomLeft, _remoteSurfaceProxy.SurfaceBottomLeft);
         workspaceCollider = workspace;
 
         NegativeSpaceCenter = new GameObject("NegativeSpaceCenter");
         NegativeSpaceCenter.transform.position = (_localSurface.SurfaceBottomLeft + _remoteSurfaceProxy.SurfaceTopRight) * 0.5f;
         NegativeSpaceCenter.transform.rotation = workspace.transform.rotation = GameObject.Find("localScreenCenter").transform.rotation;
+
+        workspace.transform.Rotate(workspace.transform.right, 45.0f);
 
         bottomCenterPosition = (_localSurface.SurfaceBottomLeft + _remoteSurfaceProxy.SurfaceBottomRight) * 0.5f;
 
@@ -299,14 +309,21 @@ public class NegativeSpace : MonoBehaviour {
         Vector3 rightPointingA = go.transform.Find("RIGHTELBOW").position;
         Vector3 rightPointingB = go.transform.Find("RIGHTHANDTIP").position;
 
+        if(float.IsPositiveInfinity(lastRightHandPos.x))
+        {
+            lastRightHandPos = rightPointingB;
+        }
+
+        if (float.IsPositiveInfinity(lastLeftHandPos.x))
+        {
+            lastLeftHandPos = leftPointingB;
+        }
+
         Vector3 leftHit = Vector3.zero;
         bool leftPointing = _isRemotePointingToWorkspace(new Ray(leftPointingB, leftPointingB - leftPointingA), workspaceCollider, out leftHit);
 
         Vector3 rightHit = Vector3.zero;
         bool rightPointing = _isRemotePointingToWorkspace(new Ray(rightPointingB, rightPointingB - rightPointingA), workspaceCollider, out rightHit);
-
-
-        Plane bottomWallPlane = new Plane(_localSurface.SurfaceBottomLeft, _localSurface.SurfaceBottomRight, _remoteSurfaceProxy.SurfaceBottomRight);
 
         Transform leftHand_d = go.transform.Find("LEFTHAND_D");
         leftHand_d.position = leftPointingB;
@@ -314,77 +331,84 @@ public class NegativeSpace : MonoBehaviour {
         Transform rightHand_d = go.transform.Find("RIGHTHAND_D");
         rightHand_d.position = rightPointingB;
 
-        Matrix4x4 rM = Matrix4x4.identity;
+        Matrix4x4 m = Matrix4x4.identity;
 
+        // Left Pointing
 
-        if (leftPointing)
+        m = _correctPointing(leftPointingA, leftPointingB, leftPointing, leftHit, ref lastLeftHandPos);
+
+        leftHand_d.position = m.MultiplyPoint(leftHand_d.position);
+
+        leftPointingInfo.matrix = m;
+        leftPointingInfo.midPoint = (leftPointingA + leftPointingB) * 0.5f;
+        leftPointingInfo.distance = 0.15f;//(leftPointingB - leftPointingA).magnitude * 0.5f + 0.1f;
+        leftPointingInfo.Elbow = go.transform.Find("LEFTELBOW").transform.position;
+        leftPointingInfo.Wrist = go.transform.Find("LEFTWRIST").transform.position;
+        leftPointingInfo.Hand = go.transform.Find("LEFTHAND").transform.position;
+        leftPointingInfo.HandTip = go.transform.Find("LEFTHANDTIP").transform.position;
+        leftPointingInfo.pointing = true;
+
+        // Right Pointing
+
+        m = _correctPointing(rightPointingA, rightPointingB, rightPointing, rightHit, ref lastRightHandPos);
+
+        rightHand_d.position = m.MultiplyPoint(rightHand_d.position);
+
+        rightPointingInfo.matrix = m;
+        rightPointingInfo.midPoint = (rightPointingA + rightPointingB) * 0.5f;
+        rightPointingInfo.distance = 0.15f;//(rightPointingB - rightPointingA).magnitude * 0.5f + 0.1f;
+        rightPointingInfo.Elbow = go.transform.Find("RIGHTELBOW").transform.position;
+        rightPointingInfo.Wrist = go.transform.Find("RIGHTWRIST").transform.position;
+        rightPointingInfo.Hand = go.transform.Find("RIGHTHAND").transform.position;
+        rightPointingInfo.HandTip = go.transform.Find("RIGHTHANDTIP").transform.position;
+        rightPointingInfo.pointing = true;
+    }
+
+    private Matrix4x4 _correctPointing(Vector3 pointingA, Vector3 pointingB, bool isPointing, Vector3 hit, ref Vector3 lastHandPosition) // pointing is defined by the vector pointingA->pointingB
+    {
+        Vector3 oldVector = pointingB - pointingA;
+        Vector3 newVector = oldVector;
+        Vector3 newHandPosition;
+
+        if (isPointing)
         {
-            Vector3 leftHitToLocal = workspaceCollider.transform.InverseTransformPoint(leftHit);
-            Vector3 reflectedPoint = new Vector3(leftHitToLocal.x, leftHitToLocal.y, -leftHitToLocal.z);
-
-            Vector3 reflectedPointWorld = workspaceCollider.transform.TransformPoint(reflectedPoint);
-
-            Debug.DrawLine(leftPointingA, leftHit, Color.cyan);
-            Debug.DrawLine(leftPointingA, reflectedPointWorld, Color.yellow);
-
-            Vector3 oldVector = leftHit - leftPointingA;
-            Vector3 newVector = reflectedPointWorld - leftPointingA;
-
-            Vector3 axis = Vector3.Cross(oldVector, newVector);
-            float angle = Vector3.Angle(oldVector, newVector);
-
-            rM = Matrix4x4.Translate(leftPointingA) * Matrix4x4.TRS(Vector3.zero, Quaternion.AngleAxis(angle, axis), Vector3.one) * Matrix4x4.Translate(-leftPointingA);
-            leftHand_d.position = rM.MultiplyPoint(leftHand_d.position);
-
-            leftPointingInfo.matrix = rM;
-            leftPointingInfo.midPoint = (leftPointingA + leftPointingB) * 0.5f;
-            leftPointingInfo.distance = 0.15f; //(leftPointingB - leftPointingA).magnitude * 0.5f + 0.1f;
-            leftPointingInfo.Elbow = leftPointingA;
-            leftPointingInfo.Elbow = go.transform.Find("LEFTELBOW").transform.position;
-            leftPointingInfo.Wrist = go.transform.Find("LEFTWRIST").transform.position;
-            leftPointingInfo.Hand = go.transform.Find("LEFTHAND").transform.position;
-            leftPointingInfo.HandTip = go.transform.Find("LEFTHANDTIP").transform.position;
-            leftPointingInfo.pointing = true;
-
-        }
-        else
-        {
-            leftPointingInfo.pointing = false;
-        }
-
-
-        if (rightPointing)
-        {
-            Vector3 rightHitToLocal = workspaceCollider.transform.InverseTransformPoint(rightHit);
+            Vector3 rightHitToLocal = workspaceCollider.transform.InverseTransformPoint(hit);
             Vector3 reflectedPoint = new Vector3(rightHitToLocal.x, rightHitToLocal.y, -rightHitToLocal.z);
             Vector3 reflectedPointWorld = workspaceCollider.transform.TransformPoint(reflectedPoint);
 
-            Debug.DrawLine(rightPointingA, rightHit, Color.cyan);
-            Debug.DrawLine(rightPointingA, reflectedPointWorld, Color.yellow);
+            Debug.DrawLine(pointingA, hit, Color.cyan);
+            Debug.DrawLine(pointingA, reflectedPointWorld, Color.yellow);
 
-            Vector3 oldVector = rightHit - rightPointingA;
-            Vector3 newVector = reflectedPointWorld - rightPointingA;
+            newVector = reflectedPointWorld - pointingA;
 
-            Vector3 axis = Vector3.Cross(oldVector, newVector);
-            float angle = Vector3.Angle(oldVector, newVector);
-
-            rM = Matrix4x4.Translate(rightPointingA) * Matrix4x4.TRS(Vector3.zero, Quaternion.AngleAxis(angle, axis), Vector3.one) * Matrix4x4.Translate(-rightPointingA);
-            rightHand_d.position = rM.MultiplyPoint(rightHand_d.position);
-
-
-            rightPointingInfo.matrix = rM;
-            rightPointingInfo.midPoint = (rightPointingA + rightPointingB) * 0.5f;
-            rightPointingInfo.distance = 0.15f;//(rightPointingB - rightPointingA).magnitude * 0.5f + 0.1f;
-            rightPointingInfo.Elbow = go.transform.Find("RIGHTELBOW").transform.position;
-            rightPointingInfo.Wrist = go.transform.Find("RIGHTWRIST").transform.position;
-            rightPointingInfo.Hand = go.transform.Find("RIGHTHAND").transform.position;
-            rightPointingInfo.HandTip = go.transform.Find("RIGHTHANDTIP").transform.position;
-            rightPointingInfo.pointing = true;
+            Vector3 reflectedHandPosition = pointingA + newVector.normalized * Vector3.Distance(pointingB, pointingA);
+            newHandPosition = _constraintHandDisplacement(reflectedHandPosition, lastHandPosition);
         }
         else
         {
             rightPointingInfo.pointing = false;
+
+            newHandPosition = _constraintHandDisplacement(pointingB, lastHandPosition);
         }
+
+        lastHandPosition = newHandPosition;
+        newVector = newHandPosition - pointingA;
+
+        Vector3 axis = Vector3.Cross(oldVector, newVector);
+        float angle = Vector3.Angle(oldVector, newVector);
+
+        return Matrix4x4.Translate(pointingA) * Matrix4x4.TRS(Vector3.zero, Quaternion.AngleAxis(angle, axis), Vector3.one) * Matrix4x4.Translate(-pointingA);
+    }
+
+    private Vector3 _constraintHandDisplacement(Vector3 newPos, Vector3 oldPos)
+    {
+        Vector3 handDisplacement = newPos - oldPos;
+        float displacementMag = handDisplacement.magnitude;
+
+        print("Vel: " + (displacementMag / Time.deltaTime) + "; Time: " + Time.deltaTime);
+
+        float maxMag = maxHandVelocity * Time.deltaTime;
+        return oldPos + handDisplacement.normalized * (displacementMag > maxMag ? maxMag : displacementMag);
     }
 
     private List<Vector3> _calcPoints(Vector3 A, Vector3 B, float inc)
@@ -421,11 +445,14 @@ public class NegativeSpace : MonoBehaviour {
 
         if (_screen != null)
         {
+            _screen.SetActive(true);
             RaycastHit hit;
             if (_screen.GetComponent<Collider>().Raycast(ray, out hit, 1000.0f))
             {
+                _screen.SetActive(false);
                 return true;
             }
+            _screen.SetActive(false);
         }
         return false;
     }

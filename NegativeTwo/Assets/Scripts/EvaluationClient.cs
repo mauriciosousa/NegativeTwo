@@ -82,11 +82,6 @@ public class EvaluationClient : MonoBehaviour {
 
     internal void reportToInstructorMicroTaskStarted(int microTask, int task, string targetCubeName)
     {
-        if (task == 1) task = (int) WhackAMoleSessionType.FOUR;
-        if (task == 2) task = (int)WhackAMoleSessionType.EIGHT;
-        if (task == 3) task = (int)WhackAMoleSessionType.SIXTEEN;
-
-
         _networkView.RPC("RPC_microtaskStarted", RPCMode.Others, microTask, task, targetCubeName);
     }
 

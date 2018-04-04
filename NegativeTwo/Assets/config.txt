@@ -1,4 +1,4 @@
-ns.length=1.00
+ns.length=1.50
 
 rpc.server.address=192.168.0.111
 

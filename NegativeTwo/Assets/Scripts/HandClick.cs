@@ -43,9 +43,10 @@ public class HandClick : MonoBehaviour {
         _A.Value = transform.Find(strA).position;
         _B.Value = transform.Find(strB).position;
 
+        waka.PointingEvent(_B.Value, _B.Value - _A.Value);
         if (Input.GetMouseButtonDown(0))
         {
-            waka.PointingEvent(_B.Value, _B.Value - _A.Value);
+            waka.click();
         }
 	}
 

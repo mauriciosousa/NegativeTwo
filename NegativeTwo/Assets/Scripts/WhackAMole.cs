@@ -3,13 +3,14 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
+/*
 public enum WhackAMoleSessionType
 {
     FOUR = 4,
     EIGHT = 8, 
     SIXTEEN = 16
 }
-
+*/
 public enum EvaluationConditionType
 {
     NONE,
@@ -31,7 +32,7 @@ public class MicroTaskData
     public int NumberOfErrors { get { return _numberOfErrors; } } 
 
     public EvaluationConditionType condition;
-    public WhackAMoleSessionType taskType;
+    public int taskType;
     public int microtaskID;
 
     private List<bool> _usingDeictics;
@@ -56,10 +57,10 @@ public class MicroTaskData
         if (!success) _numberOfErrors++;
     }
 
-    public MicroTaskData(EvaluationConditionType condition, WhackAMoleSessionType tasktype, int microtask)
+    public MicroTaskData(EvaluationConditionType condition, int tasktype, int microtask)
     {
         this.condition = condition;
-        taskType = tasktype;
+        this.taskType = tasktype;
         this.microtaskID = microtask;
         _usingDeictics = new List<bool>();
     }
@@ -109,6 +110,7 @@ public class WhackAMole : MonoBehaviour {
 
     public GameObject selectedCube = null;
     public GameObject targetCube = null;
+    public GameObject highlightedCube = null;
     private string lastTargetedCube = "";
     private string lastWronglySelectedCube = "";
 
@@ -130,7 +132,7 @@ public class WhackAMole : MonoBehaviour {
     public bool trialInProgress = false;
     public bool habituationTaskInProgress = false;
 
-    public WhackAMoleSessionType taskType = WhackAMoleSessionType.FOUR;
+    public int taskType = 1;
 
     private int task = 1;
     private int microTask = 1;
@@ -152,7 +154,7 @@ public class WhackAMole : MonoBehaviour {
 
     void Start()
     {
-        _availableCubes = null;
+        _availableCubes = new List<GameObject>();
     }
 
     internal void Init()
@@ -185,7 +187,6 @@ public class WhackAMole : MonoBehaviour {
         {
             if (_main.location == Location.Assembler)
             {
-
                 if (microTask <= MaxRepetitions)
                 {
                     if (microTask == 1 && !microtasking)
@@ -202,7 +203,7 @@ public class WhackAMole : MonoBehaviour {
 
                     #region MICROTASK
                     _microtaskData.Peek().addPointing(_negativeSpace.isUsingDeitics);
-                    print(_microtaskData.Count);
+                    //print(_microtaskData.Count);
 
                     if (selectedCube != null)
                     {
@@ -223,8 +224,6 @@ public class WhackAMole : MonoBehaviour {
                         }
                     }
                     selectedCube = null;
-
-
                     #endregion
 
                     if (_microtaskData.Peek().startTime.AddMilliseconds(timelimit) < DateTime.Now)
@@ -249,7 +248,6 @@ public class WhackAMole : MonoBehaviour {
                             client.reportToInstructorMicroTaskEnded(_microtaskData.Peek().microtaskID);
                             _microtaskData.Peek().END();
 
-
                             microTask += 1;
 
                             // start new task
@@ -271,12 +269,27 @@ public class WhackAMole : MonoBehaviour {
                 }
             }
         }
- 	}
+
+        if(Input.GetKeyDown(KeyCode.F1))
+        {
+            _distributeCubes(1);
+        }
+        if (Input.GetKeyDown(KeyCode.F2))
+        {
+            _distributeCubes(2);
+        }
+        if (Input.GetKeyDown(KeyCode.F3))
+        {
+            _distributeCubes(3);
+        }
+        if (Input.GetKeyDown(KeyCode.F4))
+        {
+            _distributeCubes(4);
+        }
+    }
 
     private void _processMicroTaskData()
     {
-        
-
         List<MicroTaskData> data = new List<MicroTaskData>(_microtaskData.ToArray());
         data.Reverse();
         if (data.Count > 0)
@@ -301,7 +314,7 @@ public class WhackAMole : MonoBehaviour {
         _microtaskData.Clear();
     }
 
-    private void _setWorkspace(WhackAMoleSessionType session)
+    private void _setWorkspace(int session)
     {
         _cleanCubes();
 
@@ -310,22 +323,7 @@ public class WhackAMole : MonoBehaviour {
         Vector3 depth = _negativeSpace.LocalSurface.SurfaceBottomRight - origin;
         Vector3 up = _negativeSpace.LocalSurface.SurfaceTopRight - _negativeSpace.LocalSurface.SurfaceBottomRight;
 
-        int numberOfCubes = (int)session;
-
-        _availableCubes = new List<GameObject>();
-        for (int i = 1; i <= numberOfCubes; i++)
-        {
-            GameObject cube = _instantiateNewCube("cube_" + i);
-            cube.transform.LookAt(cube.transform.position + depth, up);
-            _availableCubes.Add(cube);
-        }
-
-        if (session == WhackAMoleSessionType.FOUR) _distribute2x2(origin, length, depth);
-        else if (session == WhackAMoleSessionType.EIGHT) _distribute4x2(origin, length, depth);
-        else if (session == WhackAMoleSessionType.SIXTEEN) _distribute4x4(origin, length, depth);
-
-        
-
+        _distributeCubes(session);
     }
 
     private void _selectTargetCube()
@@ -359,25 +357,62 @@ public class WhackAMole : MonoBehaviour {
     {
         if (!_init) return;
 
-        RaycastHit hit;
-        Ray ray = new Ray(origin, direction);
-        if (Physics.Raycast(ray, out hit, float.PositiveInfinity))
+        if(highlightedCube != null)
         {
-            Debug.DrawLine(origin, hit.point, Color.red);
+            highlightedCube.GetComponent<CubeSelection>().Highlighted = false;
+            highlightedCube = null;
+        }
 
-            float distance = float.PositiveInfinity;
-            foreach (GameObject cube in _availableCubes)
+        Transform screenCenter = GameObject.Find("localScreenCenter").transform;
+        Plane surface = new Plane(screenCenter.forward, screenCenter.position);
+
+        Ray ray = new Ray(origin, direction);
+
+        float distance = float.PositiveInfinity;
+
+        bool didHit = false;
+        Vector3 hitPoint = Vector3.zero;
+
+        /*if (surface.Raycast(ray, out distance))
+        {
+            hitPoint = ray.GetPoint(distance);
+
+            Debug.DrawLine(origin, hitPoint, Color.cyan);
+
+            Vector3 pixel = Camera.main.WorldToScreenPoint(hitPoint);
+            ray = Camera.main.ScreenPointToRay(pixel);
+
+            didHit = true;
+        }
+
+        if (didHit)*/
+        {
+            RaycastHit hit;
+            if (Physics.Raycast(ray, out hit, float.PositiveInfinity))
             {
-                float newDistance = Vector3.Distance(hit.point, cube.transform.position);
-                if ( newDistance < distance)
+                Debug.DrawLine(ray.origin, hit.point, Color.red);
+
+                //print("Curte este OBJ: " + hit.collider.gameObject.name);
+
+                distance = float.PositiveInfinity;
+                foreach (GameObject cube in _availableCubes)
                 {
-                    selectedCube = cube;
-                    distance = newDistance;
+                    float newDistance = Vector3.Distance(hit.point, cube.transform.position);
+                    if (newDistance < distance)
+                    {
+                        highlightedCube = cube;
+                        distance = newDistance;
+                    }
+                }
+
+                if (highlightedCube != null)
+                {
+                    highlightedCube.GetComponent<CubeSelection>().Highlighted = true;
+
+                    print("                         SELECTED CUBE: " + highlightedCube.ToString());
                 }
             }
-            print("                         SELECTED CUBE: " + selectedCube.ToString());
-
-        }   
+        }
     }
 
     /*public bool IAmPointing(Ray ray, bool click, out Vector3 hitPoint) // who dis?
@@ -423,8 +458,6 @@ public class WhackAMole : MonoBehaviour {
         return newCube;
     }
 
-
-
     private void _upTheCubes()
     {
         foreach (GameObject c in _availableCubes)
@@ -433,12 +466,74 @@ public class WhackAMole : MonoBehaviour {
         }
     }
 
+    private void _distributeCubes(int task)
+    {
+        float cubeSize = 0.05f;
+        int numberOfCubes;
+
+        if (task == 1) numberOfCubes = 4;
+        else if (task == 2) numberOfCubes = 6;
+        else if(task == 3) numberOfCubes = 9;
+        else numberOfCubes = 12;
+
+        Vector3 origin = _negativeSpace.RemoteSurface.SurfaceBottomRight;
+        Vector3 length = _negativeSpace.RemoteSurface.SurfaceBottomLeft - origin;
+        Vector3 depth = _negativeSpace.LocalSurface.SurfaceBottomRight - origin;
+        Vector3 up = _negativeSpace.LocalSurface.SurfaceTopRight - _negativeSpace.LocalSurface.SurfaceBottomRight;
+
+        _cleanCubes();
+
+        int i = 1;
+        for (; i <= numberOfCubes; i++)
+        {
+            GameObject cube = _instantiateNewCube("cube_" + i);
+            cube.transform.LookAt(cube.transform.position + depth, up);
+            _availableCubes.Add(cube);
+        }
+
+        i = 0;
+        _availableCubes[i++].transform.position = origin + (length.normalized + depth.normalized) * cubeSize;
+        _availableCubes[i++].transform.position = origin + length + (-length.normalized + depth.normalized) * cubeSize;
+        _availableCubes[i++].transform.position = origin + depth + (length.normalized - depth.normalized) * cubeSize;
+        _availableCubes[i++].transform.position = origin + depth + length + (-length.normalized - depth.normalized) * cubeSize;
+
+        if(task == 2 || task == 3)
+        {
+            _availableCubes[i++].transform.position = origin + depth * 0.5f + (length.normalized) * cubeSize;
+            _availableCubes[i++].transform.position = origin + depth * 0.5f + length + (-length.normalized) * cubeSize;
+        }
+
+        if(task == 3)
+        {
+            _availableCubes[i++].transform.position = origin + depth * 0.5f + length * 0.5f;
+        }
+
+        if(task == 3 || task == 4)
+        {
+            _availableCubes[i++].transform.position = origin + length * 0.5f + (depth.normalized) * cubeSize;
+            _availableCubes[i++].transform.position = origin + depth + length * 0.5f + (-depth.normalized) * cubeSize;
+        }
+
+        if (task == 4)
+        {
+            _availableCubes[i++].transform.position = origin + depth / 3.0f + (length.normalized) * cubeSize;
+            _availableCubes[i++].transform.position = origin + depth / 3.0f + length * 0.5f;
+            _availableCubes[i++].transform.position = origin + depth / 3.0f + length + (-length.normalized) * cubeSize;
+
+            _availableCubes[i++].transform.position = origin + depth * 2.0f / 3.0f + (length.normalized) * cubeSize;
+            _availableCubes[i++].transform.position = origin + depth * 2.0f / 3.0f + length * 0.5f;
+            _availableCubes[i++].transform.position = origin + depth * 2.0f / 3.0f + length + (-length.normalized) * cubeSize;
+        }
+
+        _upTheCubes();
+    }
+
     private void _distribute2x2(Vector3 o, Vector3 length, Vector3 depth)
     {
-        _availableCubes[0].transform.position = o + (length / 4) + (depth / 4);
-        _availableCubes[1].transform.position = o + (3 * length / 4) + (depth / 4);
-        _availableCubes[2].transform.position = o + (length / 4) + (3 * depth / 4);
-        _availableCubes[3].transform.position = o + (3 * length / 4) + (3 * depth / 4);
+        _availableCubes[0].transform.position = o + (length / 8) + (depth / 4);
+        _availableCubes[1].transform.position = o + (9 * length / 8) + (depth / 4);
+        _availableCubes[2].transform.position = o + (length / 8) + (3 * depth / 4);
+        _availableCubes[3].transform.position = o + (9 * length / 8) + (3 * depth / 4);
         _upTheCubes();
     }
 
@@ -488,13 +583,11 @@ public class WhackAMole : MonoBehaviour {
         _cleanCubes();
     }
 
-    internal void startTrial(int condition, int trial)
+    internal void startTrial(int condition, int taskType)
     {
         evaluationCondition = (EvaluationConditionType)condition;
 
-        if (trial == 1) taskType = WhackAMoleSessionType.FOUR;
-        if (trial == 2) taskType = WhackAMoleSessionType.EIGHT;
-        if (trial == 3) taskType = WhackAMoleSessionType.SIXTEEN;
+        this.taskType = taskType;
         trialInProgress = true;
         _setWorkspace(taskType);
     }
@@ -589,5 +682,10 @@ public class WhackAMole : MonoBehaviour {
                 }
             }
         }
+    }
+
+    internal void click()
+    {
+        Debug.LogError("[Click Event] " + new NotImplementedException().ToString());
     }
 }

@@ -16,14 +16,31 @@ public class CubeSelection : MonoBehaviour {
     public CubeSTATE state = CubeSTATE.NONE;
 
     public Material normalMaterial;
-    public Material highlightedMaterial;
+    public Material targetMaterial;
     public Material selectedMaterial_CORRECT;
     public Material selectedMaterial_WRONG;
+
+    private bool _highlighted = false;
 
     private DateTime _selectedTime;
     private double notificationTime = 500; //ms
 
     private Location _location;
+
+    public bool Highlighted
+    {
+        get
+        {
+            return _highlighted;
+        }
+
+        set
+        {
+            _highlighted = value;
+
+            transform.localScale = Vector3.one * (_highlighted? 0.1f : 0.05f);
+        }
+    }
 
     void Start()
     {
@@ -44,7 +61,7 @@ public class CubeSelection : MonoBehaviour {
         else if (state == CubeSTATE.SELECT)
         {
             //setMaterial(_location == Location.Instructor ? highlightedMaterial : normalMaterial);
-            setMaterial(highlightedMaterial);
+            setMaterial(targetMaterial);
         }
         else if (state == CubeSTATE.SELECT_CORRECT)
         {
@@ -75,6 +92,8 @@ public class CubeSelection : MonoBehaviour {
         state = CubeSTATE.SELECT_WRONG;
         _selectedTime = DateTime.Now;
     }
+
+
 
     /*
     private void _select(bool correct)
