@@ -126,6 +126,7 @@ public class WhackAMole : MonoBehaviour {
     public Vector3 CubesScale;
 
     private List<GameObject> _availableCubes;
+    private Dictionary<int, GameObject> _cubesNumbers;
 
     private EvaluationConditionType evaluationCondition = EvaluationConditionType.NONE;
 
@@ -155,6 +156,7 @@ public class WhackAMole : MonoBehaviour {
     void Start()
     {
         _availableCubes = new List<GameObject>();
+        _cubesNumbers = new Dictionary<int, GameObject>();
     }
 
     internal void Init()
@@ -205,6 +207,8 @@ public class WhackAMole : MonoBehaviour {
                     _microtaskData.Peek().addPointing(_negativeSpace.isUsingDeitics);
                     //print(_microtaskData.Count);
 
+                    if (!_microtaskData.Peek().success) selectedCube = _checkButtons();
+
                     if (selectedCube != null)
                     {
                         if (selectedCube == targetCube && !_microtaskData.Peek().success)
@@ -247,6 +251,7 @@ public class WhackAMole : MonoBehaviour {
                             // end current task
                             client.reportToInstructorMicroTaskEnded(_microtaskData.Peek().microtaskID);
                             _microtaskData.Peek().END();
+                            _removeCubeColors();
 
                             microTask += 1;
 
@@ -286,6 +291,32 @@ public class WhackAMole : MonoBehaviour {
         {
             _distributeCubes(4);
         }
+    }
+
+    private void _removeCubeColors()
+    {
+        foreach(GameObject o in _availableCubes)
+        {
+            o.GetComponent<CubeSelection>().state = CubeSTATE.NONE;
+        }
+    }
+
+    private GameObject _checkButtons()
+    {
+        if (Input.GetKeyDown(KeyCode.F1) || Input.GetKeyDown(KeyCode.Keypad1)) return (_cubesNumbers.ContainsKey(1) ? _cubesNumbers[1] : null);
+        if (Input.GetKeyDown(KeyCode.F2) || Input.GetKeyDown(KeyCode.Keypad2)) return (_cubesNumbers.ContainsKey(2) ? _cubesNumbers[2] : null);
+        if (Input.GetKeyDown(KeyCode.F3) || Input.GetKeyDown(KeyCode.Keypad3)) return (_cubesNumbers.ContainsKey(3) ? _cubesNumbers[3] : null);
+        if (Input.GetKeyDown(KeyCode.F4) || Input.GetKeyDown(KeyCode.Keypad4)) return (_cubesNumbers.ContainsKey(4) ? _cubesNumbers[4] : null);
+        if (Input.GetKeyDown(KeyCode.F5) || Input.GetKeyDown(KeyCode.Keypad5)) return (_cubesNumbers.ContainsKey(5) ? _cubesNumbers[5] : null);
+        if (Input.GetKeyDown(KeyCode.F6) || Input.GetKeyDown(KeyCode.Keypad6)) return (_cubesNumbers.ContainsKey(6) ? _cubesNumbers[6] : null);
+        if (Input.GetKeyDown(KeyCode.F7) || Input.GetKeyDown(KeyCode.Keypad7)) return (_cubesNumbers.ContainsKey(7) ? _cubesNumbers[7] : null);
+        if (Input.GetKeyDown(KeyCode.F8) || Input.GetKeyDown(KeyCode.Keypad8)) return (_cubesNumbers.ContainsKey(8) ? _cubesNumbers[8] : null);
+        if (Input.GetKeyDown(KeyCode.F9) || Input.GetKeyDown(KeyCode.Keypad9)) return (_cubesNumbers.ContainsKey(9) ? _cubesNumbers[9] : null);
+        if (Input.GetKeyDown(KeyCode.F10) || Input.GetKeyDown(KeyCode.KeypadDivide)) return (_cubesNumbers.ContainsKey(10) ? _cubesNumbers[10] : null);
+        if (Input.GetKeyDown(KeyCode.F11) || Input.GetKeyDown(KeyCode.KeypadMultiply)) return (_cubesNumbers.ContainsKey(11) ? _cubesNumbers[11] : null);
+        if (Input.GetKeyDown(KeyCode.F12) || Input.GetKeyDown(KeyCode.KeypadMinus)) return (_cubesNumbers.ContainsKey(12) ? _cubesNumbers[12] : null);
+
+        return null;
     }
 
     private void _processMicroTaskData()
@@ -350,7 +381,16 @@ public class WhackAMole : MonoBehaviour {
 
     private void _cleanCubes()
     {
-        if (_availableCubes != null) _availableCubes.RemoveAll(delegate (GameObject o) { Destroy(o); return o == null; });
+        _cubesNumbers.Clear();
+
+        if (_availableCubes != null)
+        {
+            foreach(GameObject o in _availableCubes)
+            {
+                Destroy(o);
+            }
+            _availableCubes.Clear();
+        }
     }
 
     internal void PointingEvent(Vector3 origin, Vector3 direction)
@@ -386,7 +426,7 @@ public class WhackAMole : MonoBehaviour {
         }
 
         if (didHit)*/
-        {
+        {         
             RaycastHit hit;
             if (Physics.Raycast(ray, out hit, float.PositiveInfinity))
             {
@@ -395,6 +435,7 @@ public class WhackAMole : MonoBehaviour {
                 //print("Curte este OBJ: " + hit.collider.gameObject.name);
 
                 distance = float.PositiveInfinity;
+                
                 foreach (GameObject cube in _availableCubes)
                 {
                     float newDistance = Vector3.Distance(hit.point, cube.transform.position);
@@ -483,12 +524,26 @@ public class WhackAMole : MonoBehaviour {
 
         _cleanCubes();
 
-        int i = 1;
-        for (; i <= numberOfCubes; i++)
+        List<int> numbers = new List<int>();
+
+        int i;
+        for (i = 1; i <= numberOfCubes; i++)
+        {
+            numbers.Add(i);
+        }
+        numbers.Shuffle();
+
+        for (i = 1; i <= numberOfCubes; i++)
         {
             GameObject cube = _instantiateNewCube("cube_" + i);
-            cube.transform.LookAt(cube.transform.position + depth, up);
+            cube.transform.LookAt(cube.transform.position - depth, up);
             _availableCubes.Add(cube);
+
+            if(_main.location == Location.Assembler)
+            {
+                _cubesNumbers.Add(numbers[i - 1], cube);
+                cube.GetComponentInChildren<TextMesh>().text = "" + numbers[i-1];
+            }
         }
 
         i = 0;
@@ -653,6 +708,8 @@ public class WhackAMole : MonoBehaviour {
             u = (float)u / _instructorIsPointing.Count;
             _instructorIsPointing_LogLines.Add("" + microTask + "#" + u);
             _instructorIsPointing.Clear();
+
+            _removeCubeColors();
 
             if (microtask == MaxRepetitions) // micro task ended
             {

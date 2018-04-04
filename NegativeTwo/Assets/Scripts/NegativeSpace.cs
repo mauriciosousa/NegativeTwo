@@ -405,7 +405,7 @@ public class NegativeSpace : MonoBehaviour {
         Vector3 handDisplacement = newPos - oldPos;
         float displacementMag = handDisplacement.magnitude;
 
-        print("Vel: " + (displacementMag / Time.deltaTime) + "; Time: " + Time.deltaTime);
+        //print("Vel: " + (displacementMag / Time.deltaTime) + "; Time: " + Time.deltaTime);
 
         float maxMag = maxHandVelocity * Time.deltaTime;
         return oldPos + handDisplacement.normalized * (displacementMag > maxMag ? maxMag : displacementMag);

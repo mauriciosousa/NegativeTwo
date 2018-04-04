@@ -69,7 +69,7 @@ public class CubeSelection : MonoBehaviour {
         }
         else if (state == CubeSTATE.SELECT_WRONG)
         {
-            if (_selectedTime.AddMilliseconds(notificationTime) > DateTime.Now)
+            /*if (_selectedTime.AddMilliseconds(notificationTime) > DateTime.Now)
             {
                 print("RED");
                 setMaterial(selectedMaterial_WRONG);
@@ -78,13 +78,16 @@ public class CubeSelection : MonoBehaviour {
             {
                 state = CubeSTATE.NONE;
                 setMaterial(normalMaterial);
-            }
+            }*/
+
+            setMaterial(selectedMaterial_WRONG);
         }
     }
 
     internal void correctSelection()
     {
         state = CubeSTATE.SELECT_CORRECT;
+        _selectedTime = DateTime.Now;
     }
 
     internal void wrongSelection()

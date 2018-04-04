@@ -43,11 +43,15 @@ public class HandClick : MonoBehaviour {
         _A.Value = transform.Find(strA).position;
         _B.Value = transform.Find(strB).position;
 
+
+        // No more pointing to select objects
+        /*
         waka.PointingEvent(_B.Value, _B.Value - _A.Value);
         if (Input.GetMouseButtonDown(0))
         {
             waka.click();
         }
+        */
 	}
 
     void OnGUI()
