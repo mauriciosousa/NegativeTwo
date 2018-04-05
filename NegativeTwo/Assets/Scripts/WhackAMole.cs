@@ -683,10 +683,13 @@ public class WhackAMole : MonoBehaviour {
         habituationTaskInProgress = true;
         taskType = 1;
         _setWorkspace(taskType);
-        _selectTargetCube();
+
         //_setWorkspace(WhackAMoleSessionType.FOUR);
         if (_main.location == Location.Assembler)
+        {
+            _selectTargetCube();
             GetComponent<EvaluationClient>().HabituationReportToInstructor_targetCube(targetCube);
+        }
     }
 
     internal void updateCube(string gameObjectName, int state)
@@ -780,6 +783,7 @@ public class WhackAMole : MonoBehaviour {
     {
         targetCube = GameObject.Find(targetCubeName);
         targetCube.GetComponent<CubeSelection>().state = CubeSTATE.SELECT;
+        print("I have target cube!!!");
     }
 
     internal void click()
