@@ -163,8 +163,6 @@ public class WhackAMole : MonoBehaviour {
         }
     }
 
-
-
     void Start()
     {
         _availableCubes = new List<GameObject>();
@@ -193,9 +191,26 @@ public class WhackAMole : MonoBehaviour {
 
         if (habituationTaskInProgress)
         {
-            /// HABOTUATION TASKK AQUI
-        }
+            if (_main.location == Location.Assembler)
+            {
+                selectedCube = _checkButtons();
 
+                if (selectedCube != null)
+                {
+                    if (selectedCube == targetCube)
+                    {
+                        selectedCube.GetComponent<CubeSelection>().correctSelection();
+                        client.reportToInstructorCubeSelected(selectedCube, true);
+                    }
+                    else
+                    {
+                        selectedCube.GetComponent<CubeSelection>().wrongSelection();
+                        lastWronglySelectedCube = selectedCube.name;
+                        client.reportToInstructorCubeSelected(selectedCube, false);
+                    }
+                }
+            }
+        }
 
         if (trialInProgress)
         {
@@ -276,7 +291,6 @@ public class WhackAMole : MonoBehaviour {
                         }
                     } 
                 }
-                
             }
             else if (_main.location == Location.Instructor)
             {
@@ -287,6 +301,7 @@ public class WhackAMole : MonoBehaviour {
             }
         }
 
+        /*
         if(Input.GetKeyDown(KeyCode.F1))
         {
             _distributeCubes(1);
@@ -303,6 +318,7 @@ public class WhackAMole : MonoBehaviour {
         {
             _distributeCubes(4);
         }
+        */
     }
 
     private void _removeCubeColors()
@@ -647,14 +663,15 @@ public class WhackAMole : MonoBehaviour {
         evaluationCondition = EvaluationConditionType.NONE;
         trialInProgress = false;
         habituationTaskInProgress = false;
-
+        targetCube = null;
         _cleanCubes();
     }
 
     internal void startTrial(int condition, int taskType)
     {
-        evaluationCondition = (EvaluationConditionType)condition;
+        habituationTaskInProgress = false;
 
+        evaluationCondition = (EvaluationConditionType)condition;
         this.taskType = taskType;
         trialInProgress = true;
         _setWorkspace(taskType);
@@ -664,7 +681,12 @@ public class WhackAMole : MonoBehaviour {
     {
         evaluationCondition = (EvaluationConditionType)condition;
         habituationTaskInProgress = true;
+        taskType = 1;
+        _setWorkspace(taskType);
+        _selectTargetCube();
         //_setWorkspace(WhackAMoleSessionType.FOUR);
+        if (_main.location == Location.Assembler)
+            GetComponent<EvaluationClient>().HabituationReportToInstructor_targetCube(targetCube);
     }
 
     internal void updateCube(string gameObjectName, int state)
@@ -752,6 +774,12 @@ public class WhackAMole : MonoBehaviour {
                 }
             }
         }
+    }
+
+    internal void INSTRUCTOR_setTargetCube(string targetCubeName)
+    {
+        targetCube = GameObject.Find(targetCubeName);
+        targetCube.GetComponent<CubeSelection>().state = CubeSTATE.SELECT;
     }
 
     internal void click()

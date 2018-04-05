@@ -163,12 +163,9 @@ public class EvaluationServer : MonoBehaviour {
     void RPC_microtaskEnded(int microtask) { }
 
     [RPC]
-    void reportToInstructorMicroTaskStarted(int microTask, int task) { }
-
-    [RPC]
-    void reportToInstructorMicroTaskEnded(int microTask) {  }
-
-    [RPC]
     void RPC_reportToInstructorCubeSelected(string selectedCubeName, bool isItTargetCube) { }
+
+    [RPC]
+    void RPC_HabituationReportToInstructor_targetCube(string targetCubeName) { }
     #endregion
 }

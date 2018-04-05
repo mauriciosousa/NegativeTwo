@@ -114,5 +114,19 @@ public class EvaluationClient : MonoBehaviour {
     {
         if (_main.location == Location.Instructor) _networkView.RPC("RPC_reportToInstructorCubeSelected", RPCMode.Others, selectedCube.name, isItTargetCube);
     }
+
+    [RPC]
+    void RPC_HabituationReportToInstructor_targetCube(string targetCubeName)
+    {
+        if (_main.location == Location.Instructor)
+        {
+            _whackAMole.INSTRUCTOR_setTargetCube(targetCubeName);
+        }
+    }
+        
+    internal void HabituationReportToInstructor_targetCube(GameObject targetCube)
+    {
+        if (_main.location == Location.Assembler) _networkView.RPC("RPC_HabituationReportToInstructor_targetCube", RPCMode.Others, targetCube.name);
+    }
     #endregion
 }
