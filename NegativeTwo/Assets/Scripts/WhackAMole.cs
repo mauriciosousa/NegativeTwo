@@ -776,6 +776,7 @@ public class WhackAMole : MonoBehaviour {
                     cube.GetComponent<CubeSelection>().wrongSelection();
                 }
             }
+            else Debug.LogError("Cube " + selectedCubeName + " is null.");
         }
     }
 
@@ -784,10 +785,5 @@ public class WhackAMole : MonoBehaviour {
         targetCube = GameObject.Find(targetCubeName);
         targetCube.GetComponent<CubeSelection>().state = CubeSTATE.SELECT;
         print("I have target cube!!!");
-    }
-
-    internal void click()
-    {
-        Debug.LogError("[Click Event] " + new NotImplementedException().ToString());
     }
 }
