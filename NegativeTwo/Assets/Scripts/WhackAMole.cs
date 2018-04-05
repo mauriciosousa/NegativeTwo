@@ -25,7 +25,8 @@ public class MicroTaskData
     private DateTime _startTime;
     public DateTime startTime { get { return _startTime; } }
 
-    private DateTime endTime;
+    private DateTime _endTime;
+    public DateTime endTime { get { return _endTime; } }
 
     private DateTime _correctSelectionTimeStamp;
     private bool _success = false;
@@ -39,10 +40,19 @@ public class MicroTaskData
         set
         {
             _success = value;
-            if (_success)
+            /*if (_success)
             {
                 _correctSelectionTimeStamp = DateTime.Now;
-            }
+            }*/
+        }
+    }
+
+    private bool _ended = false;
+    public bool Ended
+    {
+        get
+        {
+            return _ended;
         }
     }
 
@@ -95,7 +105,8 @@ public class MicroTaskData
     }
     public void END()
     {
-        endTime = DateTime.Now;
+        _endTime = DateTime.Now;
+        _ended = true;
         Debug.Log("[microtask]    END    total:" + this.TimeSpanMilliseconds + " using deictics %:" + usingDeictics); /// ????????????????????
     }
 
@@ -103,18 +114,18 @@ public class MicroTaskData
     {
         get
         {
-            return (endTime - startTime).TotalMilliseconds;
+            return (_endTime - startTime).TotalMilliseconds;
             //return ((TimeSpan)(endTime - startTime)).Milliseconds;
         }
     }
 
-    public double TimeToCorrectSelection
+    /*public double TimeToCorrectSelection
     {
         get
         {
             return success ? (_correctSelectionTimeStamp - startTime).TotalMilliseconds : -1;
         }
-    }
+    }*/
 }
 
 public class WhackAMole : MonoBehaviour {
@@ -150,8 +161,9 @@ public class WhackAMole : MonoBehaviour {
     private int task = 1;
     private int microTask = 1;
     private bool microtasking = false;
-    private int MaxRepetitions = 10;
-    private double timelimit = 5 * 1000;  //ms
+    private int MaxRepetitions = 20;
+    private double timelimit = 2 * 1000;  //ms
+    private double showtime = 2 * 1000;  //ms
 
     private string LogFileDir
     {
@@ -234,7 +246,7 @@ public class WhackAMole : MonoBehaviour {
                     _microtaskData.Peek().addPointing(_negativeSpace.isUsingDeitics);
                     //print(_microtaskData.Count);
 
-                    if (!_microtaskData.Peek().success) selectedCube = _checkButtons();
+                    if (!_microtaskData.Peek().Ended) selectedCube = _checkButtons();
 
                     if (selectedCube != null)
                     {
@@ -252,37 +264,47 @@ public class WhackAMole : MonoBehaviour {
                             lastWronglySelectedCube = selectedCube.name;
                             print("SELECTED WRONGLYYY                  " + selectedCube + "  ----   " + targetCube);
                             client.reportToInstructorCubeSelected(selectedCube, false);
+                            targetCube.GetComponent<CubeSelection>().state = CubeSTATE.RIGHT_ANSWER; // põe o certo a laranja
                         }
+
+                        _microtaskData.Peek().END();
+                        client.reportToInstructorMicroTaskEnded(_microtaskData.Peek().microtaskID);
                     }
                     selectedCube = null;
                     #endregion
 
-                    if (_microtaskData.Peek().startTime.AddMilliseconds(timelimit) < DateTime.Now)
+                    if (!_microtaskData.Peek().Ended && _microtaskData.Peek().startTime.AddMilliseconds(timelimit) < DateTime.Now)
                     {
-                        //END micro
+                        targetCube.GetComponent<CubeSelection>().state = CubeSTATE.RIGHT_ANSWER; // põe o certo a laranja
+                        _microtaskData.Peek().END();
+                        client.reportToInstructorMicroTaskEnded(_microtaskData.Peek().microtaskID);
+                    }
+
+                    if (_microtaskData.Peek().Ended && _microtaskData.Peek().endTime.AddMilliseconds(showtime) < DateTime.Now)
+                    {
+                        // END task
                         if (microTask == MaxRepetitions)
                         {
                             microtasking = false;
                             microTask = 1;
                             trialInProgress = false;
 
-                            client.reportToInstructorMicroTaskEnded(_microtaskData.Peek().microtaskID);
-                            _microtaskData.Peek().END(); // end last one
-                            print("END EVERythings");
+                            //client.reportToInstructorMicroTaskEnded(_microtaskData.Peek().microtaskID);
+                            //_microtaskData.Peek().END(); // end last one
 
                             _processMicroTaskData();
                             _cleanCubes();
                         }
                         else
                         {
-                            // end current task
+                            // end micro task
                             client.reportToInstructorMicroTaskEnded(_microtaskData.Peek().microtaskID);
-                            _microtaskData.Peek().END();
+                            //_microtaskData.Peek().END();
                             _removeCubeColors();
 
                             microTask += 1;
 
-                            // start new task
+                            // start new micro task
                             MicroTaskData m = new MicroTaskData(evaluationCondition, taskType, microTask); // START OTHER MICROTASKS
                             _microtaskData.Push(m);
                             _selectTargetCube();
@@ -354,7 +376,7 @@ public class WhackAMole : MonoBehaviour {
         if (data.Count > 0)
         {
             List<String> lines = new List<string>();
-            lines.Add("TASKID" + "#" + "MICROTASKID" + "#" + "CONDITION" + "#" + "SUCCESS" + "#" + "NUMBER_OF_ERRORS" + "#" + "TIME_TILL_SUCCESS" + "#" + "TOTAL_TIME" + "#" + "%_DEICTICS");
+            lines.Add("TASKID" + "#" + "MICROTASKID" + "#" + "CONDITION" + "#" + "SUCCESS" + "#" + "NUMBER_OF_ERRORS" + "#" + "TOTAL_TIME" + "#" + "%_DEICTICS");
 
             foreach (MicroTaskData m in data)
             {
@@ -364,7 +386,6 @@ public class WhackAMole : MonoBehaviour {
                 line += m.condition + "#";
                 line += m.success + "#";
                 line += m.NumberOfErrors + "#";
-                line += m.TimeToCorrectSelection + "#";
                 line += m.TimeSpanMilliseconds + "#";
                 line += m.usingDeictics;
                 lines.Add(line);

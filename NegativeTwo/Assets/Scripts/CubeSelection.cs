@@ -8,7 +8,8 @@ public enum CubeSTATE
     NONE = 0,
     SELECT = 1,
     SELECT_WRONG = 2,
-    SELECT_CORRECT = 3
+    SELECT_CORRECT = 3,
+    RIGHT_ANSWER = 4
 }
 
 public class CubeSelection : MonoBehaviour {
@@ -19,11 +20,9 @@ public class CubeSelection : MonoBehaviour {
     public Material targetMaterial;
     public Material selectedMaterial_CORRECT;
     public Material selectedMaterial_WRONG;
+    public Material selectedMaterial_ANSWER;
 
     private bool _highlighted = false;
-
-    private DateTime _selectedTime;
-    private double notificationTime = 500; //ms
 
     private Location _location;
 
@@ -60,7 +59,6 @@ public class CubeSelection : MonoBehaviour {
         }
         else if (state == CubeSTATE.SELECT)
         {
-            //setMaterial(_location == Location.Instructor ? highlightedMaterial : normalMaterial);
             setMaterial(targetMaterial);
         }
         else if (state == CubeSTATE.SELECT_CORRECT)
@@ -69,42 +67,23 @@ public class CubeSelection : MonoBehaviour {
         }
         else if (state == CubeSTATE.SELECT_WRONG)
         {
-            /*if (_selectedTime.AddMilliseconds(notificationTime) > DateTime.Now)
-            {
-                print("RED");
-                setMaterial(selectedMaterial_WRONG);
-            }
-            else
-            {
-                state = CubeSTATE.NONE;
-                setMaterial(normalMaterial);
-            }*/
-
             setMaterial(selectedMaterial_WRONG);
+        }
+        else if(state == CubeSTATE.RIGHT_ANSWER)
+        {
+            setMaterial(selectedMaterial_ANSWER);
         }
     }
 
     internal void correctSelection()
     {
         state = CubeSTATE.SELECT_CORRECT;
-        _selectedTime = DateTime.Now;
+        //_selectedTime = DateTime.Now;
     }
 
     internal void wrongSelection()
     {
         state = CubeSTATE.SELECT_WRONG;
-        _selectedTime = DateTime.Now;
+        //_selectedTime = DateTime.Now;
     }
-
-
-
-    /*
-    private void _select(bool correct)
-    {
-        if (selected) return;
-        selected = true;
-        _selectedTime = DateTime.Now;
-        GetComponent<Renderer>().material = correct ? selectedMaterial_CORRECT : selectedMaterial_WRONG;
-    }
-    */
 }
