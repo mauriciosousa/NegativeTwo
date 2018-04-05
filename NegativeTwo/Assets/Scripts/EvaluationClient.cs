@@ -112,7 +112,7 @@ public class EvaluationClient : MonoBehaviour {
 
     internal void reportToInstructorCubeSelected(GameObject selectedCube, bool isItTargetCube)
     {
-        if (_main.location == Location.Instructor) _networkView.RPC("RPC_reportToInstructorCubeSelected", RPCMode.Others, selectedCube.name, isItTargetCube);
+        if (_main.location == Location.Assembler) _networkView.RPC("RPC_reportToInstructorCubeSelected", RPCMode.Others, selectedCube.name, isItTargetCube);
     }
 
     [RPC]

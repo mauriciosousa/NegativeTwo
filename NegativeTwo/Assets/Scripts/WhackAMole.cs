@@ -679,6 +679,7 @@ public class WhackAMole : MonoBehaviour {
 
     internal void startHabituationTask(int condition)
     {
+        clearBoard();
         evaluationCondition = (EvaluationConditionType)condition;
         habituationTaskInProgress = true;
         taskType = 1;
