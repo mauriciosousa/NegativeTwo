@@ -323,12 +323,12 @@ public class NegativeSpace : MonoBehaviour {
                         Vector3 hit;
 
                         // right
-                        ray = new Ray(human.body.Joints[BodyJointType.rightHandTip], human.body.Joints[BodyJointType.rightHandTip] - human.body.Joints[BodyJointType.rightElbow]);
+                        ray = new Ray(human.body.Joints[BodyJointType.rightHandTip], human.body.Joints[BodyJointType.rightHandTip] - human.body.Joints[BodyJointType.head]);
                         if (_isPointingToWorkspace(ray, workspaceCollider, out hit)) _cursors.rightHandPixel = Camera.main.WorldToScreenPoint(hit);
                         else _cursors.rightHandPixel = Vector2.positiveInfinity;
 
                         // left
-                        ray = new Ray(human.body.Joints[BodyJointType.leftHandTip], human.body.Joints[BodyJointType.leftHandTip] - human.body.Joints[BodyJointType.leftElbow]);
+                        ray = new Ray(human.body.Joints[BodyJointType.leftHandTip], human.body.Joints[BodyJointType.leftHandTip] - human.body.Joints[BodyJointType.head]);
                         if (_isPointingToWorkspace(ray, workspaceCollider, out hit)) _cursors.leftHandPixel = Camera.main.WorldToScreenPoint(hit);
                         else _cursors.leftHandPixel = Vector2.positiveInfinity;
                     }
