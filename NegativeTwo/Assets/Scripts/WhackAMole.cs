@@ -162,7 +162,7 @@ public class WhackAMole : MonoBehaviour {
     private int microTask = 1;
     private bool microtasking = false;
     private int MaxRepetitions = 20;
-    private double timelimit = 2 * 1000;  //ms
+    private double timelimit = 4 * 1000;  //ms
     private double showtime = 2 * 1000;  //ms
 
     private string LogFileDir
@@ -268,7 +268,6 @@ public class WhackAMole : MonoBehaviour {
                         }
 
                         _microtaskData.Peek().END();
-                        client.reportToInstructorMicroTaskEnded(_microtaskData.Peek().microtaskID);
                     }
                     selectedCube = null;
                     #endregion
@@ -289,7 +288,7 @@ public class WhackAMole : MonoBehaviour {
                             microTask = 1;
                             trialInProgress = false;
 
-                            //client.reportToInstructorMicroTaskEnded(_microtaskData.Peek().microtaskID);
+                            client.reportToInstructorMicroTaskEnded(_microtaskData.Peek().microtaskID);
                             //_microtaskData.Peek().END(); // end last one
 
                             _processMicroTaskData();
@@ -688,6 +687,29 @@ public class WhackAMole : MonoBehaviour {
         _cleanCubes();
     }
 
+    private void _applyCondition(EvaluationConditionType condition)
+    {
+        switch (condition)
+        {
+            case EvaluationConditionType.SIMULATED_SIDE_SIDE:
+                _negativeSpace.Mirroring = false;
+                _negativeSpace.correctingPointing = false;
+                break;
+            case EvaluationConditionType.SIMULATED_SIDE_SIDE_Depth:
+                _negativeSpace.Mirroring = false;
+                _negativeSpace.correctingPointing = true;
+                break;
+            case EvaluationConditionType.MIRRORED_PERSON:
+                _negativeSpace.Mirroring = true;
+                _negativeSpace.correctingPointing = false;
+                break;
+            case EvaluationConditionType.MIRRORED_PERSON_Depth:
+                _negativeSpace.Mirroring = true;
+                _negativeSpace.correctingPointing = true;
+                break;
+        }
+    }
+
     internal void startTrial(int condition, int taskType)
     {
         habituationTaskInProgress = false;
@@ -696,6 +718,8 @@ public class WhackAMole : MonoBehaviour {
         this.taskType = taskType;
         trialInProgress = true;
         _setWorkspace(taskType);
+
+        _applyCondition(evaluationCondition);
     }
 
     internal void startHabituationTask(int condition)
@@ -705,6 +729,8 @@ public class WhackAMole : MonoBehaviour {
         habituationTaskInProgress = true;
         taskType = 1;
         _setWorkspace(taskType);
+
+        _applyCondition(evaluationCondition);
 
         //_setWorkspace(WhackAMoleSessionType.FOUR);
         if (_main.location == Location.Assembler)
@@ -753,30 +779,33 @@ public class WhackAMole : MonoBehaviour {
     {
         if (_main.location == Location.Instructor)
         {
-            foreach (GameObject cube in _availableCubes)
+            if (_storingInstructorData)
             {
-                cube.GetComponent<CubeSelection>().state = CubeSTATE.NONE;
-            }
+                foreach (GameObject cube in _availableCubes)
+                {
+                    cube.GetComponent<CubeSelection>().state = CubeSTATE.NONE;
+                }
 
-            _storingInstructorData = false;
+                _storingInstructorData = false;
 
-            double u = 0;
-            foreach (bool b in _instructorIsPointing)
-            {
-                if (b) u++;
-            }
-            u = (float)u / _instructorIsPointing.Count;
-            _instructorIsPointing_LogLines.Add("" + task + "#" + microTask + "#" + evaluationCondition + "#" + u);
-            _instructorIsPointing.Clear();
+                double u = 0;
+                foreach (bool b in _instructorIsPointing)
+                {
+                    if (b) u++;
+                }
+                u = (float)u / _instructorIsPointing.Count;
+                _instructorIsPointing_LogLines.Add("" + task + "#" + microTask + "#" + evaluationCondition + "#" + u);
+                _instructorIsPointing.Clear();
 
-            _removeCubeColors();
+                _removeCubeColors();
 
-            if (microtask == MaxRepetitions) // micro task ended
-            {
-                trialInProgress = false;
-                Logger.save(LogFileDir + "/instructorLog " + DateTime.Now.ToString("yyyy MMMM dd HH mm ss") + ".txt", _instructorIsPointing_LogLines.ToArray());
-                _instructorIsPointing_LogLines.Clear();
-                _cleanCubes();
+                if (microtask == MaxRepetitions) // micro task ended
+                {
+                    trialInProgress = false;
+                    Logger.save(LogFileDir + "/instructorLog " + DateTime.Now.ToString("yyyy MMMM dd HH mm ss") + ".txt", _instructorIsPointing_LogLines.ToArray());
+                    _instructorIsPointing_LogLines.Clear();
+                    _cleanCubes();
+                }
             }
         }
     }

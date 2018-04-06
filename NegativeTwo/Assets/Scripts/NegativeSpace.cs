@@ -57,6 +57,21 @@ public class NegativeSpace : MonoBehaviour {
 
     public bool isUsingDeitics = false;
 
+    private bool mirroring = false;
+    public bool Mirroring
+    {
+        get
+        {
+            return mirroring;
+        }
+
+        set
+        {
+            mirroring = value;
+            _main.RemoteOrigin.transform.parent.localScale = new Vector3(mirroring ? -1.0f : 1.0f, 1.0f, 1.0f);
+        }
+    }
+    public bool correctingPointing = false;
 
     void Awake()
     {
@@ -72,7 +87,7 @@ public class NegativeSpace : MonoBehaviour {
         _properties = GetComponent<Properties>();
         _filteredHandPosition = new AdaptiveDoubleExponentialFilterVector3();
         _bodiesManager = GameObject.Find("BodiesManager").GetComponent<BodiesManager>();
-	}
+    }
 
     /// <summary>
     /// 
@@ -107,9 +122,9 @@ public class NegativeSpace : MonoBehaviour {
         workspace.AddComponent<BoxCollider>();
         workspace.transform.position = (_localSurface.SurfaceBottomLeft + _remoteSurfaceProxy.SurfaceBottomRight) * 0.5f;
         workspace.transform.localScale = new Vector3(
-            Vector3.Distance(_localSurface.SurfaceBottomLeft, _localSurface.SurfaceBottomRight) * 2.0f, 
+            Vector3.Distance(_localSurface.SurfaceBottomLeft, _localSurface.SurfaceBottomRight) * 4.0f, 
             0.001f, 
-            Vector3.Distance(_localSurface.SurfaceBottomLeft, _localSurface.SurfaceTopLeft) * 1.2f);
+            Vector3.Distance(_localSurface.SurfaceBottomLeft, _localSurface.SurfaceTopLeft) * 1.5f);
         //workspace.transform.position += Vector3.back * 0.5f * Vector3.Distance(_localSurface.SurfaceBottomLeft, _remoteSurfaceProxy.SurfaceBottomLeft);
         workspaceCollider = workspace;
 
@@ -295,9 +310,8 @@ public class NegativeSpace : MonoBehaviour {
 
             if (go.name == "RemoteBody")
             {
-                _applyDisplacement(human, go);
+                if (correctingPointing) _applyDisplacement(human, go);
             }
-
         }
     }
 
