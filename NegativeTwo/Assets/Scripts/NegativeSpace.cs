@@ -21,6 +21,8 @@ public class NegativeSpace : MonoBehaviour {
     private Properties _properties;
     private BodiesManager _bodiesManager;
 
+    private SimpleHandCursor _cursors;
+
     private bool _spaceCreated = false;
     private Location _location;
     private SurfaceRectangle _localSurface;
@@ -73,6 +75,8 @@ public class NegativeSpace : MonoBehaviour {
     }
     public bool correctingPointing = false;
 
+    private DateTime _lastCursorTime;
+
     void Awake()
     {
         _negativeSpaceObjects = new Dictionary<string, GameObject>();
@@ -87,6 +91,9 @@ public class NegativeSpace : MonoBehaviour {
         _properties = GetComponent<Properties>();
         _filteredHandPosition = new AdaptiveDoubleExponentialFilterVector3();
         _bodiesManager = GameObject.Find("BodiesManager").GetComponent<BodiesManager>();
+        _cursors = GameObject.Find("Cursors").GetComponent<SimpleHandCursor>();
+
+        _lastCursorTime = DateTime.Now;
     }
 
     /// <summary>
@@ -132,7 +139,7 @@ public class NegativeSpace : MonoBehaviour {
         NegativeSpaceCenter.transform.position = (_localSurface.SurfaceBottomLeft + _remoteSurfaceProxy.SurfaceTopRight) * 0.5f;
         NegativeSpaceCenter.transform.rotation = workspace.transform.rotation = GameObject.Find("localScreenCenter").transform.rotation;
 
-        workspace.transform.Rotate(workspace.transform.right, 45.0f);
+        //workspace.transform.Rotate(workspace.transform.right, 45.0f);
 
         bottomCenterPosition = (_localSurface.SurfaceBottomLeft + _remoteSurfaceProxy.SurfaceBottomRight) * 0.5f;
 
@@ -271,16 +278,7 @@ public class NegativeSpace : MonoBehaviour {
         Vector3 leftHand = human.body.Joints[BodyJointType.leftHand];
         Vector3 rightHand = human.body.Joints[BodyJointType.rightHand];
 
-        //_handCursor.transform.position = _handheldListener.Message.Hand == HandType.Left ? leftHand : rightHand;
         _filteredHandPosition.Value = _handheldListener.Message.Hand == HandType.Left ? leftHand : rightHand;
-        
-        //_handCursor.transform.position = _filteredHandPosition.Value;
-
-        if (_main.location == Location.Assembler) // Instructor cannot interact yolo
-        {
-            //_handCursor.GetComponent<HandCursor>().Update(_handheldListener.Message);
-        }
-
 
         if (Application.isEditor && go != null && go.activeSelf)
         {
@@ -312,6 +310,29 @@ public class NegativeSpace : MonoBehaviour {
             {
                 if (correctingPointing) _applyDisplacement(human, go);
             }
+            else
+            {
+                if (_main.location == Location.Instructor)
+                {
+                    if (DateTime.Now > _lastCursorTime.AddMilliseconds(10))
+                    {
+                        _lastCursorTime = DateTime.Now;
+
+                        Ray ray;
+                        Vector3 hit;
+
+                        // right
+                        ray = new Ray(human.body.Joints[BodyJointType.rightHandTip], human.body.Joints[BodyJointType.rightHandTip] - human.body.Joints[BodyJointType.rightElbow]);
+                        if (_isPointingToWorkspace(ray, workspaceCollider, out hit)) _cursors.rightHandPixel = Camera.main.WorldToScreenPoint(hit);
+                        else _cursors.rightHandPixel = Vector2.positiveInfinity;
+
+                        // left
+                        ray = new Ray(human.body.Joints[BodyJointType.leftHandTip], human.body.Joints[BodyJointType.leftHandTip] - human.body.Joints[BodyJointType.leftElbow]);
+                        if (_isPointingToWorkspace(ray, workspaceCollider, out hit)) _cursors.leftHandPixel = Camera.main.WorldToScreenPoint(hit);
+                        else _cursors.leftHandPixel = Vector2.positiveInfinity;
+                    }
+                }
+            }
         }
     }
 
@@ -334,10 +355,10 @@ public class NegativeSpace : MonoBehaviour {
         }
 
         Vector3 leftHit = Vector3.zero;
-        bool leftPointing = _isRemotePointingToWorkspace(new Ray(leftPointingB, leftPointingB - leftPointingA), workspaceCollider, out leftHit);
+        bool leftPointing = _isPointingToWorkspace(new Ray(leftPointingB, leftPointingB - leftPointingA), workspaceCollider, out leftHit);
 
         Vector3 rightHit = Vector3.zero;
-        bool rightPointing = _isRemotePointingToWorkspace(new Ray(rightPointingB, rightPointingB - rightPointingA), workspaceCollider, out rightHit);
+        bool rightPointing = _isPointingToWorkspace(new Ray(rightPointingB, rightPointingB - rightPointingA), workspaceCollider, out rightHit);
 
         Transform leftHand_d = go.transform.Find("LEFTHAND_D");
         leftHand_d.position = leftPointingB;
@@ -438,7 +459,7 @@ public class NegativeSpace : MonoBehaviour {
         return points;
     }
 
-    private static bool _isRemotePointingToWorkspace(Ray ray, GameObject workspace, out Vector3 hitpoint)
+    private static bool _isPointingToWorkspace(Ray ray, GameObject workspace, out Vector3 hitpoint)
     {
         hitpoint = Vector3.zero;
         RaycastHit hit;

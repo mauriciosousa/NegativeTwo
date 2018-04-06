@@ -322,7 +322,7 @@ public class WhackAMole : MonoBehaviour {
             }
         }
 
-        /*
+        
         if(Input.GetKeyDown(KeyCode.F1))
         {
             _distributeCubes(1);
@@ -339,7 +339,7 @@ public class WhackAMole : MonoBehaviour {
         {
             _distributeCubes(4);
         }
-        */
+        
     }
 
     private void _removeCubeColors()
@@ -352,7 +352,7 @@ public class WhackAMole : MonoBehaviour {
 
     private GameObject _checkButtons()
     {
-        if (Input.GetKeyDown(KeyCode.F1) || Input.GetKeyDown(KeyCode.Keypad1)) return (_cubesNumbers.ContainsKey(1) ? _cubesNumbers[1] : null);
+        /*if (Input.GetKeyDown(KeyCode.F1) || Input.GetKeyDown(KeyCode.Keypad1)) return (_cubesNumbers.ContainsKey(1) ? _cubesNumbers[1] : null);
         if (Input.GetKeyDown(KeyCode.F2) || Input.GetKeyDown(KeyCode.Keypad2)) return (_cubesNumbers.ContainsKey(2) ? _cubesNumbers[2] : null);
         if (Input.GetKeyDown(KeyCode.F3) || Input.GetKeyDown(KeyCode.Keypad3)) return (_cubesNumbers.ContainsKey(3) ? _cubesNumbers[3] : null);
         if (Input.GetKeyDown(KeyCode.F4) || Input.GetKeyDown(KeyCode.Keypad4)) return (_cubesNumbers.ContainsKey(4) ? _cubesNumbers[4] : null);
@@ -363,7 +363,7 @@ public class WhackAMole : MonoBehaviour {
         if (Input.GetKeyDown(KeyCode.F9) || Input.GetKeyDown(KeyCode.Keypad9)) return (_cubesNumbers.ContainsKey(9) ? _cubesNumbers[9] : null);
         if (Input.GetKeyDown(KeyCode.F10) || Input.GetKeyDown(KeyCode.KeypadDivide)) return (_cubesNumbers.ContainsKey(10) ? _cubesNumbers[10] : null);
         if (Input.GetKeyDown(KeyCode.F11) || Input.GetKeyDown(KeyCode.KeypadMultiply)) return (_cubesNumbers.ContainsKey(11) ? _cubesNumbers[11] : null);
-        if (Input.GetKeyDown(KeyCode.F12) || Input.GetKeyDown(KeyCode.KeypadMinus)) return (_cubesNumbers.ContainsKey(12) ? _cubesNumbers[12] : null);
+        if (Input.GetKeyDown(KeyCode.F12) || Input.GetKeyDown(KeyCode.KeypadMinus)) return (_cubesNumbers.ContainsKey(12) ? _cubesNumbers[12] : null);*/
 
         return null;
     }
@@ -562,9 +562,9 @@ public class WhackAMole : MonoBehaviour {
         int numberOfCubes;
 
         if (task == 1) numberOfCubes = 4;
-        else if (task == 2) numberOfCubes = 6;
-        else if(task == 3) numberOfCubes = 9;
-        else numberOfCubes = 12;
+        else if (task == 2) numberOfCubes = 8;
+        else if(task == 3) numberOfCubes = 8;
+        else numberOfCubes = 16;
 
         Vector3 origin = _negativeSpace.RemoteSurface.SurfaceBottomRight;
         Vector3 length = _negativeSpace.RemoteSurface.SurfaceBottomLeft - origin;
@@ -601,32 +601,31 @@ public class WhackAMole : MonoBehaviour {
         _availableCubes[i++].transform.position = origin + depth + (length.normalized - depth.normalized) * cubeSize;
         _availableCubes[i++].transform.position = origin + depth + length + (-length.normalized - depth.normalized) * cubeSize;
 
-        if(task == 2 || task == 3)
+        if (task == 3 || task == 4)
         {
-            _availableCubes[i++].transform.position = origin + depth * 0.5f + (length.normalized) * cubeSize;
-            _availableCubes[i++].transform.position = origin + depth * 0.5f + length + (-length.normalized) * cubeSize;
+            _availableCubes[i++].transform.position = origin + length.normalized * (length.magnitude - cubeSize * 2.0f) / 3.0f + (length.normalized + depth.normalized) * cubeSize;
+            _availableCubes[i++].transform.position = origin + length.normalized * (length.magnitude - cubeSize * 2.0f) * 2.0f / 3.0f + (length.normalized + depth.normalized) * cubeSize;
+
+            _availableCubes[i++].transform.position = origin + depth + length.normalized * (length.magnitude - cubeSize * 2.0f) / 3.0f + (length.normalized - depth.normalized) * cubeSize;
+            _availableCubes[i++].transform.position = origin + depth + length.normalized * (length.magnitude - cubeSize * 2.0f) * 2.0f / 3.0f + (length.normalized - depth.normalized) * cubeSize;
         }
 
-        if(task == 3)
-        {
-            _availableCubes[i++].transform.position = origin + depth * 0.5f + length * 0.5f;
-        }
-
-        if(task == 3 || task == 4)
-        {
-            _availableCubes[i++].transform.position = origin + length * 0.5f + (depth.normalized) * cubeSize;
-            _availableCubes[i++].transform.position = origin + depth + length * 0.5f + (-depth.normalized) * cubeSize;
-        }
-
-        if (task == 4)
+        if(task == 2 || task == 4)
         {
             _availableCubes[i++].transform.position = origin + depth / 3.0f + (length.normalized) * cubeSize;
-            _availableCubes[i++].transform.position = origin + depth / 3.0f + length * 0.5f;
             _availableCubes[i++].transform.position = origin + depth / 3.0f + length + (-length.normalized) * cubeSize;
 
             _availableCubes[i++].transform.position = origin + depth * 2.0f / 3.0f + (length.normalized) * cubeSize;
-            _availableCubes[i++].transform.position = origin + depth * 2.0f / 3.0f + length * 0.5f;
             _availableCubes[i++].transform.position = origin + depth * 2.0f / 3.0f + length + (-length.normalized) * cubeSize;
+        }
+
+        if(task == 4)
+        {
+            _availableCubes[i++].transform.position = origin + depth / 3.0f + length.normalized * (length.magnitude - cubeSize * 2.0f) / 3.0f + (length.normalized) * cubeSize;
+            _availableCubes[i++].transform.position = origin + depth / 3.0f + length.normalized * (length.magnitude - cubeSize * 2.0f) * 2.0f / 3.0f + (length.normalized) * cubeSize;
+
+            _availableCubes[i++].transform.position = origin + depth * 2.0f / 3.0f + length.normalized * (length.magnitude - cubeSize * 2.0f) / 3.0f + (length.normalized) * cubeSize;
+            _availableCubes[i++].transform.position = origin + depth * 2.0f / 3.0f + length.normalized * (length.magnitude - cubeSize * 2.0f) * 2.0f / 3.0f + (length.normalized) * cubeSize;
         }
 
         _upTheCubes();
