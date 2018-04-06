@@ -306,6 +306,7 @@ public class NegativeSpace : MonoBehaviour {
             go.transform.Find("RIGHTHANDTIP").localPosition = human.body.Joints[BodyJointType.rightHandTip];
 
 
+
             if (go.name == "RemoteBody")
             {
                 if (correctingPointing) _applyDisplacement(human, go);
