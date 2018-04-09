@@ -22,6 +22,8 @@ public class NegativeSpace : MonoBehaviour {
     private BodiesManager _bodiesManager;
 
     private SimpleHandCursor _cursors;
+    private SimpleHandCursor _cursors2;
+
 
     private bool _spaceCreated = false;
     private Location _location;
@@ -92,6 +94,8 @@ public class NegativeSpace : MonoBehaviour {
         _filteredHandPosition = new AdaptiveDoubleExponentialFilterVector3();
         _bodiesManager = GameObject.Find("BodiesManager").GetComponent<BodiesManager>();
         _cursors = GameObject.Find("Cursors").GetComponent<SimpleHandCursor>();
+        _cursors2 = GameObject.Find("Cursors2").GetComponent<SimpleHandCursor>();
+
 
         _lastCursorTime = DateTime.Now;
     }
@@ -264,10 +268,12 @@ public class NegativeSpace : MonoBehaviour {
                 Vector3 rightElbow = _bodiesManager.human.body.Joints[BodyJointType.rightElbow];
                 Vector3 rightHand = _bodiesManager.human.body.Joints[BodyJointType.rightHand];
 
-                isUsingDeitics = _isLocalPointingToScreen(head, leftHand)
-                                || _isLocalPointingToScreen(head, rightHand)
-                                || _isLocalPointingToScreen(leftElbow, leftHand)
-                                || _isLocalPointingToScreen(rightElbow, rightHand);
+                Vector3 dummy;
+
+                isUsingDeitics = _isLocalPointingToScreen(head, leftHand, out dummy)
+                                || _isLocalPointingToScreen(head, rightHand, out dummy)
+                                || _isLocalPointingToScreen(leftElbow, leftHand, out dummy)
+                                || _isLocalPointingToScreen(rightElbow, rightHand, out dummy);
             }
         }
     }
@@ -319,9 +325,9 @@ public class NegativeSpace : MonoBehaviour {
                     {
                         _lastCursorTime = DateTime.Now;
 
-                        Ray ray;
+                        //Ray ray;
                         Vector3 hit;
-
+                        /*
                         // right
                         ray = new Ray(human.body.Joints[BodyJointType.rightHandTip], human.body.Joints[BodyJointType.rightHandTip] - human.body.Joints[BodyJointType.head]);
                         if (_isPointingToWorkspace(ray, workspaceCollider, out hit)) _cursors.rightHandPixel = Camera.main.WorldToScreenPoint(hit);
@@ -331,6 +337,21 @@ public class NegativeSpace : MonoBehaviour {
                         ray = new Ray(human.body.Joints[BodyJointType.leftHandTip], human.body.Joints[BodyJointType.leftHandTip] - human.body.Joints[BodyJointType.head]);
                         if (_isPointingToWorkspace(ray, workspaceCollider, out hit)) _cursors.leftHandPixel = Camera.main.WorldToScreenPoint(hit);
                         else _cursors.leftHandPixel = Vector2.positiveInfinity;
+                        */
+                        // cursors2 experiment - Ziz workz =)
+
+                        // right
+                        if (_isLocalPointingToScreen(human.body.Joints[BodyJointType.head], human.body.Joints[BodyJointType.rightHandTip], out hit))
+                            _cursors.rightHandPixel = Camera.main.WorldToScreenPoint(hit);
+                        else
+                            _cursors.rightHandPixel = Vector2.positiveInfinity;
+
+                        // left
+                        if (_isLocalPointingToScreen(human.body.Joints[BodyJointType.head], human.body.Joints[BodyJointType.leftHandTip], out hit))
+                            _cursors.leftHandPixel = Camera.main.WorldToScreenPoint(hit);
+                        else
+                            _cursors.leftHandPixel = Vector2.positiveInfinity;
+
                     }
                 }
             }
@@ -474,7 +495,7 @@ public class NegativeSpace : MonoBehaviour {
         return false;
     }
 
-    private bool _isLocalPointingToScreen(Vector3 A, Vector3 B)
+    private bool _isLocalPointingToScreen(Vector3 A, Vector3 B, out Vector3 hitPoint)
     {
         Vector3 dir = (B - A).normalized;
         Ray ray = new Ray(A, dir);
@@ -486,10 +507,12 @@ public class NegativeSpace : MonoBehaviour {
             if (_screen.GetComponent<Collider>().Raycast(ray, out hit, 1000.0f))
             {
                 _screen.SetActive(false);
+                hitPoint = hit.point;
                 return true;
             }
             _screen.SetActive(false);
         }
+        hitPoint = Vector3.positiveInfinity;
         return false;
     }
 
