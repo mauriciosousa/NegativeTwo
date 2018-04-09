@@ -336,7 +336,7 @@ public class NegativeSpace : MonoBehaviour {
                     else _client.sendRightHit(Vector3.positiveInfinity);
 
                     // left
-                    ray = new Ray(human.body.Joints[BodyJointType.rightHandTip], human.body.Joints[BodyJointType.rightHandTip] - human.body.Joints[BodyJointType.head]);
+                    ray = new Ray(human.body.Joints[BodyJointType.leftHandTip], human.body.Joints[BodyJointType.leftHandTip] - human.body.Joints[BodyJointType.head]);
                     if (Physics.Raycast(ray, out hitInfo)) _client.sendLeftHit(workspaceCollider.transform.worldToLocalMatrix.MultiplyPoint(hitInfo.point));
                     else _client.sendLeftHit(Vector3.positiveInfinity);
 
