@@ -225,6 +225,7 @@ public class PointCloudDepth : MonoBehaviour
             mr.material.SetMatrix("_LeftTransform", ns.leftPointingInfo.matrix);
             mr.material.SetVector("_LeftMidPoint", ns.leftPointingInfo.midPoint);
             mr.material.SetFloat("_LeftDistance", ns.leftPointingInfo.distance);
+            mr.material.SetVector("_LeftShoulder", ns.leftPointingInfo.Shoulder);
             mr.material.SetVector("_LeftElbow", ns.leftPointingInfo.Elbow);
             mr.material.SetVector("_LeftWrist", ns.leftPointingInfo.Wrist);
             mr.material.SetVector("_LeftHand", ns.leftPointingInfo.Hand);
@@ -235,6 +236,7 @@ public class PointCloudDepth : MonoBehaviour
             mr.material.SetMatrix("_RightTransform", ns.rightPointingInfo.matrix);
             mr.material.SetVector("_RightMidPoint", ns.rightPointingInfo.midPoint);
             mr.material.SetFloat("_RightDistance", ns.rightPointingInfo.distance);
+            mr.material.SetVector("_RightShoulder", ns.rightPointingInfo.Shoulder);
             mr.material.SetVector("_RightElbow", ns.rightPointingInfo.Elbow);
             mr.material.SetVector("_RightWrist", ns.rightPointingInfo.Wrist);
             mr.material.SetVector("_RightHand", ns.rightPointingInfo.Hand);

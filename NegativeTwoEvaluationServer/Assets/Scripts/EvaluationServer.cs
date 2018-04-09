@@ -167,5 +167,11 @@ public class EvaluationServer : MonoBehaviour {
 
     [RPC]
     void RPC_HabituationReportToInstructor_targetCube(string targetCubeName) { }
+
+    [RPC]
+    void RPC_SendRightHitToAssembler(Vector3 point) { }
+
+    [RPC]
+    void RPC_SendLeftHitToAssembler(Vector3 point) { }
     #endregion
 }

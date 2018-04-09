@@ -8,6 +8,7 @@ public class PointingDistortionInfo
     public Matrix4x4 matrix;
     public Vector3 midPoint;
     public float distance;
+    public Vector3 Shoulder;
     public Vector3 Elbow;
     public Vector3 Wrist;
     public Vector3 Hand;
@@ -77,7 +78,9 @@ public class NegativeSpace : MonoBehaviour {
     }
     public bool correctingPointing = false;
 
-    private DateTime _lastCursorTime;
+    private EvaluationClient _client;
+    public Vector3 remoteRightHit;
+    public Vector3 remoteLeftHit;
 
     void Awake()
     {
@@ -85,6 +88,8 @@ public class NegativeSpace : MonoBehaviour {
 
         rightPointingInfo = new PointingDistortionInfo();
         leftPointingInfo = new PointingDistortionInfo();
+
+        remoteLeftHit = remoteRightHit = Vector3.positiveInfinity;
     }
 
     void Start ()
@@ -95,9 +100,7 @@ public class NegativeSpace : MonoBehaviour {
         _bodiesManager = GameObject.Find("BodiesManager").GetComponent<BodiesManager>();
         _cursors = GameObject.Find("Cursors").GetComponent<SimpleHandCursor>();
         _cursors2 = GameObject.Find("Cursors2").GetComponent<SimpleHandCursor>();
-
-
-        _lastCursorTime = DateTime.Now;
+        _client = GameObject.Find("WhackAMole").GetComponent<EvaluationClient>();
     }
 
     /// <summary>
@@ -177,15 +180,16 @@ public class NegativeSpace : MonoBehaviour {
         o.transform.parent = transform;
 
         MeshFilter meshFilter = (MeshFilter)o.AddComponent(typeof(MeshFilter));
-        Mesh m = new Mesh();
-        m.name = "NegativeSpaceMesh";
-        m.vertices = new Vector3[] { a, b, c, d };
-        m.triangles = new int[]
+        Mesh m = new Mesh()
+        {
+            name = "NegativeSpaceMesh",
+            vertices = new Vector3[] { a, b, c, d },
+            triangles = new int[]
             {
                 0, 1, 2,
                 0, 2, 3
-            };
-
+            }
+        };
         Vector2[] uv = new Vector2[m.vertices.Length];
         for (int i = 0; i < uv.Length; i++)
         {
@@ -213,15 +217,16 @@ public class NegativeSpace : MonoBehaviour {
     private void _createNegativeSpaceMesh()
     {
         MeshFilter meshFilter = (MeshFilter)gameObject.AddComponent(typeof(MeshFilter));
-        Mesh m = new Mesh();
-        m.name = "NegativeSpaceMesh";
-        m.vertices = new Vector3[]
+        Mesh m = new Mesh()
+        {
+            name = "NegativeSpaceMesh",
+            vertices = new Vector3[]
             {
                 _localSurface.SurfaceBottomLeft, _localSurface.SurfaceBottomRight, _localSurface.SurfaceTopRight, _localSurface.SurfaceTopLeft,
                 _remoteSurfaceProxy.SurfaceBottomLeft, _remoteSurfaceProxy.SurfaceBottomRight, _remoteSurfaceProxy.SurfaceTopRight, _remoteSurfaceProxy.SurfaceTopLeft
-            };
+            },
 
-        m.triangles = new int[]
+            triangles = new int[]
             {
                     0, 4, 3,
                     0, 1, 4,
@@ -231,8 +236,8 @@ public class NegativeSpace : MonoBehaviour {
                     2, 7, 6,
                     3, 7, 2,
                     3, 4, 7
-            };
-
+            }
+        };
         Vector2[] uv = new Vector2[m.vertices.Length];
         for (int i = 0; i < uv.Length; i++)
         {
@@ -321,38 +326,33 @@ public class NegativeSpace : MonoBehaviour {
             {
                 if (_main.location == Location.Instructor)
                 {
-                    if (DateTime.Now > _lastCursorTime.AddMilliseconds(10))
-                    {
-                        _lastCursorTime = DateTime.Now;
+                    Ray ray;
+                    Vector3 hit;
+                    RaycastHit hitInfo;
 
-                        //Ray ray;
-                        Vector3 hit;
-                        /*
-                        // right
-                        ray = new Ray(human.body.Joints[BodyJointType.rightHandTip], human.body.Joints[BodyJointType.rightHandTip] - human.body.Joints[BodyJointType.head]);
-                        if (_isPointingToWorkspace(ray, workspaceCollider, out hit)) _cursors.rightHandPixel = Camera.main.WorldToScreenPoint(hit);
-                        else _cursors.rightHandPixel = Vector2.positiveInfinity;
+                    // right
+                    ray = new Ray(human.body.Joints[BodyJointType.rightHandTip], human.body.Joints[BodyJointType.rightHandTip] - human.body.Joints[BodyJointType.head]);
+                    if (Physics.Raycast(ray, out hitInfo)) _client.sendRightHit(workspaceCollider.transform.worldToLocalMatrix.MultiplyPoint(hitInfo.point));
+                    else _client.sendRightHit(Vector3.positiveInfinity);
 
-                        // left
-                        ray = new Ray(human.body.Joints[BodyJointType.leftHandTip], human.body.Joints[BodyJointType.leftHandTip] - human.body.Joints[BodyJointType.head]);
-                        if (_isPointingToWorkspace(ray, workspaceCollider, out hit)) _cursors.leftHandPixel = Camera.main.WorldToScreenPoint(hit);
-                        else _cursors.leftHandPixel = Vector2.positiveInfinity;
-                        */
-                        // cursors2 experiment - Ziz workz =)
+                    // left
+                    ray = new Ray(human.body.Joints[BodyJointType.rightHandTip], human.body.Joints[BodyJointType.rightHandTip] - human.body.Joints[BodyJointType.head]);
+                    if (Physics.Raycast(ray, out hitInfo)) _client.sendLeftHit(workspaceCollider.transform.worldToLocalMatrix.MultiplyPoint(hitInfo.point));
+                    else _client.sendLeftHit(Vector3.positiveInfinity);
 
-                        // right
-                        if (_isLocalPointingToScreen(human.body.Joints[BodyJointType.head], human.body.Joints[BodyJointType.rightHandTip], out hit))
-                            _cursors.rightHandPixel = Camera.main.WorldToScreenPoint(hit);
-                        else
-                            _cursors.rightHandPixel = Vector2.positiveInfinity;
+                    // cursors2 experiment - Ziz workz =)
 
-                        // left
-                        if (_isLocalPointingToScreen(human.body.Joints[BodyJointType.head], human.body.Joints[BodyJointType.leftHandTip], out hit))
-                            _cursors.leftHandPixel = Camera.main.WorldToScreenPoint(hit);
-                        else
-                            _cursors.leftHandPixel = Vector2.positiveInfinity;
+                    // right
+                    if (_isLocalPointingToScreen(human.body.Joints[BodyJointType.head], human.body.Joints[BodyJointType.rightHandTip], out hit))
+                        _cursors.rightHandPixel = Camera.main.WorldToScreenPoint(hit);
+                    else
+                        _cursors.rightHandPixel = Vector2.positiveInfinity;
 
-                    }
+                    // left
+                    if (_isLocalPointingToScreen(human.body.Joints[BodyJointType.head], human.body.Joints[BodyJointType.leftHandTip], out hit))
+                        _cursors.leftHandPixel = Camera.main.WorldToScreenPoint(hit);
+                    else
+                        _cursors.leftHandPixel = Vector2.positiveInfinity;
                 }
             }
         }
@@ -360,45 +360,52 @@ public class NegativeSpace : MonoBehaviour {
 
     private void _applyDisplacement(Human human, GameObject go)
     {
-        Vector3 leftPointingA = go.transform.Find("LEFTELBOW").position;
-        Vector3 leftPointingB = go.transform.Find("LEFTHANDTIP").position;
+        Vector3 head = go.transform.Find("HEAD").position;
 
-        Vector3 rightPointingA = go.transform.Find("RIGHTELBOW").position;
-        Vector3 rightPointingB = go.transform.Find("RIGHTHANDTIP").position;
+        Vector3 leftShoulder = go.transform.Find("LEFTSHOULDER").position;
+        Vector3 leftTip = go.transform.Find("LEFTHANDTIP").position;
+
+        Vector3 rightShoulder = go.transform.Find("RIGHTSHOULDER").position;
+        Vector3 rightTip = go.transform.Find("RIGHTHANDTIP").position;
 
         if(float.IsPositiveInfinity(lastRightHandPos.x))
         {
-            lastRightHandPos = rightPointingB;
+            lastRightHandPos = rightTip;
         }
 
         if (float.IsPositiveInfinity(lastLeftHandPos.x))
         {
-            lastLeftHandPos = leftPointingB;
+            lastLeftHandPos = leftTip;
         }
 
         Vector3 leftHit = Vector3.zero;
-        bool leftPointing = _isPointingToWorkspace(new Ray(leftPointingB, leftPointingB - leftPointingA), workspaceCollider, out leftHit);
+        //bool leftPointing = _isPointingToWorkspace(new Ray(leftTip, leftTip - head), workspaceCollider, out leftHit);
+        bool leftPointing = !float.IsPositiveInfinity(remoteLeftHit.x);
+        if (leftPointing) leftHit = workspaceCollider.transform.localToWorldMatrix.MultiplyPoint(remoteLeftHit);
 
         Vector3 rightHit = Vector3.zero;
-        bool rightPointing = _isPointingToWorkspace(new Ray(rightPointingB, rightPointingB - rightPointingA), workspaceCollider, out rightHit);
+        //bool rightPointing = _isPointingToWorkspace(new Ray(rightTip, rightTip - head), workspaceCollider, out rightHit);
+        bool rightPointing = !float.IsPositiveInfinity(remoteRightHit.x);
+        if (rightPointing) rightHit = workspaceCollider.transform.localToWorldMatrix.MultiplyPoint(remoteRightHit);
 
         Transform leftHand_d = go.transform.Find("LEFTHAND_D");
-        leftHand_d.position = leftPointingB;
+        leftHand_d.position = leftTip;
 
         Transform rightHand_d = go.transform.Find("RIGHTHAND_D");
-        rightHand_d.position = rightPointingB;
+        rightHand_d.position = rightTip;
 
         Matrix4x4 m = Matrix4x4.identity;
 
         // Left Pointing
 
-        m = _correctPointing(leftPointingA, leftPointingB, leftPointing, leftHit, ref lastLeftHandPos);
+        m = _correctPointing(leftShoulder, leftTip, head, leftPointing, leftHit, ref lastLeftHandPos);
 
         leftHand_d.position = m.MultiplyPoint(leftHand_d.position);
 
         leftPointingInfo.matrix = m;
-        leftPointingInfo.midPoint = (leftPointingA + leftPointingB) * 0.5f;
+        leftPointingInfo.midPoint = (leftShoulder + leftTip) * 0.5f;
         leftPointingInfo.distance = 0.15f;//(leftPointingB - leftPointingA).magnitude * 0.5f + 0.1f;
+        leftPointingInfo.Shoulder = go.transform.Find("LEFTSHOULDER").transform.position;
         leftPointingInfo.Elbow = go.transform.Find("LEFTELBOW").transform.position;
         leftPointingInfo.Wrist = go.transform.Find("LEFTWRIST").transform.position;
         leftPointingInfo.Hand = go.transform.Find("LEFTHAND").transform.position;
@@ -407,13 +414,14 @@ public class NegativeSpace : MonoBehaviour {
 
         // Right Pointing
 
-        m = _correctPointing(rightPointingA, rightPointingB, rightPointing, rightHit, ref lastRightHandPos);
+        m = _correctPointing(rightShoulder, rightTip, head, rightPointing, rightHit, ref lastRightHandPos);
 
         rightHand_d.position = m.MultiplyPoint(rightHand_d.position);
 
         rightPointingInfo.matrix = m;
-        rightPointingInfo.midPoint = (rightPointingA + rightPointingB) * 0.5f;
+        rightPointingInfo.midPoint = (rightShoulder + rightTip) * 0.5f;
         rightPointingInfo.distance = 0.15f;//(rightPointingB - rightPointingA).magnitude * 0.5f + 0.1f;
+        rightPointingInfo.Shoulder = go.transform.Find("RIGHTSHOULDER").transform.position;
         rightPointingInfo.Elbow = go.transform.Find("RIGHTELBOW").transform.position;
         rightPointingInfo.Wrist = go.transform.Find("RIGHTWRIST").transform.position;
         rightPointingInfo.Hand = go.transform.Find("RIGHTHAND").transform.position;
@@ -421,9 +429,9 @@ public class NegativeSpace : MonoBehaviour {
         rightPointingInfo.pointing = true;
     }
 
-    private Matrix4x4 _correctPointing(Vector3 pointingA, Vector3 pointingB, bool isPointing, Vector3 hit, ref Vector3 lastHandPosition) // pointing is defined by the vector pointingA->pointingB
+    private Matrix4x4 _correctPointing(Vector3 elbow, Vector3 tip, Vector3 head, bool isPointing, Vector3 hit, ref Vector3 lastHandPosition)
     {
-        Vector3 oldVector = pointingB - pointingA;
+        Vector3 oldVector = tip - elbow;
         Vector3 newVector = oldVector;
         Vector3 newHandPosition;
 
@@ -433,28 +441,28 @@ public class NegativeSpace : MonoBehaviour {
             Vector3 reflectedPoint = new Vector3(rightHitToLocal.x, rightHitToLocal.y, -rightHitToLocal.z);
             Vector3 reflectedPointWorld = workspaceCollider.transform.TransformPoint(reflectedPoint);
 
-            Debug.DrawLine(pointingA, hit, Color.cyan);
-            Debug.DrawLine(pointingA, reflectedPointWorld, Color.yellow);
+            Debug.DrawLine(head, hit, Color.cyan);
+            Debug.DrawLine(elbow, reflectedPointWorld, Color.yellow);
 
-            newVector = reflectedPointWorld - pointingA;
+            newVector = reflectedPointWorld - elbow;
 
-            Vector3 reflectedHandPosition = pointingA + newVector.normalized * Vector3.Distance(pointingB, pointingA);
+            Vector3 reflectedHandPosition = elbow + newVector.normalized * Vector3.Distance(tip, elbow);
             newHandPosition = _constraintHandDisplacement(reflectedHandPosition, lastHandPosition);
         }
         else
         {
             rightPointingInfo.pointing = false;
 
-            newHandPosition = _constraintHandDisplacement(pointingB, lastHandPosition);
+            newHandPosition = _constraintHandDisplacement(tip, lastHandPosition);
         }
 
         lastHandPosition = newHandPosition;
-        newVector = newHandPosition - pointingA;
+        newVector = newHandPosition - elbow;
 
         Vector3 axis = Vector3.Cross(oldVector, newVector);
         float angle = Vector3.Angle(oldVector, newVector);
 
-        return Matrix4x4.Translate(pointingA) * Matrix4x4.TRS(Vector3.zero, Quaternion.AngleAxis(angle, axis), Vector3.one) * Matrix4x4.Translate(-pointingA);
+        return Matrix4x4.Translate(elbow) * Matrix4x4.TRS(Vector3.zero, Quaternion.AngleAxis(angle, axis), Vector3.one) * Matrix4x4.Translate(-elbow);
     }
 
     private Vector3 _constraintHandDisplacement(Vector3 newPos, Vector3 oldPos)

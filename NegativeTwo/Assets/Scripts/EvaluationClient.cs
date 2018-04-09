@@ -123,10 +123,34 @@ public class EvaluationClient : MonoBehaviour {
             _whackAMole.INSTRUCTOR_setTargetCube(targetCubeName);
         }
     }
-        
+
     internal void HabituationReportToInstructor_targetCube(GameObject targetCube)
     {
         if (_main.location == Location.Assembler) _networkView.RPC("RPC_HabituationReportToInstructor_targetCube", RPCMode.Others, targetCube.name);
+    }
+
+    [RPC]
+    void RPC_SendRightHitToAssembler(Vector3 point)
+    {
+        if (_main.location == Location.Assembler)
+            _negativeSpace.remoteRightHit = point;
+    }
+
+    internal void sendRightHit(Vector3 point)
+    {
+        if (_main.location == Location.Instructor) _networkView.RPC("RPC_SendRightHitToAssembler", RPCMode.Others, point);
+    }
+
+    [RPC]
+    void RPC_SendLeftHitToAssembler(Vector3 point)
+    {
+        if (_main.location == Location.Assembler)
+            _negativeSpace.remoteLeftHit = point;
+    }
+
+    internal void sendLeftHit(Vector3 point)
+    {
+        if (_main.location == Location.Instructor) _networkView.RPC("RPC_SendLeftHitToAssembler", RPCMode.Others, point);
     }
     #endregion
 }

@@ -63,6 +63,7 @@ Shader "Custom/Depth Billboard"
 				float4x4 _RightTransform;
 				float3 _RightMidPoint;
 				float _RightDistance;
+				float3 _RightShoulder;
 				float3 _RightElbow;
 				float3 _RightWrist;
 				float3 _RightHand;
@@ -72,6 +73,7 @@ Shader "Custom/Depth Billboard"
 				float4x4 _LeftTransform;
 				float3 _LeftMidPoint;
 				float _LeftDistance;
+				float3 _LeftShoulder;
 				float3 _LeftElbow;
 				float3 _LeftWrist;
 				float3 _LeftHand;
@@ -112,14 +114,18 @@ Shader "Custom/Depth Billboard"
 
 					float4 worldPos = mul(unity_ObjectToWorld, pos);
 
-					// RIGHT ARM
 					float inc = 0.10f;
-					float4 A = float4(_RightElbow, 1.0);
-					float4 B = float4(_RightWrist, 1.0);
+					float4 A;
+					float4 B;
 					int i;
 					float4 p;
+
+					// RIGHT ARM
 					if (_RightPointing == 1)
 					{
+						// shoulder -> elbow
+						A = float4(_RightShoulder, 1.0);
+						B = float4(_RightElbow, 1.0);
 						for (i = 1; i <= (distance(A, B) / inc); i++)
 						{
 							p = A + normalize(B - A) * i * inc;
@@ -130,6 +136,22 @@ Shader "Custom/Depth Billboard"
 								break;
 							}
 						}
+
+						// elbow -> wrist
+						A = float4(_RightElbow, 1.0);
+						B = float4(_RightWrist, 1.0);
+						for (i = 1; i <= (distance(A, B) / inc); i++)
+						{
+							p = A + normalize(B - A) * i * inc;
+							if (distance(worldPos, p) < _RightDistance)
+							{
+								pos = mul(unity_WorldToObject, mul(_RightTransform, worldPos));
+								//c.r = 1; c.g = 0; c.b = 0;
+								break;
+							}
+						}
+
+						// handz and tipz
 						if (distance(worldPos, float4(_RightHand, 1.0)) < _RightDistance
 							|| distance(worldPos, float4(_RightHandTip, 1.0)) < _RightDistance)
 						{
@@ -139,12 +161,11 @@ Shader "Custom/Depth Billboard"
 					}
 
 					// LEFT ARM
-					inc = 0.10f;
-					A = float4(_LeftElbow, 1.0);
-					B = float4(_LeftWrist, 1.0);
-					
 					if (_LeftPointing == 1)
 					{
+						// shoulder -> elbow
+						A = float4(_LeftShoulder, 1.0);
+						B = float4(_LeftElbow, 1.0);
 						for (i = 1; i <= (distance(A, B) / inc); i++)
 						{
 							p = A + normalize(B - A) * i * inc;
@@ -155,6 +176,22 @@ Shader "Custom/Depth Billboard"
 								break;
 							}
 						}
+
+						// elbow -> wrist
+						A = float4(_LeftElbow, 1.0);
+						B = float4(_LeftWrist, 1.0);
+						for (i = 1; i <= (distance(A, B) / inc); i++)
+						{
+							p = A + normalize(B - A) * i * inc;
+							if (distance(worldPos, p) < _LeftDistance)
+							{
+								pos = mul(unity_WorldToObject, mul(_LeftTransform, worldPos));
+								//c.r = 1; c.g = 0; c.b = 0;
+								break;
+							}
+						}
+
+						// handz and tipz
 						if (distance(worldPos, float4(_LeftHand, 1.0)) < _LeftDistance
 							|| distance(worldPos, float4(_LeftHandTip, 1.0)) < _LeftDistance)
 						{
