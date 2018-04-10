@@ -332,12 +332,12 @@ public class NegativeSpace : MonoBehaviour {
 
                     // right
                     ray = new Ray(human.body.Joints[BodyJointType.rightHandTip], human.body.Joints[BodyJointType.rightHandTip] - human.body.Joints[BodyJointType.head]);
-                    if (Physics.Raycast(ray, out hitInfo)) _client.sendRightHit(workspaceCollider.transform.worldToLocalMatrix.MultiplyPoint(hitInfo.point));
+                    if (Physics.Raycast(ray, out hitInfo)) _client.sendRightHit(workspaceCollider.transform.InverseTransformPoint(reflectWorkspacePoint(hitInfo.point)));
                     else _client.sendRightHit(Vector3.positiveInfinity);
 
                     // left
                     ray = new Ray(human.body.Joints[BodyJointType.leftHandTip], human.body.Joints[BodyJointType.leftHandTip] - human.body.Joints[BodyJointType.head]);
-                    if (Physics.Raycast(ray, out hitInfo)) _client.sendLeftHit(workspaceCollider.transform.worldToLocalMatrix.MultiplyPoint(hitInfo.point));
+                    if (Physics.Raycast(ray, out hitInfo)) _client.sendLeftHit(workspaceCollider.transform.InverseTransformPoint(reflectWorkspacePoint(hitInfo.point)));
                     else _client.sendLeftHit(Vector3.positiveInfinity);
 
                     // cursors2 experiment - Ziz workz =)
@@ -381,12 +381,12 @@ public class NegativeSpace : MonoBehaviour {
         Vector3 leftHit = Vector3.zero;
         //bool leftPointing = _isPointingToWorkspace(new Ray(leftTip, leftTip - head), workspaceCollider, out leftHit);
         bool leftPointing = !float.IsPositiveInfinity(remoteLeftHit.x);
-        if (leftPointing) leftHit = workspaceCollider.transform.localToWorldMatrix.MultiplyPoint(remoteLeftHit);
+        if (leftPointing) leftHit = workspaceCollider.transform.TransformPoint(remoteLeftHit);
 
         Vector3 rightHit = Vector3.zero;
         //bool rightPointing = _isPointingToWorkspace(new Ray(rightTip, rightTip - head), workspaceCollider, out rightHit);
         bool rightPointing = !float.IsPositiveInfinity(remoteRightHit.x);
-        if (rightPointing) rightHit = workspaceCollider.transform.localToWorldMatrix.MultiplyPoint(remoteRightHit);
+        if (rightPointing) rightHit = workspaceCollider.transform.TransformPoint(remoteRightHit);
 
         Transform leftHand_d = go.transform.Find("LEFTHAND_D");
         leftHand_d.position = leftTip;
@@ -437,9 +437,7 @@ public class NegativeSpace : MonoBehaviour {
 
         if (isPointing)
         {
-            Vector3 rightHitToLocal = workspaceCollider.transform.InverseTransformPoint(hit);
-            Vector3 reflectedPoint = new Vector3(rightHitToLocal.x, rightHitToLocal.y, -rightHitToLocal.z);
-            Vector3 reflectedPointWorld = workspaceCollider.transform.TransformPoint(reflectedPoint);
+            Vector3 reflectedPointWorld = reflectWorkspacePoint(hit);
 
             Debug.DrawLine(head, hit, Color.cyan);
             Debug.DrawLine(elbow, reflectedPointWorld, Color.yellow);
@@ -463,6 +461,13 @@ public class NegativeSpace : MonoBehaviour {
         float angle = Vector3.Angle(oldVector, newVector);
 
         return Matrix4x4.Translate(elbow) * Matrix4x4.TRS(Vector3.zero, Quaternion.AngleAxis(angle, axis), Vector3.one) * Matrix4x4.Translate(-elbow);
+    }
+
+    private Vector3 reflectWorkspacePoint(Vector3 point) // receives world point, returns world point (yes, that's world 2 times)
+    {
+        Vector3 pointToLocal = workspaceCollider.transform.InverseTransformPoint(point);
+        Vector3 reflectedPoint = new Vector3(pointToLocal.x, pointToLocal.y, -pointToLocal.z);
+        return workspaceCollider.transform.TransformPoint(reflectedPoint);
     }
 
     private Vector3 _constraintHandDisplacement(Vector3 newPos, Vector3 oldPos)
