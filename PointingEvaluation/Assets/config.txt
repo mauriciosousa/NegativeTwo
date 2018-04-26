@@ -1,0 +1,4 @@
+tracker.address=146.193.224.188
+tracker.broadcast.port=5112
+tracker.listen.port=5111
+avatar.listen.port=5110
