@@ -119,8 +119,8 @@ public class Main : MonoBehaviour {
     void Update()
     {
        
-            if (_bodies._localHuman != null) updateBody(_bodies._localHuman, GameObject.Find("LocalBody"));
-            if (_bodies._remoteHuman!= null) updateBody(_bodies._remoteHuman, GameObject.Find("RemoteBody"));
+            //if (_bodies._localHuman != null) updateBody(_bodies._localHuman, GameObject.Find("LocalBody"));
+            //if (_bodies._remoteHuman!= null) updateBody(_bodies._remoteHuman, GameObject.Find("RemoteBody"));
 
     }
 

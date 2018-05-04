@@ -8,24 +8,25 @@ public class BodiesManager : MonoBehaviour
 
     private Dictionary<string, Human> _humans;
     private bool _humanLocked = false;
-    public Human _localHuman = null;
-    public Human _remoteHuman = null;
 
-    //private PerspectiveProjection _perspectiveProjection;
-
+    public Human LeftHuman = null;
+    public Human RightHuman = null;
 
     private  Dictionary<string, Human> _remoteHumans;
     private bool _remoteHumanLocked = false;
     public Human remoteHuman = null;
+
+    public Evaluation _evaluation;
 
     void Start()
     {
         //_perspectiveProjection = Camera.main.GetComponent<PerspectiveProjection>();
         _humans = new Dictionary<string, Human>();
         _remoteHumans = new Dictionary<string, Human>();
+        _evaluation = GameObject.Find("PointingEvaluation").GetComponent<Evaluation>();
     }
 
-    private string GetHumanIdWithHandUp()
+    private string _getHumanIdWithHandUp()
     {
         foreach (Human h in _humans.Values)
         {
@@ -38,7 +39,7 @@ public class BodiesManager : MonoBehaviour
         return string.Empty;
     }
 
-    void Update()
+    void Update() // REDO
     {
 
         if (Input.GetKeyDown(KeyCode.L))
@@ -48,26 +49,12 @@ public class BodiesManager : MonoBehaviour
 
         if (Input.GetMouseButtonDown(0) || Input.GetKeyDown(KeyCode.PageDown) || Input.GetKeyDown(KeyCode.Joystick1Button1)) // Mouse tap
         {
-            string currentHumanId = GetHumanIdWithHandUp();
-            foreach (KeyValuePair<String,Human> h in _humans)
-            {
-                if (h.Key == currentHumanId)
-                {
-                    _localHuman = h.Value;
-                }
-                else
-                {
-                    _remoteHuman = h.Value;
-                }
-            }
+
         }
 
 
         // finally
         _cleanDeadHumans();
-
-        if (_localHuman != null) Camera.main.transform.position = _localHuman.body.Joints[BodyJointType.head];
-
 
     }
 
@@ -120,8 +107,51 @@ public class BodiesManager : MonoBehaviour
         }
     }
 
-    void OnGUI()
+    public Human getHumanWithHandUp()
     {
-        //GUI.Label(new Rect(10, 10, 1000, 1000), "" + _humans.Count);
+
+        string id = _getHumanIdWithHandUp();
+        foreach (KeyValuePair<String, Human> h in _humans)
+        {
+            if (h.Key == id) return h.Value;
+        }
+        return null;
+    }
+
+    internal void calibrateRightHuman()
+    {
+        Human h = getHumanWithHandUp();
+        if (h == null)
+        {
+            throw new Exception("Cannot find that human!");
+        }
+        else
+            RightHuman = h;
+    }
+
+    internal void calibrateLeftHuman()
+    {
+        Human h = getHumanWithHandUp();
+        if (h == null)
+        {
+            throw new Exception("Cannot find that human!");
+        }
+        else
+            LeftHuman = h;
+    }
+
+    internal void calibrateHumans(EvaluationPosition evaluationPosition)
+    {
+        if (_evaluation.evaluationPosition == evaluationPosition)
+        {
+            if (_evaluation.clientPosition == EvaluationPosition.ON_THE_LEFT)
+            {
+                calibrateLeftHuman();
+            }
+            else if (_evaluation.clientPosition == EvaluationPosition.ON_THE_RIGHT)
+            {
+                calibrateRightHuman();
+            }
+        }
     }
 }

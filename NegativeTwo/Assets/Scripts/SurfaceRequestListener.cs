@@ -67,6 +67,8 @@ public class SurfaceRequestListener : MonoBehaviour
     {
         Byte[] receiveBytes = _udpClient_RemoteSurface.EndReceive(ar, ref _anyIP_RemoteSurface);
         string result = System.Text.Encoding.UTF8.GetString(receiveBytes);
+
+      
         string[] trackermessage = result.Split(MessageSeparators.L0);
         result = trackermessage[0] + MessageSeparators.L0 + trackermessage[1];
         Sensor[] sensors = _retrieveSensors(trackermessage[2]);
@@ -87,6 +89,7 @@ public class SurfaceRequestListener : MonoBehaviour
         string[] sensorsInfo = v.Split(MessageSeparators.L2);
         foreach (string s in sensorsInfo)
         {
+
             if (s.Length > 0)
             {
                 string[] values = s.Split(MessageSeparators.L3);
