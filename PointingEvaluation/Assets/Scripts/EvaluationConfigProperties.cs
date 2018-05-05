@@ -56,7 +56,7 @@ public class EvaluationConfigProperties : MonoBehaviour {
             {
                 if (line.Split('=')[0] == property)
                 {
-                    Debug.Log("Found: " + property + " - " + line.Split('=')[1]);
+                    //Debug.Log("Found: " + property + " - " + line.Split('=')[1]);
                     return line.Split('=')[1];
                 }
             }

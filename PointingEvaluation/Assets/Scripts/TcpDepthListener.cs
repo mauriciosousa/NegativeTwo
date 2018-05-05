@@ -227,11 +227,15 @@ public class TcpDepthListener : MonoBehaviour
 
     public void closeTcpConnections()
     {
-        foreach (DepthStream ks in _depthStreams)
-        {
-            ks.stopStream();
-        }
-        _depthStreams = new List<DepthStream>();
+		try {
+	        foreach (DepthStream ks in _depthStreams)
+	        {
+	            ks.stopStream();
+	        }
+	        _depthStreams = new List<DepthStream>();
+		}
+		catch {
+		}
     }
 
     void OnApplicationQuit()

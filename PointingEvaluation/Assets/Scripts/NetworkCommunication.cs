@@ -99,11 +99,11 @@ public class NetworkCommunication : MonoBehaviour {
     }
 
     [RPC]
-    void RPC_startTrial(int trialID)
+	void RPC_startTrial(int trialID, int condition)
     {
         if (evaluationPeerType == EvaluationPeertype.CLIENT)
         {
-            _evaluation.OnRPC_startTrial(trialID);
+			_evaluation.OnRPC_startTrial(trialID, (EvaluationCondition)Enum.ToObject(typeof(EvaluationCondition), condition));
         }
     }
 
@@ -111,6 +111,20 @@ public class NetworkCommunication : MonoBehaviour {
     {
         _networkView.RPC("RPC_startTrial", RPCMode.Others, trialID);
     }
+
+	[RPC]
+	void RPC_endTrial()
+	{
+		if (evaluationPeerType == EvaluationPeertype.CLIENT)
+		{
+			_evaluation.OnRPC_endTrial();
+		}
+	}
+
+	public void endTrial()
+	{
+		_networkView.RPC("RPC_endTrial", RPCMode.Others);
+	}
 
     [RPC]
     void RPC_reset()
