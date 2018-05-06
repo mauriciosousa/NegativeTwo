@@ -224,14 +224,16 @@ public class Evaluation : MonoBehaviour {
             {
                 if (GUI.Button(new Rect(left + 10, top, width - 20, 1.5f * lineHeight), "End Task"))
                 {
-					_log.recordSnapshot (_task, (int) condition, leftHuman, rightHuman);
+					//_log.recordSnapshot (_task, (int) condition, leftHuman, rightHuman);
 
 					if (targetGO != null) {
 						targetGO.SetActive (false);
 					}
                     _taskInProgress = false;
 					_network.endTrial ();
-					_console.writeLineGreen ("TASK " + _task + " ended...");
+					_console.writeLine ("TASK " + _task + " ended...");
+					if (_task == _numberOfRepetitions)
+						_console.writeLineGreen ("(( Session ended ))");
                     _incTask();
                 }
             }
