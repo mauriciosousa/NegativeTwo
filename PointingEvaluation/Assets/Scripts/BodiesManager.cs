@@ -156,7 +156,7 @@ public class BodiesManager : MonoBehaviour
 
     internal void calibrateHumans(EvaluationPosition evaluationPosition)
     {
-        if (_evaluation.evaluationPosition == evaluationPosition)
+        if (_evaluation.clientPosition == evaluationPosition)
         {
             if (_evaluation.clientPosition == EvaluationPosition.ON_THE_LEFT)
             {

@@ -82,17 +82,6 @@ public class NetworkCommunication : MonoBehaviour {
         _networkView.RPC("RPC_calibrateHumans", RPCMode.Others, evaluationPosition);
     }
 
-    [RPC]
-    void RPC_setupTrial(int evaluationPosition, int role, int condition)
-    {
-        if (evaluationPeerType == EvaluationPeertype.CLIENT)
-        {
-            _evaluation.OnRPC_setupTrial((EvaluationPosition)Enum.ToObject(typeof(EvaluationPosition), evaluationPosition),
-                                   (Role)Enum.ToObject(typeof(Role), role),
-                                   (EvaluationCondition)Enum.ToObject(typeof(EvaluationCondition), condition));
-        }
-    }
-
     public void setupTrial(int evaluationPosition, int role, int condition)
     {
         _networkView.RPC("RPC_setupTrial", RPCMode.Others, evaluationPosition, role, condition);
@@ -126,17 +115,4 @@ public class NetworkCommunication : MonoBehaviour {
 		_networkView.RPC("RPC_endTrial", RPCMode.Others);
 	}
 
-    [RPC]
-    void RPC_reset()
-    {
-        if (evaluationPeerType == EvaluationPeertype.CLIENT)
-        {
-            _evaluation.OnRPC_reset();
-        }
-    }
-
-    public void reset()
-    {
-        _networkView.RPC("RPC_reset", RPCMode.Others);
-    }
 }

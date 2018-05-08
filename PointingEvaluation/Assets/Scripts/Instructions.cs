@@ -55,26 +55,14 @@ public class Instructions : MonoBehaviour {
     void Start () {
 		_eval = GameObject.Find ("PointingEvaluation").GetComponent<Evaluation> ();
 		_network = GameObject.Find ("PointingEvaluation").GetComponent<NetworkCommunication> ();
-
-
-        if (_network.evaluationPeerType == EvaluationPeertype.SERVER)
-        {
-            this.gameObject.SetActive(false);
-        }
 	}
 
 	void Update () {
         if (_network.evaluationPeerType == EvaluationPeertype.SERVER)
             return;
 
-		if (!_eval.taskInProgress) {
-            //this.gameObject.SetActive(false);
-        }
-        else {
-            //this.gameObject.SetActive(true);
-
-            Role myRole = _eval.getMyRole();
-
+		if (_eval.taskInProgress) {            
+            Role myRole = _eval.getMyRole();    
             textMesh.text = InstructionsText.getInstruction(_eval.Task, _eval.clientPosition);
         }
     }

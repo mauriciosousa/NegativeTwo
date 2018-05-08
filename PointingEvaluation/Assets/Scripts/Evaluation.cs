@@ -40,8 +40,6 @@ public enum PointingArm
 public class Evaluation : MonoBehaviour {
 
     public EvaluationCondition condition = EvaluationCondition.NONE;
-    public Role role = Role.NONE;
-    public EvaluationPosition evaluationPosition = EvaluationPosition.NONE;
 
     private NetworkCommunication _network;
     private ServerConsole _console;
@@ -112,6 +110,8 @@ public class Evaluation : MonoBehaviour {
         }
     }
 
+    private Instructions _instructionsPanel;
+
     public BoxCollider wallCollider;
 
     void Start () {
@@ -127,7 +127,11 @@ public class Evaluation : MonoBehaviour {
         _bodies = GameObject.Find("BodiesManager").GetComponent<BodiesManager>();
 		_log = GetComponent<LogEvaluation> ();
 
+        _instructionsPanel = GameObject.Find("InstructionsPanel").GetComponent<Instructions>();
+
         _clientPosition = _config.clientPosition;
+
+        Debug.Log(_clientPosition);
 
         condition = EvaluationCondition.NO_DEICTICS_CORRECTION;
 
@@ -140,15 +144,9 @@ public class Evaluation : MonoBehaviour {
         leftTarget.SetActive(false);
         rightTarget.SetActive(false);
 
+        _instructionsPanel.gameObject.SetActive(false);
     }
 	
-	void Update () {
-
-        if (_network.evaluationPeerType == EvaluationPeertype.CLIENT && _taskInProgress)
-        {
-
-        }
-    }
 
     void OnGUI()
     {
@@ -311,9 +309,15 @@ public class Evaluation : MonoBehaviour {
                             _console.writeLineGreen(" ");
                             _console.writeLineGreen("########################################");
                             _console.writeLineGreen(" ");
+                            _reset();
                         }
                         _incTask();
                     }
+                }
+
+                if (GUI.Button(new Rect(left, top, width, lineHeight), "reset"))
+                {
+                    _reset();
                 }
             }
         }
@@ -443,40 +447,68 @@ public class Evaluation : MonoBehaviour {
 
     internal void OnRPC_calibrateHumans(EvaluationPosition evaluationPosition)
     {
+
         if (_network.evaluationPeerType == EvaluationPeertype.CLIENT)
         {
+            Debug.Log("[RPC] OnRPC_calibrateHumans");
             _bodies.calibrateHumans(evaluationPosition);
         }
     }
 
-    internal void OnRPC_setupTrial(EvaluationPosition evaluationPosition, Role role, EvaluationCondition evaluationCondition)
-    {
-        throw new NotImplementedException();
-    }
-
 	internal void OnRPC_startTrial(int trialID, EvaluationCondition condition)
     {
-		if (_network.evaluationPeerType == EvaluationPeertype.CLIENT) {
+		if (_network.evaluationPeerType == EvaluationPeertype.CLIENT)
+        {
+            Debug.Log("[RPC] OnRPC_startTrial");
+            this.condition = condition;
+            // setup condition
+            _task = trialID;
+            _taskInProgress = true;
 
-			this.condition = condition;
-			// setup condition
-			_taskInProgress = true;
-		}
+            _instructionsPanel.gameObject.SetActive(true);
+
+
+            if (clientPosition == EvaluationPosition.ON_THE_LEFT)
+            {
+                if (_task == 1) leftTarget.SetActive(true);
+            }
+
+            if (clientPosition == EvaluationPosition.ON_THE_RIGHT)
+            {
+                if (_task == 1 || _task == 8) rightTarget.SetActive(true);
+
+            }
+
+        }
 	}
 
 	internal void OnRPC_endTrial()
 	{
-		if (_network.evaluationPeerType == EvaluationPeertype.CLIENT && _taskInProgress) {
-			_taskInProgress = false;
-		}
+        if (_network.evaluationPeerType == EvaluationPeertype.CLIENT && _taskInProgress) {
+            Debug.Log("[RPC] OnRPC_endTrial");
+            leftTarget.SetActive(false);
+            rightTarget.SetActive(false);
+            _taskInProgress = false;
+            _instructionsPanel.gameObject.SetActive(false);
+
+
+            if (_task == NumberOfRepetitions)
+            {
+                _task = 0;
+                _reset();
+            }
+        }
 	}
 
-    internal void OnRPC_reset()
+    private void _reset()
     {
-        throw new NotImplementedException();
+        _taskInProgress = false;
+        _instructionsPanel.gameObject.SetActive(false);
+        leftTarget.SetActive(false);
+        rightTarget.SetActive(false);
     }
 
-	private Texture2D MakeTex( int width, int height, Color col )
+    private Texture2D MakeTex( int width, int height, Color col )
 	{
 		Color[] pix = new Color[width * height];
 		for( int i = 0; i < pix.Length; ++i )
@@ -502,7 +534,7 @@ public class Evaluation : MonoBehaviour {
 
     public Role getMyRole()
     {
-        return getRole(_task, evaluationPosition);
+        return getRole(_task, clientPosition);
     }
 
     public static bool evenNumber(int n)
