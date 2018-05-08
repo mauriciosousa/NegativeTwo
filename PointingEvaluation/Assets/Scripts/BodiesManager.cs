@@ -16,7 +16,13 @@ public class BodiesManager : MonoBehaviour
     private bool _remoteHumanLocked = false;
     public Human remoteHuman = null;
 
-    public Evaluation _evaluation;
+    private Evaluation _evaluation;
+    private NetworkCommunication _network;
+
+
+    public GameObject LeftHumanGO;
+    public GameObject RightHumanGO;
+    
 
     void Start()
     {
@@ -24,6 +30,8 @@ public class BodiesManager : MonoBehaviour
         _humans = new Dictionary<string, Human>();
         _remoteHumans = new Dictionary<string, Human>();
         _evaluation = GameObject.Find("PointingEvaluation").GetComponent<Evaluation>();
+        _network = GameObject.Find("PointingEvaluation").GetComponent<NetworkCommunication>();
+
     }
 
     private string _getHumanIdWithHandUp()
@@ -47,15 +55,15 @@ public class BodiesManager : MonoBehaviour
             _humanLocked = !_humanLocked;
         }
 
-        if (Input.GetMouseButtonDown(0) || Input.GetKeyDown(KeyCode.PageDown) || Input.GetKeyDown(KeyCode.Joystick1Button1)) // Mouse tap
-        {
-
-        }
-
-
         // finally
         _cleanDeadHumans();
 
+
+        if (_network.evaluationPeerType == EvaluationPeertype.SERVER)
+        {
+            _renderServerBody(LeftHuman, LeftHumanGO);
+            _renderServerBody(RightHuman, RightHumanGO);
+        }
     }
 
     public void setNewFrame(Body[] bodies)
@@ -118,7 +126,7 @@ public class BodiesManager : MonoBehaviour
         return null;
     }
 
-    internal void calibrateRightHuman()
+    internal string calibrateRightHuman()
     {
         Human h = getHumanWithHandUp();
         if (h == null)
@@ -126,10 +134,13 @@ public class BodiesManager : MonoBehaviour
             throw new Exception("Cannot find that human!");
         }
         else
+        {
             RightHuman = h;
+            return h.id;
+        }
     }
 
-    internal void calibrateLeftHuman()
+    internal string calibrateLeftHuman()
     {
         Human h = getHumanWithHandUp();
         if (h == null)
@@ -137,7 +148,10 @@ public class BodiesManager : MonoBehaviour
             throw new Exception("Cannot find that human!");
         }
         else
+        {
             LeftHuman = h;
+            return h.id;
+        }
     }
 
     internal void calibrateHumans(EvaluationPosition evaluationPosition)
@@ -153,5 +167,40 @@ public class BodiesManager : MonoBehaviour
                 calibrateRightHuman();
             }
         }
+    }
+
+    private void _renderServerBody(Human human, GameObject go)
+    {
+        if (human == null)
+        {
+            go.SetActive(false);
+        }
+        else
+        {
+            go.SetActive(true);
+
+            go.transform.Find("HEAD").localPosition = human.body.Joints[BodyJointType.head];
+            go.transform.Find("LEFTHAND").localPosition = human.body.Joints[BodyJointType.leftHand];
+            go.transform.Find("RIGHTHAND").localPosition = human.body.Joints[BodyJointType.rightHand];
+            go.transform.Find("NECK").localPosition = human.body.Joints[BodyJointType.neck];
+            go.transform.Find("SPINESHOULDER").localPosition = human.body.Joints[BodyJointType.spineShoulder];
+            go.transform.Find("LEFTSHOULDER").localPosition = human.body.Joints[BodyJointType.leftShoulder];
+            go.transform.Find("RIGHTSHOULDER").localPosition = human.body.Joints[BodyJointType.rightShoulder];
+            go.transform.Find("LEFTELBOW").localPosition = human.body.Joints[BodyJointType.leftElbow];
+            go.transform.Find("RIGHTELBOW").localPosition = human.body.Joints[BodyJointType.rightElbow];
+            go.transform.Find("LEFTWRIST").localPosition = human.body.Joints[BodyJointType.leftWrist];
+            go.transform.Find("RIGHTWRIST").localPosition = human.body.Joints[BodyJointType.rightWrist];
+            go.transform.Find("SPINEBASE").localPosition = human.body.Joints[BodyJointType.spineBase];
+            go.transform.Find("SPINEMID").localPosition = human.body.Joints[BodyJointType.spineMid];
+            go.transform.Find("LEFTHIP").localPosition = human.body.Joints[BodyJointType.leftHip];
+            go.transform.Find("RIGHTHIP").localPosition = human.body.Joints[BodyJointType.rightHip];
+            go.transform.Find("LEFTKNEE").localPosition = human.body.Joints[BodyJointType.leftKnee];
+            go.transform.Find("RIGHTKNEE").localPosition = human.body.Joints[BodyJointType.rightKnee];
+            go.transform.Find("LEFTFOOT").localPosition = human.body.Joints[BodyJointType.leftFoot];
+            go.transform.Find("RIGHTFOOT").localPosition = human.body.Joints[BodyJointType.rightFoot];
+            go.transform.Find("LEFTHANDTIP").localPosition = human.body.Joints[BodyJointType.leftHandTip];
+            go.transform.Find("RIGHTHANDTIP").localPosition = human.body.Joints[BodyJointType.rightHandTip];
+        }
+
     }
 }

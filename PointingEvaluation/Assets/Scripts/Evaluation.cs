@@ -14,7 +14,7 @@ public enum Role
 {
     NONE = 0,
     POINTING_PERSON = 1,
-    OBSERVER = 2
+    MIMIC = 2
 }
 
 public enum EvaluationPosition
@@ -30,6 +30,13 @@ public enum TypeOfHuman
     RightHuman = 2
 }
 
+public enum PointingArm
+{
+    NONE,
+    LEFT,
+    RIGHT
+}
+
 public class Evaluation : MonoBehaviour {
 
     public EvaluationCondition condition = EvaluationCondition.NONE;
@@ -41,7 +48,7 @@ public class Evaluation : MonoBehaviour {
     private EvaluationConfigProperties _config;
 	private LogEvaluation _log;
 
-	private int _numberOfRepetitions = 10;
+	private int _numberOfRepetitions = 14;
 	public int NumberOfRepetitions
 	{
 		get 
@@ -86,7 +93,8 @@ public class Evaluation : MonoBehaviour {
 		}
 	}
 
-	public GameObject targetGO;
+	public GameObject leftTarget;
+    public GameObject rightTarget;
 
     public Human leftHuman
     {
@@ -103,6 +111,8 @@ public class Evaluation : MonoBehaviour {
             return _bodies.RightHuman;
         }
     }
+
+    public BoxCollider wallCollider;
 
     void Start () {
 
@@ -126,14 +136,26 @@ public class Evaluation : MonoBehaviour {
 		if (_network.evaluationPeerType == EvaluationPeertype.SERVER) {
 			_log.Init (_numberOfRepetitions);
 		}
-
-		if (targetGO != null)
-			targetGO.SetActive (false);
-
 	}
 	
 	void Update () {
 
+        if (/*_network.evaluationPeerType == EvaluationPeertype.CLIENT &&*/ _taskInProgress)
+        {
+            if (evaluationPosition == EvaluationPosition.ON_THE_LEFT && Task == 1)
+            {
+                leftTarget.SetActive(true);
+            }
+            else
+                leftTarget.SetActive(false);
+
+            if (evaluationPosition == EvaluationPosition.ON_THE_RIGHT && (Task == 1 || Task == 8))
+            {
+                leftTarget.SetActive(true);
+            }
+            else
+                leftTarget.SetActive(false);
+        }
     }
 
     void OnGUI()
@@ -164,7 +186,7 @@ public class Evaluation : MonoBehaviour {
             {
                 _setupHumans(TypeOfHuman.RightHuman);
             }
-			GUI.Box (new Rect(left + width / 2, top + 1.5f*lineHeight, width / 2 - 5, 5), "", (leftHuman != null) ? greenBox : redBox);
+			GUI.Box (new Rect(left + width / 2, top + 1.5f*lineHeight, width / 2 - 5, 5), "", (rightHuman != null) ? greenBox : redBox);
 
 
             // CONDITION
@@ -212,9 +234,7 @@ public class Evaluation : MonoBehaviour {
                 {
 					if (_checkHumans ()) {
 						_taskInProgress = true;
-						if (targetGO != null) {
-							targetGO.SetActive (_task == 1);
-						}
+
 						_network.startTrial (_task);
 						_console.writeLineGreen ("TASK " + _task + " started...");
 					}
@@ -224,23 +244,144 @@ public class Evaluation : MonoBehaviour {
             {
                 if (GUI.Button(new Rect(left + 10, top, width - 20, 1.5f * lineHeight), "End Task"))
                 {
-					//_log.recordSnapshot (_task, (int) condition, leftHuman, rightHuman);
+                    bool _continue = false;
 
-					if (targetGO != null) {
-						targetGO.SetActive (false);
-					}
-                    _taskInProgress = false;
-					_network.endTrial ();
-					_console.writeLine ("TASK " + _task + " ended...");
-					if (_task == _numberOfRepetitions)
-						_console.writeLineGreen ("(( Session ended ))");
-                    _incTask();
+                    try
+                    {
+                        Vector3 left_hitpoint = Vector3.zero;
+
+                        Role leftHumanRole = getRole(_task, EvaluationPosition.ON_THE_LEFT);
+                        PointingArm leftHuman_PointingArm = _isPointing(leftHuman, EvaluationPosition.ON_THE_LEFT, out left_hitpoint);
+
+
+                        Vector3 right_hitpoint = Vector3.zero;
+
+                        Role rightHumanRole = getRole(_task, EvaluationPosition.ON_THE_RIGHT);
+                        PointingArm rightHuman_PointingArm = _isPointing(rightHuman, EvaluationPosition.ON_THE_RIGHT, out right_hitpoint);
+
+                        Vector3 pointer_head = Vector3.zero;
+                        Vector3 mimic_head = Vector3.zero;
+
+                        Vector3 origin = Vector3.zero;
+                        Vector3 pointer_hit = Vector3.zero;
+                        Vector3 mimic_hit = Vector3.zero;
+
+                        if (leftHumanRole == Role.POINTING_PERSON)
+                        {
+                            pointer_head = leftHuman.body.Joints[BodyJointType.head];
+                            mimic_head = rightHuman.body.Joints[BodyJointType.head];
+
+                            origin = pointer_head;
+                            pointer_hit = left_hitpoint;
+                            mimic_hit = right_hitpoint;
+                        }
+                        else
+                        {
+                            pointer_head = rightHuman.body.Joints[BodyJointType.head];
+                            mimic_head = leftHuman.body.Joints[BodyJointType.head];
+
+                            origin = pointer_head;
+                            pointer_hit = right_hitpoint;
+                            mimic_hit = left_hitpoint;
+                        }
+
+                        Vector3 pointer_vector = (pointer_hit - origin);
+                        Vector3 mimic_vector = (mimic_hit - origin);
+
+                        float error_angle = Vector3.Angle(pointer_vector, mimic_vector);
+                        float error_distance = Vector3.Distance(pointer_hit, mimic_hit);
+
+
+
+                        _log.recordSnapshot(_task, condition, leftHuman, leftHumanRole, leftHuman_PointingArm, rightHuman, rightHumanRole, rightHuman_PointingArm, error_angle, error_distance, pointer_hit, pointer_head, mimic_hit, mimic_head);
+
+                        _continue = true;
+                    }
+                    catch (Exception e)
+                    {
+                        _console.writeLineRed(e.Message);
+                    }
+
+                    if (_continue)
+                    {
+                        _taskInProgress = false;
+                        _network.endTrial();
+
+                        _console.writeLine("TASK " + _task + " ended...");
+
+                        if (_task == _numberOfRepetitions)
+                        {
+                            _console.writeLineGreen(" ");
+                            _console.writeLineGreen("########################################");
+                            _console.writeLineGreen(" ");
+                            _console.writeLineGreen("                Session ended");
+                            _console.writeLineGreen(" ");
+                            _console.writeLineGreen("########################################");
+                            _console.writeLineGreen(" ");
+                        }
+                        _incTask();
+                    }
                 }
             }
         }
     }
 
-	private bool _checkHumans()
+    private PointingArm _isPointing(Human human, EvaluationPosition position, out Vector3 hitpoint)
+    {
+        Vector3 head = human.body.Joints[BodyJointType.head];
+        Vector3 leftHand = human.body.Joints[BodyJointType.leftHandTip];
+        Vector3 rightHand = human.body.Joints[BodyJointType.rightHandTip];
+
+        Debug.DrawRay(head, (leftHand - head).normalized, Color.cyan);
+        Debug.DrawRay(head, (rightHand - head).normalized, Color.cyan);
+
+
+        hitpoint = Vector3.zero;
+
+        bool leftPointing = false;
+        Ray leftRay = new Ray(head, leftHand - head);
+        RaycastHit leftHit;
+        if (wallCollider.Raycast(leftRay, out leftHit, float.PositiveInfinity))
+        {
+            hitpoint = leftHit.point;
+            leftPointing = true;
+        }
+
+        bool rightPointing = false;
+        Ray rightRay = new Ray(head, rightHand - head);
+        RaycastHit rightHit;
+        if (wallCollider.Raycast(rightRay, out rightHit, float.PositiveInfinity))
+        {
+            hitpoint = rightHit.point; 
+            rightPointing = true;
+        }
+
+
+
+        if (leftPointing && !rightPointing)
+        {
+            return PointingArm.LEFT;
+        }
+
+        if (!leftPointing && rightPointing)
+        {
+            return PointingArm.RIGHT;
+        }
+
+        if (leftPointing && rightPointing)
+        {
+            throw new Exception("USER " + position.ToString().Replace('_', ' ') + " USED BOTH HANDS >:(");
+        }
+
+        if (!leftPointing && !rightPointing)
+        {
+            throw new Exception("USER " + position.ToString().Replace('_', ' ') + " NOT POINTING uhgg");
+        }
+
+        return PointingArm.NONE;
+    }
+
+    private bool _checkHumans()
 	{
 		bool ret = false;
 
@@ -281,19 +422,21 @@ public class Evaluation : MonoBehaviour {
 
     private void _setupHumans(TypeOfHuman human)
     {
+        string id = "None";
+
         try
         {
             if (human == TypeOfHuman.LeftHuman)
             {
-                _bodies.calibrateLeftHuman();
+                id = _bodies.calibrateLeftHuman();
                 _network.calibrateHumans((int)TypeOfHuman.LeftHuman);
             }
             else
             {
-                _bodies.calibrateRightHuman();
+                id = _bodies.calibrateRightHuman();
                 _network.calibrateHumans((int)TypeOfHuman.RightHuman);
             }
-            _console.writeLineGreen(human.ToString() + " calibrated");
+            _console.writeLineGreen(human.ToString() + " calibrated with ID: " + id);
         }
         catch (Exception e)
         {
@@ -321,9 +464,6 @@ public class Evaluation : MonoBehaviour {
 			this.condition = condition;
 			// setup condition
 			_taskInProgress = true;
-			if (targetGO != null && role == Role.POINTING_PERSON) {
-				targetGO.SetActive (_task == 1);
-			}
 		}
 	}
 
@@ -331,10 +471,6 @@ public class Evaluation : MonoBehaviour {
 	{
 		if (_network.evaluationPeerType == EvaluationPeertype.CLIENT && _taskInProgress) {
 			_taskInProgress = false;
-
-			if (targetGO != null) {
-				targetGO.SetActive (false);
-			}
 		}
 	}
 
@@ -355,5 +491,26 @@ public class Evaluation : MonoBehaviour {
 		result.Apply();
 		return result;
 	}
+
+    public Role getRole(int task, EvaluationPosition position)
+    {
+        if (task == 1) return Role.POINTING_PERSON;
+
+        if (position == EvaluationPosition.ON_THE_LEFT) return evenNumber(task) ? Role.POINTING_PERSON : Role.MIMIC;
+
+        if (position == EvaluationPosition.ON_THE_RIGHT) return !evenNumber(task) ? Role.POINTING_PERSON : Role.MIMIC;
+
+        return Role.NONE;
+    }
+
+    public Role getMyRole()
+    {
+        return getRole(_task, evaluationPosition);
+    }
+
+    public static bool evenNumber(int n)
+    {
+        return Convert.ToBoolean((n % 2 == 0 ? true : false));
+    }
 
 }

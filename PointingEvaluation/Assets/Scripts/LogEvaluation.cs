@@ -12,7 +12,7 @@ public class LogEvaluation : MonoBehaviour {
 	public string Folder = "Recordings";
 	private string _dir;
 
-	public char CSVSeparator = '#';
+	private string CSVSeparator = "#";
 
 	private bool __init__ = false; 
 
@@ -39,10 +39,10 @@ public class LogEvaluation : MonoBehaviour {
 			Directory.CreateDirectory (_dir);
 		}
 
-		filename = _dir + System.IO.Path.DirectorySeparatorChar + DateTime.Now.ToString("yyyy MMMM d H-mm-ss.csv");
+		filename = _dir + System.IO.Path.DirectorySeparatorChar + DateTime.Now.ToString("yyyy MMMM d H-mm-ss") + ".txt";
 
 		if (!File.Exists (filename)) {
-			File.Create (filename);
+			File.Create (filename).Dispose();
 		}
 			
 		string header = "";
@@ -51,90 +51,32 @@ public class LogEvaluation : MonoBehaviour {
 		header += "TASK" + CSVSeparator;
 		header += "CONDITION" + CSVSeparator;
 
-		header += "LH_POINTING_HAND" + CSVSeparator; // LEFT HUMAN
-		header += "LH_TARGET_POINT_X" + CSVSeparator;
-		header += "LH_TARGET_POINT_Y" + CSVSeparator;
-		header += "LH_TARGET_POINT_Z" + CSVSeparator;
+        header += "LEFT_HUMAN_ROLE" + CSVSeparator;
+        header += "RIGHT_HUMAN_ROLE" + CSVSeparator;
 
-		header += "LH_HEAD_X" + CSVSeparator;
-		header += "LH_HEAD_Y" + CSVSeparator;
-		header += "LH_HEAD_Z" + CSVSeparator;
+        header += "LEFT_HUMAN_POINTING_ARM" + CSVSeparator;
+        header += "RIGHT_HUMAN_POINTING_ARM" + CSVSeparator;
 
-		header += "LH_LEFT_SHOULDER_X" + CSVSeparator;
-		header += "LH_LEFT_SHOULDER_Y" + CSVSeparator;
-		header += "LH_LEFT_SHOULDER_Z" + CSVSeparator;
+        header += "ERROR_ANGLE" + CSVSeparator;
+        header += "ERROR_DISTANCE" + CSVSeparator;
 
-		header += "LH_LEFT_ELBOW_X" + CSVSeparator;
-		header += "LH_LEFT_ELBOW_Y" + CSVSeparator;
-		header += "LH_LEFT_ELBOW_Z" + CSVSeparator;
+        header += "POINTER_HITPOINT_X" + CSVSeparator;
+        header += "POINTER_HITPOINT_Y" + CSVSeparator;
+        header += "POINTER_HITPOINT_Z" + CSVSeparator;
 
-		header += "LH_LEFT_HAND_X" + CSVSeparator;
-		header += "LH_LEFT_HAND_Y" + CSVSeparator;
-		header += "LH_LEFT_HAND_Z" + CSVSeparator;
+        header += "POINTER_HEAD_X" + CSVSeparator;
+        header += "POINTER_HEAD_Y" + CSVSeparator;
+        header += "POINTER_HEAD_Z" + CSVSeparator;
 
-		header += "LH_LEFT_HAND_TIP_X" + CSVSeparator;
-		header += "LH_LEFT_HAND_TIP_Y" + CSVSeparator;
-		header += "LH_LEFT_HAND_TIP_Z" + CSVSeparator;
+        header += "MIMIC_HITPOINT_X" + CSVSeparator;
+        header += "MIMIC_HITPOINT_Y" + CSVSeparator;
+        header += "MIMIC_HITPOINT_Z" + CSVSeparator;
 
-		header += "LH_RIGHT_SHOULDER_X" + CSVSeparator;
-		header += "LH_RIGHT_SHOULDER_Y" + CSVSeparator;
-		header += "LH_RIGHT_SHOULDER_Z" + CSVSeparator;
+        header += "MIMIC_HEAD_X" + CSVSeparator;
+        header += "MIMIC_HEAD_Y" + CSVSeparator;
+        header += "MIMIC_HEAD_Z" + CSVSeparator;
 
-		header += "LH_RIGHT_ELBOW_X" + CSVSeparator;
-		header += "LH_RIGHT_ELBOW_Y" + CSVSeparator;
-		header += "LH_RIGHT_ELBOW_Z" + CSVSeparator;
-
-		header += "LH_RIGHT_HAND_X" + CSVSeparator;
-		header += "LH_RIGHT_HAND_Y" + CSVSeparator;
-		header += "LH_RIGHT_HAND_Z" + CSVSeparator;
-
-		header += "LH_RIGHT_HAND_TIP_X" + CSVSeparator;
-		header += "LH_RIGHT_HAND_TIP_Y" + CSVSeparator;
-		header += "LH_RIGHT_HAND_TIP_Z" + CSVSeparator;
-
-		header += "RH_POINTING_HAND" + CSVSeparator; // RIGHT HUMAN
-		header += "RH_TARGET_POINT_X" + CSVSeparator;
-		header += "RH_TARGET_POINT_Y" + CSVSeparator;
-		header += "RH_TARGET_POINT_Z" + CSVSeparator;
-
-		header += "RH_HEAD_X" + CSVSeparator;
-		header += "RH_HEAD_Y" + CSVSeparator;
-		header += "RH_HEAD_Z" + CSVSeparator;
-
-		header += "RH_LEFT_SHOULDER_X" + CSVSeparator;
-		header += "RH_LEFT_SHOULDER_Y" + CSVSeparator;
-		header += "RH_LEFT_SHOULDER_Z" + CSVSeparator;
-
-		header += "RH_LEFT_ELBOW_X" + CSVSeparator;
-		header += "RH_LEFT_ELBOW_Y" + CSVSeparator;
-		header += "RH_LEFT_ELBOW_Z" + CSVSeparator;
-
-		header += "RH_LEFT_HAND_X" + CSVSeparator;
-		header += "RH_LEFT_HAND_Y" + CSVSeparator;
-		header += "RH_LEFT_HAND_Z" + CSVSeparator;
-
-		header += "RH_LEFT_HAND_TIP_X" + CSVSeparator;
-		header += "RH_LEFT_HAND_TIP_Y" + CSVSeparator;
-		header += "RH_LEFT_HAND_TIP_Z" + CSVSeparator;
-
-		header += "RH_RIGHT_SHOULDER_X" + CSVSeparator;
-		header += "RH_RIGHT_SHOULDER_Y" + CSVSeparator;
-		header += "RH_RIGHT_SHOULDER_Z" + CSVSeparator;
-
-		header += "RH_RIGHT_ELBOW_X" + CSVSeparator;
-		header += "RH_RIGHT_ELBOW_Y" + CSVSeparator;
-		header += "RH_RIGHT_ELBOW_Z" + CSVSeparator;
-
-		header += "RH_RIGHT_HAND_X" + CSVSeparator;
-		header += "RH_RIGHT_HAND_Y" + CSVSeparator;
-		header += "RH_RIGHT_HAND_Z" + CSVSeparator;
-
-		header += "RH_RIGHT_HAND_TIP_X" + CSVSeparator;
-		header += "RH_RIGHT_HAND_TIP_Y" + CSVSeparator;
-		header += "RH_RIGHT_HAND_TIP_Z" + CSVSeparator;
-
-
-		_writeLine (header, filename);
+        _writeLine(header, filename);
 
 		__inSession__ = true;
 		_console.writeLine ("[LOG] session started");
@@ -149,8 +91,26 @@ public class LogEvaluation : MonoBehaviour {
 		_console.writeLine ("[LOG] session ended");
 	}
 
-	public void recordSnapshot(int task, int condition, Human leftHuman, bool leftHumanPointingHandisTheLeft, Vector3 leftHumanTargetOnTheWall,
-														Human rightHuman, bool rightHumanPointingHandisTheLeft, Vector3 rightHumanTargetOnTheWall)
+	public void recordSnapshot(int task, 
+                               EvaluationCondition condition,
+                               
+                               Human leftHuman,
+                               Role leftHuman_Role,
+                               PointingArm leftHuman_PointingArm,
+                               
+                               Human rightHuman,
+                               Role rightHuman_Role,
+                               PointingArm rightHuman_PointingArm,
+                               
+                               float errorAngle,
+                               float errorDistance,
+
+                               Vector3 pointer_hitpoint,
+                               Vector3 pointer_head,
+
+                               Vector3 mimic_hitpoint,
+                               Vector3 mimic_head
+                               )
 	{
 		if (!__init__)
 			return;
@@ -161,58 +121,51 @@ public class LogEvaluation : MonoBehaviour {
 
 		if (__inSession__) {
 
-
 			string line = "";
 			line += DateTime.Now.ToString ("H:mm:ss:ff") + CSVSeparator;
 			line += task + CSVSeparator;
-			line += condition + CSVSeparator;
+			line += condition.ToString() + CSVSeparator;
 
-			// LEFT HUMAN
-			line += "" + (leftHumanPointingHandisTheLeft ? "LEFT" : "RIGHT") + CSVSeparator;
-			line += _vector3ToLine (leftHumanTargetOnTheWall) + CSVSeparator;
+            line += leftHuman_Role.ToString() + CSVSeparator;
+            line += rightHuman_Role.ToString() + CSVSeparator;
 
-			line += _vector3ToLine (leftHuman.body.Joints[BodyJointType.head]) + CSVSeparator;
+            line += leftHuman_PointingArm.ToString() + CSVSeparator;
+            line += rightHuman_PointingArm.ToString() + CSVSeparator;
 
-			line += _vector3ToLine (leftHuman.body.Joints[BodyJointType.leftShoulder]) + CSVSeparator;
-			line += _vector3ToLine (leftHuman.body.Joints[BodyJointType.leftElbow]) + CSVSeparator;
-			line += _vector3ToLine (leftHuman.body.Joints[BodyJointType.leftHand]) + CSVSeparator;
-			line += _vector3ToLine (leftHuman.body.Joints[BodyJointType.leftHandTip]) + CSVSeparator;
+            line += errorAngle + CSVSeparator;
+            line += errorDistance + CSVSeparator;
 
-			line += _vector3ToLine (leftHuman.body.Joints[BodyJointType.rightShoulder]) + CSVSeparator;
-			line += _vector3ToLine (leftHuman.body.Joints[BodyJointType.rightElbow]) + CSVSeparator;
-			line += _vector3ToLine (leftHuman.body.Joints[BodyJointType.rightHand]) + CSVSeparator;
-			line += _vector3ToLine (leftHuman.body.Joints[BodyJointType.rightHandTip]) + CSVSeparator;
+            line += pointer_hitpoint.x + CSVSeparator;
+            line += pointer_hitpoint.y + CSVSeparator;
+            line += pointer_hitpoint.z + CSVSeparator;
 
-			// RIGHT HUMAN
-			line += "" + (rightHumanPointingHandisTheLeft ? "LEFT" : "RIGHT") + CSVSeparator;
-			line += _vector3ToLine (rightHumanTargetOnTheWall) + CSVSeparator;
+            line += pointer_head.x + CSVSeparator;
+            line += pointer_head.y + CSVSeparator;
+            line += pointer_head.z + CSVSeparator;
 
-			line += _vector3ToLine (rightHuman.body.Joints[BodyJointType.head]) + CSVSeparator;
+            line += mimic_hitpoint.x + CSVSeparator;
+            line += mimic_hitpoint.y + CSVSeparator;
+            line += mimic_hitpoint.z + CSVSeparator;
 
-			line += _vector3ToLine (rightHuman.body.Joints[BodyJointType.leftShoulder]) + CSVSeparator;
-			line += _vector3ToLine (rightHuman.body.Joints[BodyJointType.leftElbow]) + CSVSeparator;
-			line += _vector3ToLine (rightHuman.body.Joints[BodyJointType.leftHand]) + CSVSeparator;
-			line += _vector3ToLine (rightHuman.body.Joints[BodyJointType.leftHandTip]) + CSVSeparator;
+            line += mimic_head.x + CSVSeparator;
+            line += mimic_head.y + CSVSeparator;
+            line += mimic_head.z + CSVSeparator;
 
-			line += _vector3ToLine (rightHuman.body.Joints[BodyJointType.rightShoulder]) + CSVSeparator;
-			line += _vector3ToLine (rightHuman.body.Joints[BodyJointType.rightElbow]) + CSVSeparator;
-			line += _vector3ToLine (rightHuman.body.Joints[BodyJointType.rightHand]) + CSVSeparator;
-			line += _vector3ToLine (rightHuman.body.Joints[BodyJointType.rightHandTip]) + CSVSeparator;
-
-			_writeLine (line, filename);
+            _writeLine(line, filename);
 
 			if (task == NumberOfTrials) {
 				endSession ();
 			}
 		} else
-			_console.writeLineRed ("Not in session. Start with Task = 1");
+			_console.writeLineRed ("Not in session. Start with Task = 0");
 	}
 
 	private void _writeLine (string line, string file)
 	{
-		using (StreamWriter w = File.AppendText(file))
+        using (StreamWriter w = File.AppendText(file))
 		{
 			w.WriteLine (line);
+            w.Close();
 		}
 	}
 

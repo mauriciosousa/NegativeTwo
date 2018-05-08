@@ -45,7 +45,7 @@ public class ServerConsole : MonoBehaviour {
         {
             maxLines = Screen.height / consoleLineHeight - 1;
 
-            GUI.Box(new Rect(0, 0, Screen.width / 3.5f, Screen.height), "");
+            GUI.Box(new Rect(0, 0, Screen.width / 4f, Screen.height), "");
 
             int top = 0;
             int left = 10;
