@@ -309,7 +309,7 @@ public class Evaluation : MonoBehaviour {
                             _console.writeLineGreen(" ");
                             _console.writeLineGreen("########################################");
                             _console.writeLineGreen(" ");
-                            _reset();
+                            reset();
                         }
                         _incTask();
                     }
@@ -318,12 +318,17 @@ public class Evaluation : MonoBehaviour {
 
 			if (GUI.Button(new Rect(left + 10, Screen.height - 19, width - 20, 19), "Reset"))
 			{
-				_reset();
+				reset();
+                _network.reset();
 			}
         }
         else if (_network.evaluationPeerType == EvaluationPeertype.CLIENT)
         {
-            GUI.Box(new Rect(Screen.width / 2, 30, 300, 30), "in progress: " + taskInProgress);
+            GUI.Box(new Rect(0, Screen.height / 2 - 150, Screen.width, 300), "");
+            GUI.Label(new Rect(10, 10, 1000, 500), "CLIENT: " + clientPosition.ToString(), conditionFontStyle);
+            GUI.Label(new Rect(10, 60, 1000, 500), "IN PROGRESS: " + taskInProgress, conditionFontStyle);
+            GUI.Label(new Rect(10, 110, 1000, 500), "TASK: " + _task, conditionFontStyle);
+            GUI.Label(new Rect(10, 160, 1000, 500), "CONDITION: " + condition, conditionFontStyle);
         }
     }
 
@@ -495,12 +500,12 @@ public class Evaluation : MonoBehaviour {
             if (_task == NumberOfRepetitions)
             {
                 _task = 0;
-                _reset();
+                reset();
             }
         }
 	}
 
-    private void _reset()
+    public void reset()
     {
         _taskInProgress = false;
         _instructionsPanel.gameObject.SetActive(false);

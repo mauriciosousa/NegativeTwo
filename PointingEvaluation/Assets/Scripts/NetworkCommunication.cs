@@ -115,4 +115,17 @@ public class NetworkCommunication : MonoBehaviour {
 		_networkView.RPC("RPC_endTrial", RPCMode.Others);
 	}
 
+    [RPC]
+    void RPC_reset()
+    {
+        if (evaluationPeerType == EvaluationPeertype.CLIENT)
+        {
+            _evaluation.reset();
+        }
+    }
+
+    public void reset()
+    {
+        _networkView.RPC("RPC_endTrial", RPCMode.Others);
+    }
 }
