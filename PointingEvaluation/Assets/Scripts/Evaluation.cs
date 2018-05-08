@@ -228,7 +228,7 @@ public class Evaluation : MonoBehaviour {
                     {
                         _taskInProgress = true;
 
-                        _network.startTrial(_task);
+                        _network.startTrial(_task, (int) condition);
                         _console.writeLineGreen("TASK " + _task + " started...");
                     }
                 }
