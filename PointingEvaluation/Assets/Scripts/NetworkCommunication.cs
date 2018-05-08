@@ -49,9 +49,8 @@ public class NetworkCommunication : MonoBehaviour {
         }
         else
         {
-            //Network.Connect(_address, _port);
+            Network.Connect(_address, _port);
         }
-
 	}
 	
 	void Update () {
@@ -60,6 +59,7 @@ public class NetworkCommunication : MonoBehaviour {
 
     void OnPlayerConnected(NetworkPlayer player)
     {
+
         _console.writeLineGreen("New Player @ " + player.ipAddress);
     }
 
@@ -107,9 +107,9 @@ public class NetworkCommunication : MonoBehaviour {
         }
     }
 
-    public void startTrial(int trialID)
+    public void startTrial(int trialID, int condition)
     {
-        _networkView.RPC("RPC_startTrial", RPCMode.Others, trialID);
+        _networkView.RPC("RPC_startTrial", RPCMode.Others, trialID, condition);
     }
 
 	[RPC]

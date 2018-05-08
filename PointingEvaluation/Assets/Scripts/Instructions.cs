@@ -68,10 +68,10 @@ public class Instructions : MonoBehaviour {
             return;
 
 		if (!_eval.taskInProgress) {
-            this.gameObject.SetActive(false);
+            //this.gameObject.SetActive(false);
         }
         else {
-            this.gameObject.SetActive(true);
+            //this.gameObject.SetActive(true);
 
             Role myRole = _eval.getMyRole();
 

@@ -136,25 +136,17 @@ public class Evaluation : MonoBehaviour {
 		if (_network.evaluationPeerType == EvaluationPeertype.SERVER) {
 			_log.Init (_numberOfRepetitions);
 		}
-	}
+
+        leftTarget.SetActive(false);
+        rightTarget.SetActive(false);
+
+    }
 	
 	void Update () {
 
-        if (/*_network.evaluationPeerType == EvaluationPeertype.CLIENT &&*/ _taskInProgress)
+        if (_network.evaluationPeerType == EvaluationPeertype.CLIENT && _taskInProgress)
         {
-            if (evaluationPosition == EvaluationPosition.ON_THE_LEFT && Task == 1)
-            {
-                leftTarget.SetActive(true);
-            }
-            else
-                leftTarget.SetActive(false);
 
-            if (evaluationPosition == EvaluationPosition.ON_THE_RIGHT && (Task == 1 || Task == 8))
-            {
-                leftTarget.SetActive(true);
-            }
-            else
-                leftTarget.SetActive(false);
         }
     }
 
@@ -162,7 +154,7 @@ public class Evaluation : MonoBehaviour {
     {
         if (_network.evaluationPeerType == EvaluationPeertype.SERVER)
         {
-            int width = (int) Math.Max(Math.Ceiling(Screen.width / 3.5f), 300);
+            int width = (int)Math.Max(Math.Ceiling(Screen.width / 3.5f), 300);
             int left = Screen.width - width;
             int top = 0;
             int lineHeight = 25;
@@ -176,17 +168,17 @@ public class Evaluation : MonoBehaviour {
             top += 2 * lineHeight;
             left = Screen.width - width;
 
-			if (GUI.Button(new Rect(left + 5, top, width / 2 - 10, 1.5f * lineHeight), "Human LEFT"))
-			{
+            if (GUI.Button(new Rect(left + 5, top, width / 2 - 10, 1.5f * lineHeight), "Human LEFT"))
+            {
                 _setupHumans(TypeOfHuman.LeftHuman);
             }
-			GUI.Box (new Rect(left + 5, top + 1.5f*lineHeight, width / 2 - 10, 5), "", (leftHuman != null) ? greenBox : redBox);
+            GUI.Box(new Rect(left + 5, top + 1.5f * lineHeight, width / 2 - 10, 5), "", (leftHuman != null) ? greenBox : redBox);
 
-			if (GUI.Button (new Rect (left + width / 2, top, width / 2 - 5, 1.5f * lineHeight), "Human RIGHT"))
+            if (GUI.Button(new Rect(left + width / 2, top, width / 2 - 5, 1.5f * lineHeight), "Human RIGHT"))
             {
                 _setupHumans(TypeOfHuman.RightHuman);
             }
-			GUI.Box (new Rect(left + width / 2, top + 1.5f*lineHeight, width / 2 - 5, 5), "", (rightHuman != null) ? greenBox : redBox);
+            GUI.Box(new Rect(left + width / 2, top + 1.5f * lineHeight, width / 2 - 5, 5), "", (rightHuman != null) ? greenBox : redBox);
 
 
             // CONDITION
@@ -199,7 +191,7 @@ public class Evaluation : MonoBehaviour {
                 _swapCondition();
             }
             left += 10;
-            GUI.Label(new Rect(Screen.width - width / 2 - 100, top-5, 200, 2 * lineHeight), condition.ToString().Replace('_', ' '), conditionFontStyle);
+            GUI.Label(new Rect(Screen.width - width / 2 - 100, top - 5, 200, 2 * lineHeight), condition.ToString().Replace('_', ' '), conditionFontStyle);
             if (GUI.Button(new Rect(Screen.width - 40 - 10, top, 40, 40), forwardIcon, GUIStyle.none))
             {
                 _swapCondition();
@@ -232,12 +224,13 @@ public class Evaluation : MonoBehaviour {
             {
                 if (GUI.Button(new Rect(left + 10, top, width - 20, 1.5f * lineHeight), "Start Task"))
                 {
-					if (_checkHumans ()) {
-						_taskInProgress = true;
+                    if (_checkHumans())
+                    {
+                        _taskInProgress = true;
 
-						_network.startTrial (_task);
-						_console.writeLineGreen ("TASK " + _task + " started...");
-					}
+                        _network.startTrial(_task);
+                        _console.writeLineGreen("TASK " + _task + " started...");
+                    }
                 }
             }
             else
@@ -323,6 +316,10 @@ public class Evaluation : MonoBehaviour {
                     }
                 }
             }
+        }
+        else if (_network.evaluationPeerType == EvaluationPeertype.CLIENT)
+        {
+            GUI.Box(new Rect(Screen.width / 2, 30, 300, 30), "in progress: " + taskInProgress);
         }
     }
 
