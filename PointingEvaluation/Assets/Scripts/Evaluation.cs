@@ -314,12 +314,12 @@ public class Evaluation : MonoBehaviour {
                         _incTask();
                     }
                 }
-
-                if (GUI.Button(new Rect(left, top, width, lineHeight), "reset"))
-                {
-                    _reset();
-                }
             }
+
+			if (GUI.Button(new Rect(left + 10, Screen.height - 19, width - 20, 19), "Reset"))
+			{
+				_reset();
+			}
         }
         else if (_network.evaluationPeerType == EvaluationPeertype.CLIENT)
         {
