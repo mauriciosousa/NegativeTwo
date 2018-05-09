@@ -19,10 +19,8 @@ public class BodiesManager : MonoBehaviour
     private Evaluation _evaluation;
     private NetworkCommunication _network;
 
-
     public GameObject LeftHumanGO;
     public GameObject RightHumanGO;
-    
 
     void Start()
     {
@@ -31,7 +29,6 @@ public class BodiesManager : MonoBehaviour
         _remoteHumans = new Dictionary<string, Human>();
         _evaluation = GameObject.Find("PointingEvaluation").GetComponent<Evaluation>();
         _network = GameObject.Find("PointingEvaluation").GetComponent<NetworkCommunication>();
-
     }
 
     private string _getHumanIdWithHandUp()
@@ -64,6 +61,25 @@ public class BodiesManager : MonoBehaviour
             _renderServerBody(LeftHuman, LeftHumanGO);
             _renderServerBody(RightHuman, RightHumanGO);
         }
+    }
+
+    public Vector3 getHeadPosition(out bool canApplyHeadPosition)
+    {
+        canApplyHeadPosition = false;
+
+        if (_evaluation.clientPosition == EvaluationPosition.ON_THE_LEFT && LeftHuman != null)
+        {
+            canApplyHeadPosition = true;
+            return transform.position = LeftHuman.body.Joints[BodyJointType.head];
+        }
+
+        if (_evaluation.clientPosition == EvaluationPosition.ON_THE_RIGHT && RightHuman != null)
+        {
+            canApplyHeadPosition = true;
+            return transform.position = RightHuman.body.Joints[BodyJointType.head];
+        }
+
+        return Vector3.zero;
     }
 
     public void setNewFrame(Body[] bodies)
@@ -147,6 +163,7 @@ public class BodiesManager : MonoBehaviour
         }
         else
         {
+            UnityEngine.XR.InputTracking.Recenter();
             RightHuman = h;
             return h.id;
         }
@@ -161,9 +178,12 @@ public class BodiesManager : MonoBehaviour
         }
         else
         {
+            UnityEngine.XR.InputTracking.Recenter();
             LeftHuman = h;
             return h.id;
         }
+
+
     }
 
     internal void calibrateHumans(EvaluationPosition evaluationPosition)
