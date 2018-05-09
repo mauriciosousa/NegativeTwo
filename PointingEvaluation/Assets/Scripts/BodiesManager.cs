@@ -86,6 +86,18 @@ public class BodiesManager : MonoBehaviour
         }
     }
 
+    internal int remoteHead()
+    {
+        if (_evaluation.clientPosition == EvaluationPosition.ON_THE_LEFT)
+        {
+            return LeftHuman == null ? 0 : 1;
+        }
+        else
+        {
+            return RightHuman == null ? 0 : 1;
+        }
+    }
+
     void _cleanDeadHumans()
     {
         List<Human> deadhumans = new List<Human>();
@@ -167,6 +179,14 @@ public class BodiesManager : MonoBehaviour
                 calibrateRightHuman();
             }
         }
+    }
+
+    internal Vector3 getLocalHead()
+    {
+        if (_evaluation.clientPosition == EvaluationPosition.ON_THE_LEFT)
+            return LeftHuman == null ? Vector3.zero : LeftHuman.body.Joints[BodyJointType.head];
+        else
+            return RightHuman == null ? Vector3.zero : RightHuman.body.Joints[BodyJointType.head];
     }
 
     private void _renderServerBody(Human human, GameObject go)

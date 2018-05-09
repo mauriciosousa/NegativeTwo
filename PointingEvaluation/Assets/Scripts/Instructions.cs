@@ -52,22 +52,9 @@ public class Instructions : MonoBehaviour {
 
     public TextMesh textMesh;
 
-    public Transform leftHumanPosition;
-    public Transform rightHumanPosition;
-
     void Start () {
 		_eval = GameObject.Find ("PointingEvaluation").GetComponent<Evaluation> ();
 		_network = GameObject.Find ("PointingEvaluation").GetComponent<NetworkCommunication> ();
-
-        if (_eval.clientPosition == EvaluationPosition.ON_THE_LEFT)
-        {
-            transform.position = new Vector3(leftHumanPosition.transform.position.x, transform.position.y, transform.position.z);
-        }
-
-        if (_eval.clientPosition == EvaluationPosition.ON_THE_RIGHT)
-        {
-            transform.position = new Vector3(rightHumanPosition.transform.position.x, transform.position.y, transform.position.z);
-        } 
 
     }
 

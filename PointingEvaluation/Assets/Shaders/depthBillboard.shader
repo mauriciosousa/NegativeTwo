@@ -118,9 +118,11 @@ Shader "Custom/Depth Billboard"
 
 					float4 worldPos = mul(unity_ObjectToWorld, pos);
 					
-					if(distance(worldPos,float4(_VRHeadPos,1.0f)) < _HeadSize)
-						c.a=0;
-					
+
+					if (distance(worldPos, float4(_VRHeadPos, 1.0f)) < _HeadSize)
+						c.a = 0;
+
+
 					float inc = 0.10f;
 					float4 A;
 					float4 B;

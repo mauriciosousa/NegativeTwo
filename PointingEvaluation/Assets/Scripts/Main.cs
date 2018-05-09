@@ -61,14 +61,20 @@ public class Main : MonoBehaviour {
     Vector3 remoteRightHit;
     private GameObject _wall = null;
     public float maxHandVelocity = 1.0f;
-    private Vector3 _localHead;
+
+     
 
 
-
-   public Vector3 getLocalHead()
+    public Vector3 getLocalHead()
     {
-        return _localHead;
+        return _bodies.getLocalHead();
     }
+
+    public int remoteHead()
+    {
+        return _bodies.remoteHead();
+    }
+
     void Awake()
     {
         Application.runInBackground = true;
@@ -160,7 +166,7 @@ public class Main : MonoBehaviour {
 
             if(go.name == "LocalBody")
             {
-                _localHead = head;
+                //_localHead = head;
             }
 
 
@@ -189,7 +195,6 @@ public class Main : MonoBehaviour {
           
         }
     }
-
 
     private void _applyDisplacement(Human human, GameObject go)
     {
