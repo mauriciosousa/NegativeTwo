@@ -206,6 +206,7 @@ public class PointCloudDepth : MonoBehaviour
             _colorTex.LoadRawTextureData(colorBytes);
         }
 
+
         _colorTex.Apply();
         _depthTex.Apply();
 

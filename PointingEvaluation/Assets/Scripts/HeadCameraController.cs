@@ -21,5 +21,10 @@ public class HeadCameraController : MonoBehaviour
         {
             this.transform.position = headposition;
         }
+        else
+        {
+            this.transform.position = new Vector3(0, 1.8f, 0);
+        }
+
     }
 }

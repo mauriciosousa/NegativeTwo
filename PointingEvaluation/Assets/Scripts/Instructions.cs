@@ -52,13 +52,23 @@ public class Instructions : MonoBehaviour {
 
     public TextMesh textMesh;
 
+    public Transform LeftHumanPosition;
+    public Transform RightHumanPosition;
+
     void Start () {
 		_eval = GameObject.Find ("PointingEvaluation").GetComponent<Evaluation> ();
 		_network = GameObject.Find ("PointingEvaluation").GetComponent<NetworkCommunication> ();
 
+
+        if (_network.evaluationPeerType == EvaluationPeertype.CLIENT)
+        {
+            print("---- " + LeftHumanPosition.position.x);
+
+            this.transform.position = new Vector3(_eval.clientPosition == EvaluationPosition.ON_THE_LEFT ? -LeftHumanPosition.position.x : -RightHumanPosition.transform.position.x, transform.position.y, transform.position.z); 
+        }
     }
 
-	void Update () {
+    void Update () {
         if (_network.evaluationPeerType == EvaluationPeertype.SERVER)
             return;
 

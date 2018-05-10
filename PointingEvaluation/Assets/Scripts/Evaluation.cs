@@ -114,6 +114,8 @@ public class Evaluation : MonoBehaviour {
 
     public BoxCollider wallCollider;
 
+    public bool showClientGUI;
+
     void Start () {
 
 		redBox = new GUIStyle ();
@@ -322,7 +324,7 @@ public class Evaluation : MonoBehaviour {
                 _network.reset();
 			}
         }
-        else if (_network.evaluationPeerType == EvaluationPeertype.CLIENT)
+        else if (_network.evaluationPeerType == EvaluationPeertype.CLIENT && showClientGUI)
         {
             GUI.Box(new Rect(0, Screen.height / 2 - 150, Screen.width, 300), "");
             GUI.Label(new Rect(10, 10, 1000, 500), "CLIENT: " + clientPosition.ToString(), conditionFontStyle);
