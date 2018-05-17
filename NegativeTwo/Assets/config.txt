@@ -2,7 +2,7 @@ ns.length=1.00
 
 rpc.server.address=192.168.0.111
 
-Instructor.machine.address=192.168.0.101
+Instructor.machine.address=192.168.0.102
 
 Instructor.rpc.port=5000
 Instructor.rcv.handheld.port=5101
