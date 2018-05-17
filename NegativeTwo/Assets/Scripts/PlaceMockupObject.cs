@@ -19,6 +19,7 @@ public class PlaceMockupObject : MonoBehaviour {
         {
             target.position = origin.position;
             target.rotation = origin.rotation;
+            target.Rotate(target.up, 180);
         }
         else
         {
