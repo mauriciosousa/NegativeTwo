@@ -212,7 +212,7 @@ public class PointCloudDepth : MonoBehaviour
 
         MeshRenderer[] renderers = GetComponentsInChildren<MeshRenderer>();
 
-        Main m = GameObject.Find("Main").GetComponent<Main>();
+        BodyWarping m = GameObject.Find("Main").GetComponent<BodyWarping>();
 
         for (int i = 0; i < renderers.Length; i++)
         {
@@ -246,7 +246,6 @@ public class PointCloudDepth : MonoBehaviour
             mr.material.SetInt("_RightPointing", m.rightPointingInfo.pointing ? 1 : 0);
 
         }
-
     }
 
 }

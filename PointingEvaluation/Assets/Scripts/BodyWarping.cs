@@ -3,137 +3,106 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-[Serializable()]
-public class NegativeRuntimeException : System.Exception
+public class PointingDistortionInfo
 {
-    public NegativeRuntimeException() : base() { }
-    public NegativeRuntimeException(string message) : base(message) { }
-    public NegativeRuntimeException(string message, System.Exception inner) : base(message, inner) { }
-    protected NegativeRuntimeException(System.Runtime.Serialization.SerializationInfo info, System.Runtime.Serialization.StreamingContext context) { }
+    public Matrix4x4 matrix;
+    public Vector3 midPoint;
+    public float distance;
+    public Vector3 Shoulder;
+    public Vector3 Elbow;
+    public Vector3 Wrist;
+    public Vector3 Hand;
+    public Vector3 HandTip;
+    internal bool pointing;
+
+    public PointingDistortionInfo()
+    {
+        matrix = Matrix4x4.identity;
+        midPoint = Vector3.zero;
+        distance = 0;
+        Shoulder = Vector3.zero;
+        Elbow = Vector3.zero;
+        Wrist = Vector3.zero;
+        Hand = Vector3.zero;
+        HandTip = Vector3.zero;
+        pointing = false;
+    }
 }
 
-public class Main : MonoBehaviour {
+public class BodyWarping : MonoBehaviour {
 
-    public Location location;
-
-    public Properties properties;
-
+    public BodiesManager bodies;
     public Evaluation evaluation;
-  
-    private UdpBodiesListener _udpLocalBodiesListener;
-    private BodiesManager _bodies;
-    public bool correctingPointing = true;
+    public NetworkCommunication network;
 
-    //public PointingDistortionInfo rightPointingInfo;
-    //public PointingDistortionInfo leftPointingInfo;
+    public GameObject wall;
 
-    public bool mirrorPessoa = false;
+    private Human _human;
+
+    public GameObject leftBody;
+    public GameObject rightBody;
+
+    public PointingDistortionInfo rightPointingInfo;
+    public PointingDistortionInfo leftPointingInfo;
+
+    private Vector3 lastRightHandPos;
+    private Vector3 lastLeftHandPos;
+
     public float headSize;
-    Vector3 lastRightHandPos;
-    Vector3 lastLeftHandPos;
-    Vector3 remoteLeftHit;
-    Vector3 remoteRightHit;
-    public GameObject Wall;
+
     public float maxHandVelocity = 1.0f;
 
-     
+    public bool applyWarp = true;
 
+    void Start ()
+    {
+        _human = null;
+
+        rightPointingInfo = new PointingDistortionInfo();
+        leftPointingInfo = new PointingDistortionInfo();
+    }
+
+    void Update ()
+    {
+        if (network.evaluationPeerType != EvaluationPeertype.CLIENT) return;
+
+
+        if (bodies.LeftHuman != null) updateBody(bodies.LeftHuman, leftBody);
+        if (bodies.RightHuman != null) updateBody(bodies.RightHuman, rightBody);
+
+
+        // applyWarp = evaluation.taskInProgress && evaluation.condition == EvaluationCondition.DEICTICS_CORRECTION)
+        
+        GameObject go = null;
+        if (evaluation.clientPosition == EvaluationPosition.ON_THE_LEFT)
+        {
+            _human = bodies.RightHuman;
+            go = rightBody;
+        }
+        else
+        {
+            _human = bodies.LeftHuman;
+            go = leftBody;
+        }
+
+        if (_human != null && go != null)
+        {
+            _applyWarp(_human, go);
+        }
+	}
 
     public Vector3 getLocalHead()
     {
-        return _bodies.getLocalHead();
+        return bodies.getLocalHead();
     }
 
-    public int remoteHead()
-    {
-        return _bodies.remoteHead();
-    }
-
-    void Awake()
-    {
-        Application.runInBackground = true;
-
-        properties = GetComponent<Properties>();
-        try
-        {
-            properties.load();
-        }
-        catch (NegativeRuntimeException e)
-        {
-            Debug.LogException(e);
-            strategicExit();
-        }
-
-        UdpBodiesListener[] udpListeners = GameObject.Find("BodiesManager").GetComponents<UdpBodiesListener>();
-        foreach (UdpBodiesListener l in udpListeners)
-        {
-            if (l.humansType == HumansType.Local)
-            {
-                _udpLocalBodiesListener = l;
-            }
-        }
-
-        //_wall = GameObject.Find("Wall");
-        _bodies = GameObject.Find("BodiesManager").GetComponent<BodiesManager>();
-        _udpLocalBodiesListener.startListening(int.Parse(properties.info.trackerBroadcastPort));
-        //rightPointingInfo = new PointingDistortionInfo();
-        //leftPointingInfo = new PointingDistortionInfo();
-
-		if (GameObject.Find ("PointingEvaluation").GetComponent<EvaluationConfigProperties> ().evaluatoinPeerType == EvaluationPeertype.CLIENT) {
-			GameObject.Find("RavatarManager").GetComponent<TcpDepthListener>().Init(int.Parse(properties.info.avatarListenPort));
-			GameObject.Find("RavatarManager").GetComponent<Tracker>().Init(int.Parse(properties.info.avatarListenPort), int.Parse(properties.info.trackerListenPort));
-		}
-	
-	}
-
-	void Start ()
-    {
-    }
-
-    private static void strategicExit()
-    {
-        if (Application.isEditor)
-        {
-            Debug.Break();
-        }
-    }
-
-    void Update()
-    {
-
-        //if (_bodies._localHuman != null) updateBody(_bodies._localHuman, GameObject.Find("LocalBody"));
-        //if (_bodies._remoteHuman!= null) updateBody(_bodies._remoteHuman, GameObject.Find("RemoteBody"));
-
-        /*if (true) // evaluation.taskInProgress && evaluation.condition == EvaluationCondition.DEICTICS_CORRECTION)
-        {
-            Human human;
-            GameObject go;
-            if (evaluation.clientPosition == EvaluationPosition.ON_THE_LEFT)
-            {
-                human = _bodies.RightHuman;
-                go = GameObject.Find("RightBody");
-            }
-            else
-            {
-                human = _bodies.LeftHuman;
-                go = GameObject.Find("RightBody");
-            }
-
-            _applyDisplacement(human, go);
-        }*/
-    }
-
-    /*
     private void updateBody(Human human, GameObject go)
     {
-        Debug.Log("update body");
-
         Vector3 head = human.body.Joints[BodyJointType.head];
         Vector3 leftHand = human.body.Joints[BodyJointType.leftHand];
         Vector3 rightHand = human.body.Joints[BodyJointType.rightHand];
 
-        // _filteredHandPosition.Value = _handheldListener.Message.Hand == HandType.Left ? leftHand : rightHand;
-        if (go != null && go.activeSelf)
+        if (go != null)// && go.activeSelf)
         {
 
             go.transform.Find("HEAD").localPosition = head;
@@ -157,40 +126,10 @@ public class Main : MonoBehaviour {
             go.transform.Find("RIGHTFOOT").localPosition = human.body.Joints[BodyJointType.rightFoot];
             go.transform.Find("LEFTHANDTIP").localPosition = human.body.Joints[BodyJointType.leftHandTip];
             go.transform.Find("RIGHTHANDTIP").localPosition = human.body.Joints[BodyJointType.rightHandTip];
-
-            if(go.name == "LocalBody")
-            {
-                //_localHead = head;
-            }
-
-
-            if (go.name == "RemoteBody" && correctingPointing)
-            {
-                Ray ray;
-                Vector3 hit;
-                RaycastHit hitInfo;
-
-                // right
-                ray = new Ray(human.body.Joints[BodyJointType.rightHandTip], human.body.Joints[BodyJointType.rightHandTip] - human.body.Joints[BodyJointType.head]);
-                if (Wall.GetComponent<Collider>().Raycast(ray, out hitInfo, 1000.0f))
-                    remoteRightHit = hitInfo.point;
-                else
-                    remoteRightHit = Vector3.positiveInfinity;
-
-                // left
-                ray = new Ray(human.body.Joints[BodyJointType.leftHandTip], human.body.Joints[BodyJointType.leftHandTip] - human.body.Joints[BodyJointType.head]);
-                if (Wall.GetComponent<Collider>().Raycast(ray, out hitInfo, 1000.0f))
-                    remoteLeftHit = hitInfo.point;
-                else
-                    remoteLeftHit = Vector3.positiveInfinity;
-
-                //_applyDisplacement(human, go);
-            }
-          
         }
     }
 
-    private void _applyDisplacement(Human human, GameObject go)
+    private void _applyWarp(Human human, GameObject go)
     {
         if (go == null) return;
 
@@ -212,21 +151,10 @@ public class Main : MonoBehaviour {
             lastLeftHandPos = leftTip;
         }
 
-
-        //bool leftPointing = _isPointingToWorkspace(new Ray(leftTip, leftTip - head), workspaceCollider, out leftHit);
-        //bool leftPointing = !float.IsPositiveInfinity(remoteLeftHit.x);
-        //if (leftPointing) leftHit = _wall.transform.TransformPoint(remoteLeftHit);
-
-        //bool rightPointing = _isPointingToWorkspace(new Ray(rightTip, rightTip - head), workspaceCollider, out rightHit);
-        //bool rightPointing = !float.IsPositiveInfinity(remoteRightHit.x);
-        //if (rightPointing) rightHit = _wall.transform.TransformPoint(remoteRightHit);
-
         Vector3 leftHit;
         bool leftPointing = _isPointingToWall(new Ray(leftTip, leftTip - head), out leftHit);
         Vector3 rightHit;
         bool rightPointing = _isPointingToWall(new Ray(rightTip, rightTip - head), out rightHit);
-
-        
 
         Transform leftHand_d = go.transform.Find("LEFTHAND_D");
         leftHand_d.position = leftTip;
@@ -238,7 +166,8 @@ public class Main : MonoBehaviour {
 
         // Left Pointing
 
-        m = _correctPointing(leftShoulder, leftTip, head, leftPointing, remoteLeftHit, ref lastLeftHandPos);
+        
+        if (applyWarp) m = _correctPointing(leftShoulder, leftTip, head, leftPointing, leftHit, ref lastLeftHandPos);
 
         leftHand_d.position = m.MultiplyPoint(leftHand_d.position);
 
@@ -250,11 +179,11 @@ public class Main : MonoBehaviour {
         leftPointingInfo.Wrist = go.transform.Find("LEFTWRIST").transform.position;
         leftPointingInfo.Hand = go.transform.Find("LEFTHAND").transform.position;
         leftPointingInfo.HandTip = go.transform.Find("LEFTHANDTIP").transform.position;
-        leftPointingInfo.pointing = true;
+        leftPointingInfo.pointing = leftPointing;// true;
 
         // Right Pointing
 
-        m = _correctPointing(rightShoulder, rightTip, head, rightPointing, remoteRightHit, ref lastRightHandPos);
+        if (applyWarp) m = _correctPointing(rightShoulder, rightTip, head, rightPointing, rightHit, ref lastRightHandPos);
 
         rightHand_d.position = m.MultiplyPoint(rightHand_d.position);
 
@@ -266,14 +195,26 @@ public class Main : MonoBehaviour {
         rightPointingInfo.Wrist = go.transform.Find("RIGHTWRIST").transform.position;
         rightPointingInfo.Hand = go.transform.Find("RIGHTHAND").transform.position;
         rightPointingInfo.HandTip = go.transform.Find("RIGHTHANDTIP").transform.position;
-        rightPointingInfo.pointing = true;
+        rightPointingInfo.pointing = rightPointing;// true;
+
+        if (leftPointing)
+        {
+            Debug.DrawLine(head, leftTip, Color.cyan);
+            Debug.DrawLine(head, leftHand_d.position, Color.cyan);
+        }
+
+        if (rightPointing)
+        {
+            Debug.DrawLine(head, rightTip, Color.cyan);
+            Debug.DrawLine(head, rightHand_d.position, Color.cyan);
+        }
     }
 
     private bool _isPointingToWall(Ray ray, out Vector3 hitpoint)
     {
         hitpoint = Vector3.zero;
         RaycastHit hit;
-        if (Wall.GetComponent<Collider>().Raycast(ray, out hit, 1000.0f))
+        if (wall.GetComponent<Collider>().Raycast(ray, out hit, 1000.0f))
         {
             //print("hit = " + hit.transform.name + " " + hit.point);
             hitpoint = hit.point;
@@ -283,13 +224,6 @@ public class Main : MonoBehaviour {
         return false;
     }
 
-    private Vector3 reflectWorkspacePoint(Vector3 point) // receives world point, returns world point (yes, that's world 2 times)
-    {
-        Vector3 pointToLocal = _wall.transform.InverseTransformPoint(point);
-        Vector3 reflectedPoint = new Vector3(pointToLocal.x, pointToLocal.y, -pointToLocal.z);
-        return _wall.transform.TransformPoint(reflectedPoint);
-    }
-
     private Matrix4x4 _correctPointing(Vector3 elbow, Vector3 tip, Vector3 head, bool isPointing, Vector3 hit, ref Vector3 lastHandPosition)
     {
         Vector3 oldVector = tip - elbow;
@@ -297,10 +231,6 @@ public class Main : MonoBehaviour {
         Vector3 newHandPosition;
         if (isPointing)
         {
-
-            Debug.DrawLine(head, hit, Color.cyan);
-            Debug.DrawLine(elbow, hit, Color.yellow);
-
             newVector = hit - elbow;
 
             Vector3 reflectedHandPosition = elbow + newVector.normalized * Vector3.Distance(tip, elbow);
@@ -308,7 +238,7 @@ public class Main : MonoBehaviour {
         }
         else
         {
-            rightPointingInfo.pointing = false;
+            //rightPointingInfo.pointing = false;
 
             newHandPosition = _constraintHandDisplacement(tip, lastHandPosition);
         }
@@ -320,7 +250,7 @@ public class Main : MonoBehaviour {
         float angle = Vector3.Angle(oldVector, newVector);
 
         return Matrix4x4.Translate(elbow) * Matrix4x4.TRS(Vector3.zero, Quaternion.AngleAxis(angle, axis), Vector3.one) * Matrix4x4.Translate(-elbow);
-   
+
     }
 
     private Vector3 _constraintHandDisplacement(Vector3 newPos, Vector3 oldPos)
@@ -332,9 +262,6 @@ public class Main : MonoBehaviour {
 
         float maxMag = maxHandVelocity * Time.deltaTime;
         return oldPos + handDisplacement.normalized * (displacementMag > maxMag ? maxMag : displacementMag);
-        return Vector3.zero;
+        //return Vector3.zero;
     }
-
-    */
-
 }

@@ -62,9 +62,8 @@ public class Instructions : MonoBehaviour {
 
         if (_network.evaluationPeerType == EvaluationPeertype.CLIENT)
         {
-            print("---- " + LeftHumanPosition.position.x);
-
-            this.transform.position = new Vector3(_eval.clientPosition == EvaluationPosition.ON_THE_LEFT ? -LeftHumanPosition.position.x : -RightHumanPosition.transform.position.x, transform.position.y, transform.position.z); 
+            
+            //this.transform.position = new Vector3(_eval.clientPosition == EvaluationPosition.ON_THE_LEFT ? -LeftHumanPosition.position.x : -RightHumanPosition.transform.position.x, transform.position.y, transform.position.z); 
         }
     }
 

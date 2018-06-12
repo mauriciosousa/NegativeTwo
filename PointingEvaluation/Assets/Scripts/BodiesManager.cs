@@ -188,6 +188,7 @@ public class BodiesManager : MonoBehaviour
 
     internal void calibrateHumans(EvaluationPosition evaluationPosition)
     {
+        /**
         if (_evaluation.clientPosition == evaluationPosition)
         {
             if (_evaluation.clientPosition == EvaluationPosition.ON_THE_LEFT)
@@ -198,6 +199,15 @@ public class BodiesManager : MonoBehaviour
             {
                 calibrateRightHuman();
             }
+        }
+        */
+        if (evaluationPosition == EvaluationPosition.ON_THE_LEFT)
+        {
+            calibrateLeftHuman();
+        }
+        if (evaluationPosition == EvaluationPosition.ON_THE_RIGHT)
+        {
+            calibrateRightHuman();
         }
     }
 
