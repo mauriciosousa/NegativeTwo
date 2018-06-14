@@ -21,6 +21,8 @@ public class CameraOrbit : MonoBehaviour
 
     private NetworkCommunication _network;
 
+    private bool started = false;
+
     void Start()
     {
         //Vector3 angles = transform.eulerAngles;
@@ -31,6 +33,7 @@ public class CameraOrbit : MonoBehaviour
             GetComponent<Rigidbody>().freezeRotation = true;*/
 
         _network = GetComponent<NetworkCommunication>();
+
     }
 
     void LateUpdate()
@@ -45,21 +48,26 @@ public class CameraOrbit : MonoBehaviour
                 x += Input.GetAxis("Mouse X") * xSpeed * distance * 0.02f;
                 y -= Input.GetAxis("Mouse Y") * ySpeed * 0.02f;
                 y = ClampAngle(y, yMinLimit, yMaxLimit);
+                started = true;
             }
-            Quaternion rotation = Quaternion.Euler(y, x, 0);
 
-            distance = Mathf.Clamp(distance - Input.GetAxis("Mouse ScrollWheel") * 5, distanceMin, distanceMax);
-
-            /*RaycastHit hit;
-            if (Physics.Linecast(target.position, transform.position, out hit))
+            if (started)
             {
-                distance -= hit.distance;
-            }*/
-            Vector3 negDistance = new Vector3(0.0f, 0.0f, -distance);
-            Vector3 position = rotation * negDistance + target.position;
+                Quaternion rotation = Quaternion.Euler(y, x, 0);
 
-            Camera.main.transform.rotation = rotation;
-            Camera.main.transform.position = position;
+                distance = Mathf.Clamp(distance - Input.GetAxis("Mouse ScrollWheel") * 5, distanceMin, distanceMax);
+
+                /*RaycastHit hit;
+                if (Physics.Linecast(target.position, transform.position, out hit))
+                {
+                    distance -= hit.distance;
+                }*/
+                Vector3 negDistance = new Vector3(0.0f, 0.0f, -distance);
+                Vector3 position = rotation * negDistance + target.position;
+
+                Camera.main.transform.rotation = rotation;
+                Camera.main.transform.position = position;
+            }
         }
 
     }

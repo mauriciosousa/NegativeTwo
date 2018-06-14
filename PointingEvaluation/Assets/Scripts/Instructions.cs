@@ -25,7 +25,7 @@ public class InstructionsText
             }
         }
 
-        if (human == EvaluationPosition.ON_THE_LEFT)
+        if (human == EvaluationPosition.ON_THE_RIGHT)
         {
             if (task == 8) return targetMessage;
 

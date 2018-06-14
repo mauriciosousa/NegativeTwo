@@ -1,4 +1,4 @@
 server.address=192.168.0.111
 server.port=5000
-peer.type=CLIENT
+peer.type=SERVER
 client.position=ON_THE_LEFT

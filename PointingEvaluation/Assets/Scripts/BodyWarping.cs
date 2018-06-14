@@ -52,7 +52,8 @@ public class BodyWarping : MonoBehaviour {
 
     public float maxHandVelocity = 1.0f;
 
-    public bool applyWarp = true;
+    private bool applyWarp = false;
+    public bool overrideApplyWarp = false;
 
     void Start ()
     {
@@ -67,11 +68,10 @@ public class BodyWarping : MonoBehaviour {
         if (network.evaluationPeerType != EvaluationPeertype.CLIENT) return;
 
 
-        if (bodies.LeftHuman != null) updateBody(bodies.LeftHuman, leftBody);
-        if (bodies.RightHuman != null) updateBody(bodies.RightHuman, rightBody);
+        
 
 
-        // applyWarp = evaluation.taskInProgress && evaluation.condition == EvaluationCondition.DEICTICS_CORRECTION)
+        applyWarp = overrideApplyWarp || (evaluation.taskInProgress && evaluation.condition == EvaluationCondition.DEICTICS_CORRECTION);
         
         GameObject go = null;
         if (evaluation.clientPosition == EvaluationPosition.ON_THE_LEFT)
@@ -94,39 +94,6 @@ public class BodyWarping : MonoBehaviour {
     public Vector3 getLocalHead()
     {
         return bodies.getLocalHead();
-    }
-
-    private void updateBody(Human human, GameObject go)
-    {
-        Vector3 head = human.body.Joints[BodyJointType.head];
-        Vector3 leftHand = human.body.Joints[BodyJointType.leftHand];
-        Vector3 rightHand = human.body.Joints[BodyJointType.rightHand];
-
-        if (go != null)// && go.activeSelf)
-        {
-
-            go.transform.Find("HEAD").localPosition = head;
-            go.transform.Find("LEFTHAND").localPosition = leftHand;
-            go.transform.Find("RIGHTHAND").localPosition = rightHand;
-            go.transform.Find("NECK").localPosition = human.body.Joints[BodyJointType.neck];
-            go.transform.Find("SPINESHOULDER").localPosition = human.body.Joints[BodyJointType.spineShoulder];
-            go.transform.Find("LEFTSHOULDER").localPosition = human.body.Joints[BodyJointType.leftShoulder];
-            go.transform.Find("RIGHTSHOULDER").localPosition = human.body.Joints[BodyJointType.rightShoulder];
-            go.transform.Find("LEFTELBOW").localPosition = human.body.Joints[BodyJointType.leftElbow];
-            go.transform.Find("RIGHTELBOW").localPosition = human.body.Joints[BodyJointType.rightElbow];
-            go.transform.Find("LEFTWRIST").localPosition = human.body.Joints[BodyJointType.leftWrist];
-            go.transform.Find("RIGHTWRIST").localPosition = human.body.Joints[BodyJointType.rightWrist];
-            go.transform.Find("SPINEBASE").localPosition = human.body.Joints[BodyJointType.spineBase];
-            go.transform.Find("SPINEMID").localPosition = human.body.Joints[BodyJointType.spineMid];
-            go.transform.Find("LEFTHIP").localPosition = human.body.Joints[BodyJointType.leftHip];
-            go.transform.Find("RIGHTHIP").localPosition = human.body.Joints[BodyJointType.rightHip];
-            go.transform.Find("LEFTKNEE").localPosition = human.body.Joints[BodyJointType.leftKnee];
-            go.transform.Find("RIGHTKNEE").localPosition = human.body.Joints[BodyJointType.rightKnee];
-            go.transform.Find("LEFTFOOT").localPosition = human.body.Joints[BodyJointType.leftFoot];
-            go.transform.Find("RIGHTFOOT").localPosition = human.body.Joints[BodyJointType.rightFoot];
-            go.transform.Find("LEFTHANDTIP").localPosition = human.body.Joints[BodyJointType.leftHandTip];
-            go.transform.Find("RIGHTHANDTIP").localPosition = human.body.Joints[BodyJointType.rightHandTip];
-        }
     }
 
     private void _applyWarp(Human human, GameObject go)
@@ -197,16 +164,19 @@ public class BodyWarping : MonoBehaviour {
         rightPointingInfo.HandTip = go.transform.Find("RIGHTHANDTIP").transform.position;
         rightPointingInfo.pointing = rightPointing;// true;
 
-        if (leftPointing)
+        if (overrideApplyWarp)
         {
-            Debug.DrawLine(head, leftTip, Color.cyan);
-            Debug.DrawLine(head, leftHand_d.position, Color.cyan);
-        }
+            if (leftPointing)
+            {
+                Debug.DrawLine(head, leftTip, Color.cyan);
+                Debug.DrawLine(head, leftHand_d.position, Color.cyan);
+            }
 
-        if (rightPointing)
-        {
-            Debug.DrawLine(head, rightTip, Color.cyan);
-            Debug.DrawLine(head, rightHand_d.position, Color.cyan);
+            if (rightPointing)
+            {
+                Debug.DrawLine(head, rightTip, Color.cyan);
+                Debug.DrawLine(head, rightHand_d.position, Color.cyan);
+            }
         }
     }
 

@@ -116,6 +116,8 @@ public class Evaluation : MonoBehaviour {
 
     public bool showClientGUI;
 
+    public GameObject TargetGameobject;
+
     void Start () {
 
 		redBox = new GUIStyle ();
@@ -241,58 +243,118 @@ public class Evaluation : MonoBehaviour {
 
                     try
                     {
-                        Vector3 left_hitpoint = Vector3.zero;
+                        // task
+                        // condition
+                        Vector3 leftHuman_Hitpoint = Vector3.zero;
+                        PointingArm leftHuman_PointingArm = _isPointing(leftHuman, EvaluationPosition.ON_THE_LEFT, out leftHuman_Hitpoint);
 
-                        Role leftHumanRole = getRole(_task, EvaluationPosition.ON_THE_LEFT);
-                        PointingArm leftHuman_PointingArm = _isPointing(leftHuman, EvaluationPosition.ON_THE_LEFT, out left_hitpoint);
+                        Vector3 rightHuman_Hitpoint = Vector3.zero;
+                        PointingArm rightHuman_PointingArm = _isPointing(rightHuman, EvaluationPosition.ON_THE_RIGHT, out rightHuman_Hitpoint);
+
+                        Role leftHuman_Role = getRole(_task, EvaluationPosition.ON_THE_LEFT);
+                        Role rightHuman_Role = getRole(_task, EvaluationPosition.ON_THE_RIGHT);
+
+                        Vector3 target = TargetGameobject.transform.position;
+
+                        Vector3 Phead = Vector3.zero;
+                        Vector3 PElbow = Vector3.zero;
+                        Vector3 PHandTip = Vector3.zero;
+                        Vector3 PhHead = Vector3.zero;
+                        Vector3 PhElbow = Vector3.zero;
+
+                        Vector3 Mhead = Vector3.zero;
+                        Vector3 MElbow = Vector3.zero;
+                        Vector3 MHandTip = Vector3.zero;
+                        Vector3 MhHead = Vector3.zero;
+                        Vector3 MhElbow = Vector3.zero;
 
 
-                        Vector3 right_hitpoint = Vector3.zero;
+                        GameObject LeftBody = _bodies.LeftHumanGO;
+                        GameObject RightBody = _bodies.RightHumanGO;
 
-                        Role rightHumanRole = getRole(_task, EvaluationPosition.ON_THE_RIGHT);
-                        PointingArm rightHuman_PointingArm = _isPointing(rightHuman, EvaluationPosition.ON_THE_RIGHT, out right_hitpoint);
-
-                        Vector3 pointer_head = Vector3.zero;
-                        Vector3 mimic_head = Vector3.zero;
-
-                        Vector3 origin = Vector3.zero;
-                        Vector3 pointer_hit = Vector3.zero;
-                        Vector3 mimic_hit = Vector3.zero;
-
-                        if (leftHumanRole == Role.POINTING_PERSON)
+                        if (leftHuman_Role == Role.POINTING_PERSON)
                         {
-                            pointer_head = leftHuman.body.Joints[BodyJointType.head];
-                            mimic_head = rightHuman.body.Joints[BodyJointType.head];
+                            Phead = LeftBody.transform.Find("HEAD").transform.position;
+                            string str = leftHuman_PointingArm == PointingArm.LEFT ? "LEFTELBOW" : "RIGHTELBOW";
+                            PhElbow = LeftBody.transform.Find(str).transform.position;
+                            str = leftHuman_PointingArm == PointingArm.LEFT ? "LEFTHANDTIP" : "RIGHTHANDTIP";
+                            PHandTip = LeftBody.transform.Find(str).transform.position;
+                            PhHead = _getHitpoint(Phead, PHandTip);
+                            PhElbow = _getHitpoint(PElbow, PHandTip);
 
-                            origin = pointer_head;
-                            pointer_hit = left_hitpoint;
-                            mimic_hit = right_hitpoint;
+                            Mhead = RightBody.transform.Find("HEAD").transform.position;
+                            str = rightHuman_PointingArm == PointingArm.LEFT ? "LEFTELBOW" : "RIGHTELBOW";
+                            MhElbow = RightBody.transform.Find(str).transform.position;
+                            str = rightHuman_PointingArm == PointingArm.LEFT ? "LEFTHANDTIP" : "RIGHTHANDTIP";
+                            MHandTip = RightBody.transform.Find(str).transform.position;
+                            MhHead = _getHitpoint(Mhead, MHandTip);
+                            MhElbow = _getHitpoint(MElbow, MHandTip);
                         }
                         else
                         {
-                            pointer_head = rightHuman.body.Joints[BodyJointType.head];
-                            mimic_head = leftHuman.body.Joints[BodyJointType.head];
+                            Mhead = LeftBody.transform.Find("HEAD").transform.position;
+                            string str = leftHuman_PointingArm == PointingArm.LEFT ? "LEFTELBOW" : "RIGHTELBOW";
+                            MhElbow = LeftBody.transform.Find(str).transform.position;
+                            str = leftHuman_PointingArm == PointingArm.LEFT ? "LEFTHANDTIP" : "RIGHTHANDTIP";
+                            MHandTip = LeftBody.transform.Find(str).transform.position;
+                            MhHead = _getHitpoint(Mhead, MHandTip);
+                            MhElbow = _getHitpoint(MElbow, MHandTip);
 
-                            origin = pointer_head;
-                            pointer_hit = right_hitpoint;
-                            mimic_hit = left_hitpoint;
+                            Phead = RightBody.transform.Find("HEAD").transform.position;
+                            str = rightHuman_PointingArm == PointingArm.LEFT ? "LEFTELBOW" : "RIGHTELBOW";
+                            PhElbow = RightBody.transform.Find(str).transform.position;
+                            str = rightHuman_PointingArm == PointingArm.LEFT ? "LEFTHANDTIP" : "RIGHTHANDTIP";
+                            PHandTip = RightBody.transform.Find(str).transform.position;
+                            PhHead = _getHitpoint(Phead, PHandTip);
+                            PhElbow = _getHitpoint(PElbow, PHandTip);
                         }
 
-                        Vector3 pointer_vector = (pointer_hit - origin);
-                        Vector3 mimic_vector = (mimic_hit - origin);
+                        float d_PhHead_Target = Vector3.Distance(PhHead, target);
+                        float d_MhHead_Target = Vector3.Distance(MhHead, target);
+                        float d_PhHead_MhHead = Vector3.Distance(PhHead, MhHead);
 
-                        float error_angle = Vector3.Angle(pointer_vector, mimic_vector);
-                        float error_distance = Vector3.Distance(pointer_hit, mimic_hit);
+                        float d_PhElbow_Target = Vector3.Distance(PhElbow, target);
+                        float d_MhElbow_Target = Vector3.Distance(MhElbow, target);
+                        float d_PhElbow_MhElbow = Vector3.Distance(PhElbow, MhElbow);
+
+                        float d_PhHead_MhElbow = Vector3.Distance(PhHead, MhElbow);
+                        float d_MhHead_PhElbow = Vector3.Distance(MhHead, PhElbow);
+
+                        if (_task != 1 && _task != 8)
+                        {
+                            _log.recordSnapshot(_task,
+                                                condition,
+
+                                                leftHuman_PointingArm,
+                                                rightHuman_PointingArm,
+
+                                                leftHuman_Role,
+                                                rightHuman_Role,
+
+                                                target,
+
+                                                Phead, PElbow, PHandTip, PhHead, PhElbow,
+
+                                                Mhead, MElbow, MHandTip, MhHead, MhElbow,
+
+                                                d_PhHead_Target, d_MhHead_Target, d_PhHead_MhHead,
+
+                                                d_PhElbow_Target, d_MhHead_Target, d_PhElbow_MhElbow,
+
+                                                d_PhHead_MhElbow, d_MhHead_PhElbow
+                                                );
 
 
 
-                        _log.recordSnapshot(_task, condition, leftHuman, leftHumanRole, leftHuman_PointingArm, rightHuman, rightHumanRole, rightHuman_PointingArm, error_angle, error_distance, pointer_hit, pointer_head, mimic_hit, mimic_head);
+                        }
 
                         _continue = true;
                     }
                     catch (Exception e)
                     {
                         _console.writeLineRed(e.Message);
+                        Debug.Log(e.Message);
+                        Debug.LogError(e.StackTrace);
                     }
 
                     if (_continue)
@@ -314,6 +376,11 @@ public class Evaluation : MonoBehaviour {
                             reset();
                         }
                         _incTask();
+
+                        if (_task < _numberOfRepetitions)
+                        {
+                            _network.startTrial(_task, (int) condition);
+                        }
                     }
                 }
             }
@@ -332,6 +399,19 @@ public class Evaluation : MonoBehaviour {
             GUI.Label(new Rect(10, 110, 1000, 500), "TASK: " + _task, conditionFontStyle);
             GUI.Label(new Rect(10, 160, 1000, 500), "CONDITION: " + condition, conditionFontStyle);
         }
+    }
+
+    private Vector3 _getHitpoint(Vector3 a, Vector3 b)
+    {
+        Vector3 hitpoint = Vector3.zero;
+
+        Ray leftRay = new Ray(a, b - a);
+        RaycastHit leftHit;
+        if (wallCollider.Raycast(leftRay, out leftHit, float.PositiveInfinity))
+        {
+            hitpoint = leftHit.point;
+        }
+        return hitpoint;
     }
 
     private PointingArm _isPointing(Human human, EvaluationPosition position, out Vector3 hitpoint)

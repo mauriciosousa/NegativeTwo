@@ -48,33 +48,70 @@ public class LogEvaluation : MonoBehaviour {
 		string header = "";
 
 		header += "TIMESTAMP" + CSVSeparator;
-		header += "TASK" + CSVSeparator;
-		header += "CONDITION" + CSVSeparator;
 
-        header += "LEFT_HUMAN_ROLE" + CSVSeparator;
-        header += "RIGHT_HUMAN_ROLE" + CSVSeparator;
+        header += "TASK" + CSVSeparator;
+		header += "CONDITION" + CSVSeparator;
 
         header += "LEFT_HUMAN_POINTING_ARM" + CSVSeparator;
         header += "RIGHT_HUMAN_POINTING_ARM" + CSVSeparator;
 
-        header += "ERROR_ANGLE" + CSVSeparator;
-        header += "ERROR_DISTANCE" + CSVSeparator;
+        header += "LEFT_HUMAN_ROLE" + CSVSeparator;
+        header += "RIGHT_HUMAN_ROLE" + CSVSeparator;
 
-        header += "POINTER_HITPOINT_X" + CSVSeparator;
-        header += "POINTER_HITPOINT_Y" + CSVSeparator;
-        header += "POINTER_HITPOINT_Z" + CSVSeparator;
+        header += "TARGET_X" + CSVSeparator;
+        header += "TARGET_Y" + CSVSeparator;
+        header += "TARGET_Z" + CSVSeparator;
 
-        header += "POINTER_HEAD_X" + CSVSeparator;
-        header += "POINTER_HEAD_Y" + CSVSeparator;
-        header += "POINTER_HEAD_Z" + CSVSeparator;
+        header += "Phead_X" + CSVSeparator;
+        header += "Phead_Y" + CSVSeparator;
+        header += "Phead_Z" + CSVSeparator;
 
-        header += "MIMIC_HITPOINT_X" + CSVSeparator;
-        header += "MIMIC_HITPOINT_Y" + CSVSeparator;
-        header += "MIMIC_HITPOINT_Z" + CSVSeparator;
+        header += "PElbow_X" + CSVSeparator;
+        header += "PElbow_Y" + CSVSeparator;
+        header += "PElbow_Z" + CSVSeparator;
 
-        header += "MIMIC_HEAD_X" + CSVSeparator;
-        header += "MIMIC_HEAD_Y" + CSVSeparator;
-        header += "MIMIC_HEAD_Z" + CSVSeparator;
+        header += "PHandTip_X" + CSVSeparator;
+        header += "PHandTip_Y" + CSVSeparator;
+        header += "PHandTip_Z" + CSVSeparator;
+
+        header += "PhHead_X" + CSVSeparator;
+        header += "PhHead_Y" + CSVSeparator;
+        header += "PhHead_Z" + CSVSeparator;
+
+        header += "PhElbow_X" + CSVSeparator;
+        header += "PhElbow_Y" + CSVSeparator;
+        header += "PhElbow_Z" + CSVSeparator;
+
+        header += "Mhead_X" + CSVSeparator;
+        header += "Mhead_Y" + CSVSeparator;
+        header += "Mhead_Z" + CSVSeparator;
+
+        header += "MElbow_X" + CSVSeparator;
+        header += "MElbow_Y" + CSVSeparator;
+        header += "MElbow_Z" + CSVSeparator;
+
+        header += "MHandTip_X" + CSVSeparator;
+        header += "MHandTip_Y" + CSVSeparator;
+        header += "MHandTip_Z" + CSVSeparator;
+
+        header += "MhHead_X" + CSVSeparator;
+        header += "MhHead_Y" + CSVSeparator;
+        header += "MhHead_Z" + CSVSeparator;
+
+        header += "MhElbow_X" + CSVSeparator;
+        header += "MhElbow_Y" + CSVSeparator;
+        header += "MhElbow_Z" + CSVSeparator;
+
+        header += "d_PhHead_Target" + CSVSeparator;
+        header += "d_MhHead_Target" + CSVSeparator;
+        header += "d_PhHead_MhHead" + CSVSeparator;
+
+        header += "d_PhElbow_Target" + CSVSeparator;
+        header += "d_MhElbow_Target" + CSVSeparator;
+        header += "d_PhElbow_MhElbow" + CSVSeparator;
+
+        header += "d_PhHead_MhElbow" + CSVSeparator;
+        header += "d_MhHead_PhElbow";
 
         _writeLine(header, filename);
 
@@ -91,31 +128,45 @@ public class LogEvaluation : MonoBehaviour {
 		_console.writeLine ("[LOG] session ended");
 	}
 
-	public void recordSnapshot(int task, 
+    public void recordSnapshot(int task,
                                EvaluationCondition condition,
-                               
-                               Human leftHuman,
-                               Role leftHuman_Role,
+
                                PointingArm leftHuman_PointingArm,
-                               
-                               Human rightHuman,
-                               Role rightHuman_Role,
                                PointingArm rightHuman_PointingArm,
-                               
-                               float errorAngle,
-                               float errorDistance,
 
-                               Vector3 pointer_hitpoint,
-                               Vector3 pointer_head,
+                               Role leftHuman_Role,
+                               Role rightHuman_Role,
 
-                               Vector3 mimic_hitpoint,
-                               Vector3 mimic_head
+                               Vector3 target,
+
+                               Vector3 Phead,
+                               Vector3 PElbow,
+                               Vector3 PHandTip,
+                               Vector3 PhHead,
+                               Vector3 PhElbow,
+
+                               Vector3 Mhead,
+                               Vector3 MElbow,
+                               Vector3 MHandTip,
+                               Vector3 MhHead,
+                               Vector3 MhElbow,
+
+                               float d_PhHead_Target,
+                               float d_MhHead_Target,
+                               float d_PhHead_MhHead,
+
+                               float d_PhElbow_Target,
+                               float d_MhElbow_Target,
+                               float d_PhElbow_MhElbow,
+
+                               float d_PhHead_MhElbow,
+                               float d_MhHead_PhElbow
                                )
 	{
 		if (!__init__)
 			return;
 
-		if (task == 1) {
+		if (task == 2) {
 			startSession ();
 		}
 
@@ -126,30 +177,66 @@ public class LogEvaluation : MonoBehaviour {
 			line += task + CSVSeparator;
 			line += condition.ToString() + CSVSeparator;
 
-            line += leftHuman_Role.ToString() + CSVSeparator;
-            line += rightHuman_Role.ToString() + CSVSeparator;
-
             line += leftHuman_PointingArm.ToString() + CSVSeparator;
             line += rightHuman_PointingArm.ToString() + CSVSeparator;
 
-            line += errorAngle + CSVSeparator;
-            line += errorDistance + CSVSeparator;
+            line += leftHuman_Role.ToString() + CSVSeparator;
+            line += rightHuman_Role.ToString() + CSVSeparator;
 
-            line += pointer_hitpoint.x + CSVSeparator;
-            line += pointer_hitpoint.y + CSVSeparator;
-            line += pointer_hitpoint.z + CSVSeparator;
+            line += target.x + CSVSeparator;
+            line += target.y + CSVSeparator;
+            line += target.z + CSVSeparator;
 
-            line += pointer_head.x + CSVSeparator;
-            line += pointer_head.y + CSVSeparator;
-            line += pointer_head.z + CSVSeparator;
+            line += Phead.x + CSVSeparator;
+            line += Phead.y + CSVSeparator;
+            line += Phead.z + CSVSeparator;
 
-            line += mimic_hitpoint.x + CSVSeparator;
-            line += mimic_hitpoint.y + CSVSeparator;
-            line += mimic_hitpoint.z + CSVSeparator;
+            line += PElbow.x + CSVSeparator;
+            line += PElbow.y + CSVSeparator;
+            line += PElbow.z + CSVSeparator;
 
-            line += mimic_head.x + CSVSeparator;
-            line += mimic_head.y + CSVSeparator;
-            line += mimic_head.z + CSVSeparator;
+            line += PHandTip.x + CSVSeparator;
+            line += PHandTip.y + CSVSeparator;
+            line += PHandTip.z + CSVSeparator;
+
+            line += PhHead.x + CSVSeparator;
+            line += PhHead.y + CSVSeparator;
+            line += PhHead.z + CSVSeparator;
+
+            line += PhElbow.x + CSVSeparator;
+            line += PhElbow.y + CSVSeparator;
+            line += PhElbow.z + CSVSeparator;
+
+            line += Mhead.x + CSVSeparator  ;
+            line += Mhead.y + CSVSeparator;
+            line += Mhead.z + CSVSeparator;
+
+            line += MElbow.x + CSVSeparator;
+            line += MElbow.y + CSVSeparator;
+            line += MElbow.z + CSVSeparator;
+
+            line += MHandTip.x + CSVSeparator;
+            line += MHandTip.y + CSVSeparator;
+            line += MHandTip.z + CSVSeparator;
+
+            line += MhHead.x + CSVSeparator;
+            line += MhHead.y + CSVSeparator;
+            line += MhHead.z + CSVSeparator;
+
+            line += MhElbow.x + CSVSeparator;
+            line += MhElbow.y + CSVSeparator;
+            line += MhElbow.z + CSVSeparator;
+
+            line += d_PhHead_Target + CSVSeparator;
+            line += d_MhHead_Target + CSVSeparator;
+            line += d_PhHead_MhHead + CSVSeparator;
+
+            line += d_PhElbow_Target + CSVSeparator;
+            line += d_MhElbow_Target + CSVSeparator;
+            line += d_PhElbow_MhElbow + CSVSeparator;
+
+            line += d_PhHead_MhElbow + CSVSeparator;
+            line += d_MhHead_PhElbow;
 
             _writeLine(line, filename);
 

@@ -40,6 +40,8 @@ public class NetworkCommunication : MonoBehaviour {
         _address = _config.address;
         evaluationPeerType = _config.evaluatoinPeerType;
 
+        Debug.Log("network started");
+
         if (evaluationPeerType == EvaluationPeertype.SERVER)
         {
             Network.InitializeServer(2, _port, false);
