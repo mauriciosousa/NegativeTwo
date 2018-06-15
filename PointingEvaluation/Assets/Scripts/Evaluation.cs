@@ -117,6 +117,7 @@ public class Evaluation : MonoBehaviour {
     public bool showClientGUI;
 
     public GameObject TargetGameobject;
+    public GameObject decoyTargetGameobject;
 
     void Start () {
 
@@ -193,7 +194,12 @@ public class Evaluation : MonoBehaviour {
                 _swapCondition();
             }
             left += 10;
-            GUI.Label(new Rect(Screen.width - width / 2 - 100, top - 5, 200, 2 * lineHeight), condition.ToString().Replace('_', ' '), conditionFontStyle);
+
+            //GUI.Label(new Rect(Screen.width - width / 2 - 100, top - 5, 200, 2 * lineHeight), condition.ToString().Replace('_', ' '), conditionFontStyle);
+            string cond = condition == EvaluationCondition.DEICTICS_CORRECTION ? "WARP" : "BASELINE";
+            GUI.Label(new Rect(Screen.width - width / 2 - 100, top - 5, 200, 2 * lineHeight), cond, conditionFontStyle);
+
+
             if (GUI.Button(new Rect(Screen.width - 40 - 10, top, 40, 40), forwardIcon, GUIStyle.none))
             {
                 _swapCondition();
@@ -222,168 +228,27 @@ public class Evaluation : MonoBehaviour {
             top += 2 * lineHeight;
             left = Screen.width - width;
 
+
             if (!_taskInProgress)
             {
                 if (GUI.Button(new Rect(left + 10, top, width - 20, 1.5f * lineHeight), "Start Task"))
                 {
-                    if (_checkHumans())
-                    {
-                        _taskInProgress = true;
-
-                        _network.startTrial(_task, (int) condition);
-                        _console.writeLineGreen("TASK " + _task + " started...");
-                    }
+                    guiStartTask();
                 }
             }
             else
             {
-                if (GUI.Button(new Rect(left + 10, top, width - 20, 1.5f * lineHeight), "End Task"))
+                if (GUI.Button(new Rect(left + 10, top + 2*lineHeight, width - 20, 1.5f * lineHeight), "Record Data"))
                 {
-                    bool _continue = false;
-
-                    try
-                    {
-                        // task
-                        // condition
-                        Vector3 leftHuman_Hitpoint = Vector3.zero;
-                        PointingArm leftHuman_PointingArm = _isPointing(leftHuman, EvaluationPosition.ON_THE_LEFT, out leftHuman_Hitpoint);
-
-                        Vector3 rightHuman_Hitpoint = Vector3.zero;
-                        PointingArm rightHuman_PointingArm = _isPointing(rightHuman, EvaluationPosition.ON_THE_RIGHT, out rightHuman_Hitpoint);
-
-                        Role leftHuman_Role = getRole(_task, EvaluationPosition.ON_THE_LEFT);
-                        Role rightHuman_Role = getRole(_task, EvaluationPosition.ON_THE_RIGHT);
-
-                        Vector3 target = TargetGameobject.transform.position;
-
-                        Vector3 Phead = Vector3.zero;
-                        Vector3 PElbow = Vector3.zero;
-                        Vector3 PHandTip = Vector3.zero;
-                        Vector3 PhHead = Vector3.zero;
-                        Vector3 PhElbow = Vector3.zero;
-
-                        Vector3 Mhead = Vector3.zero;
-                        Vector3 MElbow = Vector3.zero;
-                        Vector3 MHandTip = Vector3.zero;
-                        Vector3 MhHead = Vector3.zero;
-                        Vector3 MhElbow = Vector3.zero;
-
-
-                        GameObject LeftBody = _bodies.LeftHumanGO;
-                        GameObject RightBody = _bodies.RightHumanGO;
-
-                        if (leftHuman_Role == Role.POINTING_PERSON)
-                        {
-                            Phead = LeftBody.transform.Find("HEAD").transform.position;
-                            string str = leftHuman_PointingArm == PointingArm.LEFT ? "LEFTELBOW" : "RIGHTELBOW";
-                            PhElbow = LeftBody.transform.Find(str).transform.position;
-                            str = leftHuman_PointingArm == PointingArm.LEFT ? "LEFTHANDTIP" : "RIGHTHANDTIP";
-                            PHandTip = LeftBody.transform.Find(str).transform.position;
-                            PhHead = _getHitpoint(Phead, PHandTip);
-                            PhElbow = _getHitpoint(PElbow, PHandTip);
-
-                            Mhead = RightBody.transform.Find("HEAD").transform.position;
-                            str = rightHuman_PointingArm == PointingArm.LEFT ? "LEFTELBOW" : "RIGHTELBOW";
-                            MhElbow = RightBody.transform.Find(str).transform.position;
-                            str = rightHuman_PointingArm == PointingArm.LEFT ? "LEFTHANDTIP" : "RIGHTHANDTIP";
-                            MHandTip = RightBody.transform.Find(str).transform.position;
-                            MhHead = _getHitpoint(Mhead, MHandTip);
-                            MhElbow = _getHitpoint(MElbow, MHandTip);
-                        }
-                        else
-                        {
-                            Mhead = LeftBody.transform.Find("HEAD").transform.position;
-                            string str = leftHuman_PointingArm == PointingArm.LEFT ? "LEFTELBOW" : "RIGHTELBOW";
-                            MhElbow = LeftBody.transform.Find(str).transform.position;
-                            str = leftHuman_PointingArm == PointingArm.LEFT ? "LEFTHANDTIP" : "RIGHTHANDTIP";
-                            MHandTip = LeftBody.transform.Find(str).transform.position;
-                            MhHead = _getHitpoint(Mhead, MHandTip);
-                            MhElbow = _getHitpoint(MElbow, MHandTip);
-
-                            Phead = RightBody.transform.Find("HEAD").transform.position;
-                            str = rightHuman_PointingArm == PointingArm.LEFT ? "LEFTELBOW" : "RIGHTELBOW";
-                            PhElbow = RightBody.transform.Find(str).transform.position;
-                            str = rightHuman_PointingArm == PointingArm.LEFT ? "LEFTHANDTIP" : "RIGHTHANDTIP";
-                            PHandTip = RightBody.transform.Find(str).transform.position;
-                            PhHead = _getHitpoint(Phead, PHandTip);
-                            PhElbow = _getHitpoint(PElbow, PHandTip);
-                        }
-
-                        float d_PhHead_Target = Vector3.Distance(PhHead, target);
-                        float d_MhHead_Target = Vector3.Distance(MhHead, target);
-                        float d_PhHead_MhHead = Vector3.Distance(PhHead, MhHead);
-
-                        float d_PhElbow_Target = Vector3.Distance(PhElbow, target);
-                        float d_MhElbow_Target = Vector3.Distance(MhElbow, target);
-                        float d_PhElbow_MhElbow = Vector3.Distance(PhElbow, MhElbow);
-
-                        float d_PhHead_MhElbow = Vector3.Distance(PhHead, MhElbow);
-                        float d_MhHead_PhElbow = Vector3.Distance(MhHead, PhElbow);
-
-                        if (_task != 1 && _task != 8)
-                        {
-                            _log.recordSnapshot(_task,
-                                                condition,
-
-                                                leftHuman_PointingArm,
-                                                rightHuman_PointingArm,
-
-                                                leftHuman_Role,
-                                                rightHuman_Role,
-
-                                                target,
-
-                                                Phead, PElbow, PHandTip, PhHead, PhElbow,
-
-                                                Mhead, MElbow, MHandTip, MhHead, MhElbow,
-
-                                                d_PhHead_Target, d_MhHead_Target, d_PhHead_MhHead,
-
-                                                d_PhElbow_Target, d_MhHead_Target, d_PhElbow_MhElbow,
-
-                                                d_PhHead_MhElbow, d_MhHead_PhElbow
-                                                );
-
-
-
-                        }
-
-                        _continue = true;
-                    }
-                    catch (Exception e)
-                    {
-                        _console.writeLineRed(e.Message);
-                        Debug.Log(e.Message);
-                        Debug.LogError(e.StackTrace);
-                    }
-
-                    if (_continue)
-                    {
-                        _taskInProgress = false;
-                        _network.endTrial();
-
-                        _console.writeLine("TASK " + _task + " ended...");
-
-                        if (_task == _numberOfRepetitions)
-                        {
-                            _console.writeLineGreen(" ");
-                            _console.writeLineGreen("########################################");
-                            _console.writeLineGreen(" ");
-                            _console.writeLineGreen("                Session ended");
-                            _console.writeLineGreen(" ");
-                            _console.writeLineGreen("########################################");
-                            _console.writeLineGreen(" ");
-                            reset();
-                        }
-                        _incTask();
-
-                        if (_task < _numberOfRepetitions)
-                        {
-                            _network.startTrial(_task, (int) condition);
-                        }
-                    }
+                    guiEndTask();
                 }
             }
+
+
+
+
+
+
 
 			if (GUI.Button(new Rect(left + 10, Screen.height - 19, width - 20, 19), "Reset"))
 			{
@@ -398,6 +263,164 @@ public class Evaluation : MonoBehaviour {
             GUI.Label(new Rect(10, 60, 1000, 500), "IN PROGRESS: " + taskInProgress, conditionFontStyle);
             GUI.Label(new Rect(10, 110, 1000, 500), "TASK: " + _task, conditionFontStyle);
             GUI.Label(new Rect(10, 160, 1000, 500), "CONDITION: " + condition, conditionFontStyle);
+        }
+    }
+
+    private void guiEndTask()
+    {
+        bool _continue = false;
+
+        try
+        {
+            // task
+            // condition
+            Vector3 leftHuman_Hitpoint = Vector3.zero;
+            PointingArm leftHuman_PointingArm = _isPointing(leftHuman, EvaluationPosition.ON_THE_LEFT, out leftHuman_Hitpoint);
+
+            Vector3 rightHuman_Hitpoint = Vector3.zero;
+            PointingArm rightHuman_PointingArm = _isPointing(rightHuman, EvaluationPosition.ON_THE_RIGHT, out rightHuman_Hitpoint);
+
+            Role leftHuman_Role = getRole(_task, EvaluationPosition.ON_THE_LEFT);
+            Role rightHuman_Role = getRole(_task, EvaluationPosition.ON_THE_RIGHT);
+
+            Vector3 target = TargetGameobject.transform.position;
+            Vector3 decoyTarget = decoyTargetGameobject.transform.position;
+
+            Vector3 Phead = Vector3.zero;
+            Vector3 PElbow = Vector3.zero;
+            Vector3 PHandTip = Vector3.zero;
+            Vector3 PhHead = Vector3.zero;
+            Vector3 PhElbow = Vector3.zero;
+
+            Vector3 Mhead = Vector3.zero;
+            Vector3 MElbow = Vector3.zero;
+            Vector3 MHandTip = Vector3.zero;
+            Vector3 MhHead = Vector3.zero;
+            Vector3 MhElbow = Vector3.zero;
+
+
+            GameObject LeftBody = _bodies.LeftHumanGO;
+            GameObject RightBody = _bodies.RightHumanGO;
+
+            if (leftHuman_Role == Role.POINTING_PERSON)
+            {
+                Phead = LeftBody.transform.Find("HEAD").transform.position;
+                string str = leftHuman_PointingArm == PointingArm.LEFT ? "LEFTELBOW" : "RIGHTELBOW";
+                PElbow = LeftBody.transform.Find(str).transform.position;
+                str = leftHuman_PointingArm == PointingArm.LEFT ? "LEFTHANDTIP" : "RIGHTHANDTIP";
+                PHandTip = LeftBody.transform.Find(str).transform.position;
+                PhHead = _getHitpoint(Phead, PHandTip);
+                PhElbow = _getHitpoint(PElbow, PHandTip);
+
+                Mhead = RightBody.transform.Find("HEAD").transform.position;
+                str = rightHuman_PointingArm == PointingArm.LEFT ? "LEFTELBOW" : "RIGHTELBOW";
+                MElbow = RightBody.transform.Find(str).transform.position;
+                str = rightHuman_PointingArm == PointingArm.LEFT ? "LEFTHANDTIP" : "RIGHTHANDTIP";
+                MHandTip = RightBody.transform.Find(str).transform.position;
+                MhHead = _getHitpoint(Mhead, MHandTip);
+                MhElbow = _getHitpoint(MElbow, MHandTip);
+            }
+            else
+            {
+                Mhead = LeftBody.transform.Find("HEAD").transform.position;
+                string str = leftHuman_PointingArm == PointingArm.LEFT ? "LEFTELBOW" : "RIGHTELBOW";
+                MElbow = LeftBody.transform.Find(str).transform.position;
+                str = leftHuman_PointingArm == PointingArm.LEFT ? "LEFTHANDTIP" : "RIGHTHANDTIP";
+                MHandTip = LeftBody.transform.Find(str).transform.position;
+                MhHead = _getHitpoint(Mhead, MHandTip);
+                MhElbow = _getHitpoint(MElbow, MHandTip);
+
+                Phead = RightBody.transform.Find("HEAD").transform.position;
+                str = rightHuman_PointingArm == PointingArm.LEFT ? "LEFTELBOW" : "RIGHTELBOW";
+                PElbow = RightBody.transform.Find(str).transform.position;
+                str = rightHuman_PointingArm == PointingArm.LEFT ? "LEFTHANDTIP" : "RIGHTHANDTIP";
+                PHandTip = RightBody.transform.Find(str).transform.position;
+                PhHead = _getHitpoint(Phead, PHandTip);
+                PhElbow = _getHitpoint(PElbow, PHandTip);
+            }
+
+            float d_PhHead_Target = Vector3.Distance(PhHead, target);
+            float d_MhHead_Target = Vector3.Distance(MhHead, target);
+            float d_PhHead_MhHead = Vector3.Distance(PhHead, MhHead);
+
+            float d_PhElbow_Target = Vector3.Distance(PhElbow, target);
+            float d_MhElbow_Target = Vector3.Distance(MhElbow, target);
+            float d_PhElbow_MhElbow = Vector3.Distance(PhElbow, MhElbow);
+
+            float d_PhHead_MhElbow = Vector3.Distance(PhHead, MhElbow);
+            float d_MhHead_PhElbow = Vector3.Distance(MhHead, PhElbow);
+
+            if (_task >= 1 && _task <= _numberOfRepetitions)
+            {
+                _log.recordSnapshot(_task,
+                                    condition,
+
+                                    leftHuman_PointingArm,
+                                    rightHuman_PointingArm,
+
+                                    leftHuman_Role,
+                                    rightHuman_Role,
+
+                                    target,
+                                    decoyTarget,
+
+                                    Phead, PElbow, PHandTip, PhHead, PhElbow,
+
+                                    Mhead, MElbow, MHandTip, MhHead, MhElbow,
+
+                                    d_PhHead_Target, d_MhHead_Target, d_PhHead_MhHead,
+
+                                    d_PhElbow_Target, d_MhHead_Target, d_PhElbow_MhElbow,
+
+                                    d_PhHead_MhElbow, d_MhHead_PhElbow
+                                    );
+
+                Debug.Log("DATA SAVED");
+            }
+
+            _continue = true;
+        }
+        catch (Exception e)
+        {
+            _console.writeLineRed(e.Message);
+            Debug.Log(e.Message);
+            Debug.LogError(e.StackTrace);
+        }
+
+        if (_continue)
+        {
+            //_taskInProgress = false;
+            _network.endTrial();
+
+            _console.writeLine("TASK " + _task + " ended...");
+
+            if (_task == _numberOfRepetitions)
+            {
+                _console.writeLineGreen(" ");
+                _console.writeLineGreen("########################################");
+                _console.writeLineGreen(" ");
+                _console.writeLineGreen("                Session ended");
+                _console.writeLineGreen(" ");
+                _console.writeLineGreen("########################################");
+                _console.writeLineGreen(" ");
+                reset();
+            }
+            else
+            {
+                _incTask();
+                guiStartTask();
+            }
+        }
+    }
+
+    private void guiStartTask()
+    {
+        if (_checkHumans())
+        {
+            _taskInProgress = true;
+
+            _network.startTrial(_task, (int)condition);
+            _console.writeLineGreen("TASK " + _task + " started...");
         }
     }
 
@@ -589,6 +612,7 @@ public class Evaluation : MonoBehaviour {
 
     public void reset()
     {
+        _task = 1;
         _taskInProgress = false;
         _instructionsPanel.gameObject.SetActive(false);
         leftTarget.SetActive(false);

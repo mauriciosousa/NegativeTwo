@@ -62,6 +62,11 @@ public class LogEvaluation : MonoBehaviour {
         header += "TARGET_Y" + CSVSeparator;
         header += "TARGET_Z" + CSVSeparator;
 
+        header += "decoyTARGET_X" + CSVSeparator;
+        header += "decoyTARGET_Y" + CSVSeparator;
+        header += "decoyTARGET_Z" + CSVSeparator;
+
+
         header += "Phead_X" + CSVSeparator;
         header += "Phead_Y" + CSVSeparator;
         header += "Phead_Z" + CSVSeparator;
@@ -138,6 +143,7 @@ public class LogEvaluation : MonoBehaviour {
                                Role rightHuman_Role,
 
                                Vector3 target,
+                               Vector3 decoyTarget,
 
                                Vector3 Phead,
                                Vector3 PElbow,
@@ -166,7 +172,7 @@ public class LogEvaluation : MonoBehaviour {
 		if (!__init__)
 			return;
 
-		if (task == 2) {
+		if (task == 1) {
 			startSession ();
 		}
 
@@ -175,7 +181,9 @@ public class LogEvaluation : MonoBehaviour {
 			string line = "";
 			line += DateTime.Now.ToString ("H:mm:ss:ff") + CSVSeparator;
 			line += task + CSVSeparator;
-			line += condition.ToString() + CSVSeparator;
+            //line += condition.ToString() + CSVSeparator;
+
+            line += (condition == EvaluationCondition.DEICTICS_CORRECTION ? "WARP" : "BASELINE") + CSVSeparator;
 
             line += leftHuman_PointingArm.ToString() + CSVSeparator;
             line += rightHuman_PointingArm.ToString() + CSVSeparator;
@@ -186,6 +194,10 @@ public class LogEvaluation : MonoBehaviour {
             line += target.x + CSVSeparator;
             line += target.y + CSVSeparator;
             line += target.z + CSVSeparator;
+
+            line += decoyTarget.x + CSVSeparator;
+            line += decoyTarget.y + CSVSeparator;
+            line += decoyTarget.z + CSVSeparator;
 
             line += Phead.x + CSVSeparator;
             line += Phead.y + CSVSeparator;
