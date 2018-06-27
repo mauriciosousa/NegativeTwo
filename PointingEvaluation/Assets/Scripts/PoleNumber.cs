@@ -7,6 +7,7 @@ public class PoleNumber : MonoBehaviour {
     public Transform quad;
     public Transform text;
     public TextMesh textMesh;
+    public int Number = 0;
 
 	void Start () {
 		

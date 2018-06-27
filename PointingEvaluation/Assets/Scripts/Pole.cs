@@ -1,4 +1,8 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Security.Cryptography;
+using System.Threading;
 using UnityEngine;
 
 public class Pole : MonoBehaviour {
@@ -16,21 +20,51 @@ public class Pole : MonoBehaviour {
 	void Start ()
     {
         poleCells = new List<GameObject>();
+        List<int> numbers = new List<int>();
 
-        numberOfPoleCells = (int) ((h1 - h0) / poleCellSize);
-        for (int i = 0; i < numberOfPoleCells; i++)
+        numberOfPoleCells = (int) Mathf.Floor((h1 - h0) / poleCellSize);
+        for (int i = 1; i <= numberOfPoleCells; i++)
         {
+            numbers.Add(i);
+
             GameObject cell = Instantiate(poleCellPrefab, transform, false);
             
             cell.transform.localScale = new Vector3(poleCellSize, poleCellSize, poleCellSize);
-            cell.transform.position += cell.transform.up * poleCellSize * (i + 1);
-            cell.GetComponent<PoleNumber>().textMesh.text = "" + i + 1;
+            cell.transform.position += cell.transform.up * poleCellSize * (i);
+            cell.GetComponent<PoleNumber>().Number = i;
+            cell.GetComponent<PoleNumber>().textMesh.text = "" + i;
+            cell.name = "pole" + i;
+            poleCells.Add(cell);
         }
-
-        print("CELLLLSSSSS  " + numberOfPoleCells);
-	}
+    }
 	
 	void Update () {
 		
 	}
+}
+
+public static class ThreadSafeRandom
+{
+    [ThreadStatic] private static System.Random Local;
+
+    public static System.Random ThisThreadsRandom
+    {
+        get { return Local ?? (Local = new System.Random(unchecked(Environment.TickCount * 31 + Thread.CurrentThread.ManagedThreadId))); }
+    }
+}
+
+static class MyExtensions
+{
+    public static void Shuffle<T>(this IList<T> list)
+    {
+        int n = list.Count;
+        while (n > 1)
+        {
+            n--;
+            int k = ThreadSafeRandom.ThisThreadsRandom.Next(n + 1);
+            T value = list[k];
+            list[k] = list[n];
+            list[n] = value;
+        }
+    }
 }
