@@ -30,9 +30,10 @@ public class Pole : MonoBehaviour {
             GameObject cell = Instantiate(poleCellPrefab, transform, false);
             
             cell.transform.localScale = new Vector3(poleCellSize, poleCellSize, poleCellSize);
-            cell.transform.position += cell.transform.up * poleCellSize * (i);
-            cell.GetComponent<PoleNumber>().Number = i;
-            cell.GetComponent<PoleNumber>().textMesh.text = "" + i;
+            cell.transform.localPosition = Vector3.zero;
+            cell.transform.localPosition = cell.transform.up * h0 + cell.transform.up * (poleCellSize * i - poleCellSize / 2);
+            cell.GetComponent<PoleNumber>().Number = numberOfPoleCells - i;
+            cell.GetComponent<PoleNumber>().textMesh.text = "" + (numberOfPoleCells - i);
             cell.name = "pole" + i;
             poleCells.Add(cell);
         }
