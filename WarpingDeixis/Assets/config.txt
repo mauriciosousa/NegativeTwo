@@ -1,0 +1,4 @@
+tracker.address=127.0.0.1
+tracker.broadcast.port=5002
+tracker.listen.port=5003
+avatar.listen.port=5009
