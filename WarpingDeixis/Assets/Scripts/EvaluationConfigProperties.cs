@@ -7,6 +7,7 @@ using UnityEngine;
 public class EvaluationConfigProperties : MonoBehaviour {
 
     public string configFilename = "evaluationConfig.txt";
+
     public string configFilenameFullPath
     {
         get
@@ -15,11 +16,19 @@ public class EvaluationConfigProperties : MonoBehaviour {
         }
     }
 
-    public EvaluationPeertype evaluatoinPeerType
+    /*public EvaluationPeertype evaluatoinPeerType
     {
         get
         {
             return (EvaluationPeertype) Enum.Parse(typeof(EvaluationPeertype), _load("peer.type"));
+        }
+    }*/
+
+    public EvaluationPeer Peer
+    {
+        get
+        {
+            return (EvaluationPeer)Enum.Parse(typeof(EvaluationPeer), _load("deixis.peer"));
         }
     }
 

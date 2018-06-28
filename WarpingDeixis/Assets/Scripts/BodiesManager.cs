@@ -16,8 +16,8 @@ public class BodiesManager : MonoBehaviour
     private bool _remoteHumanLocked = false;
     public Human remoteHuman = null;
 
-    private Evaluation _evaluation;
-    private NetworkCommunication _network;
+    private DeixisEvaluation _evaluation;
+    private DeixisNetwork _network;
 
     public GameObject LeftHumanGO;
     public GameObject RightHumanGO;
@@ -27,8 +27,8 @@ public class BodiesManager : MonoBehaviour
         //_perspectiveProjection = Camera.main.GetComponent<PerspectiveProjection>();
         _humans = new Dictionary<string, Human>();
         _remoteHumans = new Dictionary<string, Human>();
-        _evaluation = GameObject.Find("PointingEvaluation").GetComponent<Evaluation>();
-        _network = GameObject.Find("PointingEvaluation").GetComponent<NetworkCommunication>();
+        _evaluation = GameObject.Find("DeixisEvaluation").GetComponent<DeixisEvaluation>();
+        _network = GameObject.Find("DeixisEvaluation").GetComponent<DeixisNetwork>();
     }
 
     private string _getHumanIdWithHandUp()
@@ -64,13 +64,13 @@ public class BodiesManager : MonoBehaviour
     {
         canApplyHeadPosition = false;
 
-        if (_evaluation.clientPosition == EvaluationPosition.ON_THE_LEFT && LeftHuman != null)
+        if (_evaluation.peer == EvaluationPeer.LEFT_VR_CLIENT && LeftHuman != null)
         {
             canApplyHeadPosition = true;
             return transform.position = LeftHuman.body.Joints[BodyJointType.head];
         }
 
-        if (_evaluation.clientPosition == EvaluationPosition.ON_THE_RIGHT && RightHuman != null)
+        if (_evaluation.peer == EvaluationPeer.RIGHT_VR_CLIENT && RightHuman != null)
         {
             canApplyHeadPosition = true;
             return transform.position = RightHuman.body.Joints[BodyJointType.head];
@@ -101,7 +101,7 @@ public class BodiesManager : MonoBehaviour
 
     internal int remoteHead()
     {
-        if (_evaluation.clientPosition == EvaluationPosition.ON_THE_LEFT)
+        if (_evaluation.peer == EvaluationPeer.LEFT_VR_CLIENT)
         {
             return LeftHuman == null ? 0 : 1;
         }
@@ -160,7 +160,7 @@ public class BodiesManager : MonoBehaviour
         }
         else
         {
-            if (_evaluation.clientPosition == EvaluationPosition.ON_THE_RIGHT)
+            if (_evaluation.peer == EvaluationPeer.RIGHT_VR_CLIENT)
             {
                 UnityEngine.XR.InputTracking.Recenter();
             }
@@ -178,7 +178,7 @@ public class BodiesManager : MonoBehaviour
         }
         else
         {
-            if (_evaluation.clientPosition == EvaluationPosition.ON_THE_LEFT)
+            if (_evaluation.peer == EvaluationPeer.LEFT_VR_CLIENT)
             {
                 UnityEngine.XR.InputTracking.Recenter();
             }
@@ -216,7 +216,7 @@ public class BodiesManager : MonoBehaviour
 
     internal Vector3 getLocalHead()
     {
-        if (_evaluation.clientPosition == EvaluationPosition.ON_THE_LEFT)
+        if (_evaluation.peer == EvaluationPeer.LEFT_VR_CLIENT)
             return LeftHuman == null ? Vector3.zero : LeftHuman.body.Joints[BodyJointType.head];
         else
             return RightHuman == null ? Vector3.zero : RightHuman.body.Joints[BodyJointType.head];

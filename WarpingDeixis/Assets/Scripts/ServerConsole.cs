@@ -25,7 +25,8 @@ public class ServerConsole : MonoBehaviour {
 
     private List<ConsoleLine> _consoleLines;
 
-    private NetworkCommunication _network;
+    private EvaluationConfigProperties _config;
+    private EvaluationPeer _peer = EvaluationPeer.SERVER;
 
     private bool __init__ = false;
 
@@ -36,12 +37,13 @@ public class ServerConsole : MonoBehaviour {
     void _init()
     {
         _consoleLines = new List<ConsoleLine>();
-        _network = GetComponent<NetworkCommunication>();
+        _config = GetComponent<EvaluationConfigProperties>();
+        _peer = _config.Peer;
         __init__ = true;
     }
 
 	void OnGUI () {
-        if (_network.evaluationPeerType == EvaluationPeertype.SERVER)
+        if (_peer == EvaluationPeer.SERVER)
         {
             maxLines = Screen.height / consoleLineHeight - 1;
 
@@ -63,7 +65,7 @@ public class ServerConsole : MonoBehaviour {
     private void _writeLine(string line, GUIStyle style)
     {
         if (!__init__) _init();
-        if (_network.evaluationPeerType == EvaluationPeertype.SERVER)
+        if (_peer == EvaluationPeer.SERVER)
             _consoleLines.Add(new ConsoleLine("" + (_consoleLines.Count + 1) + ". " + line, style));
     }
 

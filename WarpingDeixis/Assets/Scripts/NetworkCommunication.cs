@@ -38,7 +38,7 @@ public class NetworkCommunication : MonoBehaviour {
 
         _port = _config.port;
         _address = _config.address;
-        evaluationPeerType = _config.evaluatoinPeerType;
+        //evaluationPeerType = _config.evaluatoinPeerType;
 
         Debug.Log("network started");
 
@@ -75,7 +75,7 @@ public class NetworkCommunication : MonoBehaviour {
     {
         if (evaluationPeerType == EvaluationPeertype.CLIENT)
         {
-            _evaluation.OnRPC_calibrateHumans((EvaluationPosition) Enum.ToObject(typeof(EvaluationPosition), evaluationPosition));
+            _evaluation.OnRPC_calibrateHumans((EvaluationPosition)Enum.ToObject(typeof(EvaluationPosition), evaluationPosition));
         }
     }
 

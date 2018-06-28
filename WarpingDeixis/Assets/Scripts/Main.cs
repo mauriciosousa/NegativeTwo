@@ -79,10 +79,10 @@ public class Main : MonoBehaviour {
         //rightPointingInfo = new PointingDistortionInfo();
         //leftPointingInfo = new PointingDistortionInfo();
 
-		if (GameObject.Find ("PointingEvaluation").GetComponent<EvaluationConfigProperties> ().evaluatoinPeerType == EvaluationPeertype.CLIENT) {
+		//if (GameObject.Find ("DeixisEvaluation").GetComponent<EvaluationConfigProperties> ().Peer != EvaluationPeer.SERVER) {
 			GameObject.Find("RavatarManager").GetComponent<TcpDepthListener>().Init(int.Parse(properties.info.avatarListenPort));
 			GameObject.Find("RavatarManager").GetComponent<Tracker>().Init(int.Parse(properties.info.avatarListenPort), int.Parse(properties.info.trackerListenPort));
-		}
+		//}
 	
 	}
 

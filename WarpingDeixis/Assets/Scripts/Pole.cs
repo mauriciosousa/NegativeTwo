@@ -5,15 +5,6 @@ using System.Security.Cryptography;
 using System.Threading;
 using UnityEngine;
 
-public enum EvaluationTask
-{
-    POLE_T1_C1,
-    POLE_T2_C1,
-    POLE_T1_C2,
-    POLE_T2_C2,
-    WALL_C1,
-    WALL_C2
-}
 
 public class Pole : MonoBehaviour {
 
@@ -32,12 +23,25 @@ public class Pole : MonoBehaviour {
 	void Start ()
     {
         poleCells = new List<GameObject>();
+    }
 
-        numberOfPoleCells = (int) Mathf.Floor((h1 - h0) / poleCellSize);
+    public void createAPole(EvaluationTask task, float distance)
+    {
+        transform.position = Vector3.zero;
+
+        print("Creating Pole for " + task.ToString() + " at " + distance);
+
+        if (poleCells.Count > 0) destroyCurrent();
+
+        poleCells = new List<GameObject>();
+
+        this.task = task;
+
+        numberOfPoleCells = (int)Mathf.Floor((h1 - h0) / poleCellSize);
         for (int i = 1; i <= numberOfPoleCells; i++)
         {
             GameObject cell = Instantiate(poleCellPrefab, transform, false);
-            
+
             cell.transform.localScale = new Vector3(poleCellSize, poleCellSize, poleCellSize);
             cell.transform.localPosition = Vector3.zero;
             cell.transform.localPosition = cell.transform.up * h0 + cell.transform.up * (poleCellSize * i - poleCellSize / 2);
@@ -52,10 +56,41 @@ public class Pole : MonoBehaviour {
             cell.name = "pole" + index;
             poleCells.Insert(0, cell);
         }
+        transform.position += Vector3.forward * distance;
     }
-	
-	void Update ()
+
+    public void destroyCurrent()
     {
+        foreach (GameObject o in poleCells)
+        {
+            Destroy(o);
+        }
+        poleCells = new List<GameObject>();
+    }
+
+    void Update ()
+    {
+        if (Input.GetKeyDown(KeyCode.Alpha1))
+        {
+            createAPole(EvaluationTask.POLE_T1_C1, 1);
+        }
+
+        if (Input.GetKeyDown(KeyCode.Alpha2))
+        {
+            createAPole(EvaluationTask.POLE_T1_C1, 2);
+        }
+
+        if (Input.GetKeyDown(KeyCode.Alpha3))
+        {
+            createAPole(EvaluationTask.POLE_T1_C1, 3);
+        }
+
+        if (Input.GetKeyDown(KeyCode.Alpha0))
+        {
+            destroyCurrent();
+        }
+
+
         if (Input.GetKeyDown(KeyCode.F9))
         {
             string filep = Application.dataPath + "/out.txt";
