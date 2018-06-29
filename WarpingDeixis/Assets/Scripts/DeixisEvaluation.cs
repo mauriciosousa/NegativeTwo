@@ -26,6 +26,12 @@ public enum WarpingCondition
     WARPING = 2
 }
 
+public enum PointingExercise
+{
+    POLE,
+    WALL
+}
+
 public class DeixisEvaluation : MonoBehaviour {
 
     public EvaluationPeer peer;
@@ -41,6 +47,7 @@ public class DeixisEvaluation : MonoBehaviour {
 
     public WarpingCondition condition = WarpingCondition.BASELINE;
     public int trial = 0;
+    public int maxTrials = 22;
 
     private BodiesManager _bodies;
 
@@ -62,12 +69,13 @@ public class DeixisEvaluation : MonoBehaviour {
 
     public GUIStyle titleFontStyle;
     public GUIStyle conditionFontStyle;
+    public GUIStyle instructionStyle;
     private GUIStyle redBox;
     private GUIStyle greenBox;
     public Texture backIcon;
     public Texture forwardIcon;
 
-    void Start () {
+    void Start() {
         _config = GetComponent<EvaluationConfigProperties>();
         peer = _config.Peer;
         _bodies = GameObject.Find("BodiesManager").GetComponent<BodiesManager>();
@@ -80,9 +88,9 @@ public class DeixisEvaluation : MonoBehaviour {
         greenBox.normal.background = MakeTex(2, 2, new Color(76f / 255f, 217f / 255f, 100f / 255f));
     }
 
-    void Update () {
-		
-	}
+    void Update() {
+
+    }
 
     internal void start(int trial, WarpingCondition condition)
     {
@@ -130,7 +138,7 @@ public class DeixisEvaluation : MonoBehaviour {
         GUI.Label(new Rect(left, top, width, lineHeight), "Condition:", titleFontStyle);
         top += 2 * lineHeight; left += 10;
 
-        if ((trial < 1 || trial > 8) && GUI.Button(new Rect(Screen.width - width + 10, top, 40, 40), backIcon, GUIStyle.none))
+        if ((trial < 1 || trial > maxTrials) && GUI.Button(new Rect(Screen.width - width + 10, top, 40, 40), backIcon, GUIStyle.none))
         {
             _swapCondition();
         }
@@ -141,7 +149,7 @@ public class DeixisEvaluation : MonoBehaviour {
         GUI.Label(new Rect(Screen.width - width / 2 - 100, top - 5, 200, 2 * lineHeight), cond, conditionFontStyle);
 
 
-        if ((trial < 1 || trial > 8) && GUI.Button(new Rect(Screen.width - 40 - 10, top, 40, 40), forwardIcon, GUIStyle.none))
+        if ((trial < 1 || trial > maxTrials) && GUI.Button(new Rect(Screen.width - 40 - 10, top, 40, 40), forwardIcon, GUIStyle.none))
         {
             _swapCondition();
         }
@@ -157,17 +165,22 @@ public class DeixisEvaluation : MonoBehaviour {
         left = Screen.width - width;
         top += 4 * lineHeight;
 
-        if (trial > 0 && trial < 9)
+        if (trial > 0 && trial <= maxTrials)
         {
             if (GUI.Button(new Rect(left + 10, top + 2 * lineHeight, width - 20, 1.5f * lineHeight), "NEXT"))
             {
-                if (trial == 9)
+                if (trial == maxTrials)
                 {
                     trial = 0;
+                    reset();
+                    _network.reset();
                 }
                 else
                 {
                     _network.EndMessage();
+                    pole.destroyCurrent();
+                    wall.destroyCurrent();
+
                     trial += 1;
                     _setupTrial(trial, condition);
                 }
@@ -187,20 +200,45 @@ public class DeixisEvaluation : MonoBehaviour {
         {
             reset();
             _network.reset();
+            trial = 0;
+        }
+
+        // Instruction
+        if (trial > 0 && trial <= maxTrials)
+        {
+            GUI.Box(new Rect(Screen.width / 3 - 20, 0, (Screen.width / 3) + 30, Screen.height / 2 + 20), " ");
+            GUI.Label(new Rect(Screen.width / 3, 10, (Screen.width / 3), Screen.height - 10), _getInstruction(trial), instructionStyle);
         }
     }
 
     public void reset()
     {
         trial = 0;
+        pole.destroyCurrent();
+        wall.hideWall();
     }
 
     private void _setupTrial(int trial, WarpingCondition condition)
     {
+        bool observer = peer == _getObserver(trial);
+        print("OBSERVER = " + observer);
+
         Debug.Log("STARTING: " + trial + " " + condition);
+        Debug.Log("trial = " + trial + ", Observer = " + _getObserver(trial) + ", Exercise = " + _getExercise(trial) + ", Arm = " + _getArm(trial) + ", distance = " + _getDistance(trial) + "m" + ", target = " + _getPoleTarget(trial));
+
+        if (_getExercise(trial) == PointingExercise.POLE)
+        {
+            pole.createAPole(trial, _getDistance(trial), _getPoleTarget(trial),observer, condition);
+        }
+        if (_getExercise(trial) == PointingExercise.WALL)
+        {
+            wall.createWall(trial, observer);
+        }
 
         _network.StartMessage(trial, condition);
     }
+
+
 
     private void _swapCondition()
     {
@@ -254,5 +292,82 @@ public class DeixisEvaluation : MonoBehaviour {
         result.SetPixels(pix);
         result.Apply();
         return result;
+    }
+
+    private EvaluationPeer _getObserver(int trial)
+    {
+        if (trial <= 11)
+        {
+            return EvaluationPeer.RIGHT_VR_CLIENT;
+        }
+        return EvaluationPeer.LEFT_VR_CLIENT;
+    }
+
+    private PointingExercise _getExercise(int trial)
+    {
+        if ((trial >= 1 && trial <= 6) || (trial >= 12 && trial <= 17))
+        {
+            return PointingExercise.POLE;
+        }
+        return PointingExercise.WALL;
+    }
+
+    private PointingArm _getArm(int trial)
+    {
+        if (trial % 2 != 0) // is Odd
+        {
+            return PointingArm.LEFT;
+        }
+        return PointingArm.RIGHT;
+    }
+
+    private int _getDistance(int trial)
+    {
+        if (new List<int>() {1, 2, 12, 13}.Contains(trial))
+        {
+            return 1;
+        }
+
+        if (new List<int>() { 5, 6, 16, 17 }.Contains(trial))
+        {
+            return 3;
+        }
+
+        return 2;
+    }
+
+    private string _getInstruction(int trial)
+    {
+        return "Pessoa Da Direita, aponta para o alvo e pessoa da Esquerda diz para onde o teu colega está a apontar em voz alta.";
+    }
+
+    private int _getPoleTarget(int trial)
+    {
+        if (trial == 1) return 16;
+
+        if (trial == 2) return 18;
+
+        if (trial == 3) return 11;
+
+        if (trial == 4) return 25;
+
+        if (trial == 5) return 28;
+
+        if (trial == 6) return 21;
+
+
+        if (trial == 12) return 21;
+
+        if (trial == 13) return 16;
+
+        if (trial == 14) return 25;
+
+        if (trial == 15) return 11;
+
+        if (trial == 16) return 18;
+
+        if (trial == 17) return 28;
+
+        return -1;
     }
 }

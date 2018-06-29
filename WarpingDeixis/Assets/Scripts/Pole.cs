@@ -18,15 +18,18 @@ public class Pole : MonoBehaviour {
 
     private List<GameObject> poleCells;
 
-    public EvaluationTask task;
+    public int task;
+    public bool observer;
 
 	void Start ()
     {
         poleCells = new List<GameObject>();
     }
 
-    public void createAPole(EvaluationTask task, float distance)
+    public void createAPole(int task, float distance, int target, bool observer, WarpingCondition condition)
     {
+        distance += GameObject.Find("leftHumanPosition").transform.position.z;
+
         transform.position = Vector3.zero;
 
         print("Creating Pole for " + task.ToString() + " at " + distance);
@@ -36,6 +39,7 @@ public class Pole : MonoBehaviour {
         poleCells = new List<GameObject>();
 
         this.task = task;
+        this.observer = observer;
 
         numberOfPoleCells = (int)Mathf.Floor((h1 - h0) / poleCellSize);
         for (int i = 1; i <= numberOfPoleCells; i++)
@@ -50,10 +54,29 @@ public class Pole : MonoBehaviour {
 
             cell.GetComponent<PoleNumber>().Number = index;
 
-            //cell.GetComponent<PoleNumber>().textMesh.text = "" + PoleNumbersDics.translate(index, task);
-            cell.GetComponent<PoleNumber>().textMesh.text = "" + index;
-
+            //try
+            {
+                cell.GetComponent<PoleNumber>().textMesh.text = "" + PoleNumbersDics.translate(index, task, condition);
+            }
+            //catch (Exception e)
+            {
+            //    Debug.Log(e.StackTrace);
+            }
+                //cell.GetComponent<PoleNumber>().textMesh.text = "" + index;
             cell.name = "pole" + index;
+
+
+            PoleNumber pl = cell.GetComponent<PoleNumber>();
+            if (observer)
+            {
+                pl.state = PoleCellStateType.OBSERVER_SIDE;
+            }
+            else pl.state = PoleCellStateType.POINTER_SIDE;
+
+            if (index == target)
+            {
+                pl.state = PoleCellStateType.POINTER_SIDE_TARGET;
+            }
             poleCells.Insert(0, cell);
         }
         transform.position += Vector3.forward * distance;
@@ -70,27 +93,6 @@ public class Pole : MonoBehaviour {
 
     void Update ()
     {
-        if (Input.GetKeyDown(KeyCode.Alpha1))
-        {
-            createAPole(EvaluationTask.POLE_T1_C1, 1);
-        }
-
-        if (Input.GetKeyDown(KeyCode.Alpha2))
-        {
-            createAPole(EvaluationTask.POLE_T1_C1, 2);
-        }
-
-        if (Input.GetKeyDown(KeyCode.Alpha3))
-        {
-            createAPole(EvaluationTask.POLE_T1_C1, 3);
-        }
-
-        if (Input.GetKeyDown(KeyCode.Alpha0))
-        {
-            destroyCurrent();
-        }
-
-
         if (Input.GetKeyDown(KeyCode.F9))
         {
             string filep = Application.dataPath + "/out.txt";
@@ -169,7 +171,7 @@ public static class PoleNumbersDics
     
     public static Dictionary<int, int> POLE_T2_C1 = new Dictionary<int, int>()
     {
-        {1, 30},{2, 24},{3, 14},{4, 27},{5, 25},{6, 36},{7, 6},{8, 18},{9, 11},{10, 29},{11, 8},{12, 37},{13, 13},{14, 23},{15, 21},{16, 17},{17, 32},{18, 31},{19, 19},{20, 5},{21, 20},{22, 12},{23, 2},{24, 34},{25, 1},{27, 16},{28, 15},{29, 10},{30, 7},{31, 33},{32, 4},{33, 3},{34, 28},{35, 35},{36, 22},{37, 9}
+        {1, 6},{2, 11},{3, 25},{4, 18},{5, 36},{6, 1},{7, 13},{8, 16},{9, 8},{10, 29},{11, 26},{12, 14},{13, 17},{14, 15},{15, 10},{16, 4},{17, 32},{18, 5},{19, 27},{20, 9},{21, 37},{22, 3},{23, 34},{24, 30},{25, 35},{26, 23},{27, 28},{28, 31},{29, 22},{30, 7},{31, 24},{32, 33},{33, 21},{34, 19},{35, 12},{36, 2},{37, 20}
     };
 
     public static Dictionary<int, int> POLE_T1_C2 = new Dictionary<int, int>()
@@ -182,21 +184,25 @@ public static class PoleNumbersDics
         {1, 21},{2, 23},{3, 19},{4, 20},{5, 27},{6, 37},{7, 25},{8, 28},{9, 1},{10, 22},{11, 7},{12, 18},{13, 12},{14, 26},{15, 30},{16, 24},{17, 14},{18, 6},{19, 15},{20, 17},{21, 13},{22, 10},{23, 34},{24, 5},{25, 16},{26, 33},{27, 29},{28, 4},{29, 32},{30, 35},{31, 3},{32, 31},{33, 11},{34, 8},{35, 36},{36, 2},{37, 9}
     };
 
-    internal static int translate(int index, EvaluationTask task)
+    internal static int translate(int index, int trial, WarpingCondition condition)
     {
-        if (task == EvaluationTask.POLE_T1_C1)
+
+        if (new List<int>() { 1, 2, 3, 4, 5, 6 }.Contains(trial) && condition == WarpingCondition.BASELINE)
         {
-            return POLE_T1_C1[index]; 
+            return POLE_T1_C1[index];
         }
-        if (task == EvaluationTask.POLE_T2_C1)
+
+        if (new List<int>() { 12, 13, 14, 15, 16, 17 }.Contains(trial) && condition == WarpingCondition.BASELINE)
         {
             return POLE_T2_C1[index];
         }
-        if (task == EvaluationTask.POLE_T1_C2)
+
+        if (new List<int>() { 1, 2, 3, 4, 5, 6 }.Contains(trial) && condition == WarpingCondition.WARPING)
         {
             return POLE_T1_C2[index];
         }
-        if (task == EvaluationTask.POLE_T2_C2)
+
+        if (new List<int>() { 12, 13, 14, 15, 16, 17 }.Contains(trial) && condition == WarpingCondition.WARPING)
         {
             return POLE_T2_C2[index];
         }
