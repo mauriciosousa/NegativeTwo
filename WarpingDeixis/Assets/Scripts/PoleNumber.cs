@@ -15,6 +15,7 @@ public class PoleNumber : MonoBehaviour {
     public Transform observerQuad;
     public Transform observerText;
     public TextMesh textMesh;
+    public Transform serverIndicator;
 
     public Transform pointerQuad;
 
@@ -23,13 +24,17 @@ public class PoleNumber : MonoBehaviour {
     public int Number = 0;
 
 	void Start () {
-		
-	}
-	
-	void Update ()
+    }
+
+    void Update ()
     {
         observerText.gameObject.GetComponent<Renderer>().enabled = state == PoleCellStateType.OBSERVER_SIDE;
         observerQuad.gameObject.GetComponent<Renderer>().enabled = state != PoleCellStateType.POINTER_SIDE_TARGET;
         pointerQuad.gameObject.GetComponent<Renderer>().enabled = state == PoleCellStateType.POINTER_SIDE_TARGET;
+    }
+
+    public void showIndicator()
+    {
+        serverIndicator.gameObject.GetComponent<MeshRenderer>().enabled = true;
     }
 }

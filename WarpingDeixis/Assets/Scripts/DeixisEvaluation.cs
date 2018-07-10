@@ -35,6 +35,7 @@ public enum PointingExercise
 public class DeixisEvaluation : MonoBehaviour {
 
     public EvaluationPeer peer;
+    public EvaluationPeer emulatePeer;
 
     private EvaluationConfigProperties _config;
     private ServerConsole _console;
@@ -46,8 +47,8 @@ public class DeixisEvaluation : MonoBehaviour {
 
 
     public WarpingCondition condition = WarpingCondition.BASELINE;
-    public int trial = 0;
-    public int maxTrials = 22;
+    private int trial = 0;
+    private int maxTrials = 28;
 
     private BodiesManager _bodies;
 
@@ -78,6 +79,7 @@ public class DeixisEvaluation : MonoBehaviour {
     void Start() {
         _config = GetComponent<EvaluationConfigProperties>();
         peer = _config.Peer;
+        emulatePeer = peer;
         _bodies = GameObject.Find("BodiesManager").GetComponent<BodiesManager>();
         _network = GetComponent<DeixisNetwork>();
         _console = GetComponent<ServerConsole>();
@@ -86,6 +88,12 @@ public class DeixisEvaluation : MonoBehaviour {
         redBox.normal.background = MakeTex(2, 2, new Color(255f / 255f, 59f / 255f, 48f / 255f));
         greenBox = new GUIStyle();
         greenBox.normal.background = MakeTex(2, 2, new Color(76f / 255f, 217f / 255f, 100f / 255f));
+
+        if (peer == EvaluationPeer.SERVER)
+        {
+            emulatePeer = EvaluationPeer.LEFT_VR_CLIENT;
+            //GameObject.Find("MainHead").GetComponent<HeadCameraController>().enabled = false;
+        }
     }
 
     void Update() {
@@ -224,15 +232,15 @@ public class DeixisEvaluation : MonoBehaviour {
         print("OBSERVER = " + observer);
 
         Debug.Log("STARTING: " + trial + " " + condition);
-        Debug.Log("trial = " + trial + ", Observer = " + _getObserver(trial) + ", Exercise = " + _getExercise(trial) + ", Arm = " + _getArm(trial) + ", distance = " + _getDistance(trial) + "m" + ", target = " + _getPoleTarget(trial));
+        //Debug.Log("trial = " + trial + ", Observer = " + _getObserver(trial) + ", Exercise = " + _getExercise(trial) + ", Arm = " + _getArm(trial) + ", distance = " + _getDistance(trial) + "m" + ", target = " + _getPoleTarget(trial, _getObserver(trial), condition));
 
         if (_getExercise(trial) == PointingExercise.POLE)
         {
-            pole.createAPole(trial, _getDistance(trial), _getPoleTarget(trial),observer, condition);
+            pole.createAPole(trial, _getDistance(trial), _getPoleTarget(trial, _getObserver(trial), condition), observer, condition);
         }
         if (_getExercise(trial) == PointingExercise.WALL)
         {
-            wall.createWall(trial, observer);
+            wall.createWall(trial, observer, _getObserver(trial), condition);
         }
 
         _network.StartMessage(trial, condition);
@@ -296,16 +304,19 @@ public class DeixisEvaluation : MonoBehaviour {
 
     private EvaluationPeer _getObserver(int trial)
     {
-        if (trial <= 11)
+        //if (peer == EvaluationPeer.SERVER) return EvaluationPeer.LEFT_VR_CLIENT;
+
+
+        if (trial <= 14)
         {
-            return EvaluationPeer.RIGHT_VR_CLIENT;
+            return EvaluationPeer.LEFT_VR_CLIENT;
         }
-        return EvaluationPeer.LEFT_VR_CLIENT;
+        return EvaluationPeer.RIGHT_VR_CLIENT;
     }
 
     private PointingExercise _getExercise(int trial)
     {
-        if ((trial >= 1 && trial <= 6) || (trial >= 12 && trial <= 17))
+        if ((trial >= 1 && trial <= 9) || (trial >= 15 && trial <= 23))
         {
             return PointingExercise.POLE;
         }
@@ -323,12 +334,12 @@ public class DeixisEvaluation : MonoBehaviour {
 
     private int _getDistance(int trial)
     {
-        if (new List<int>() {1, 2, 12, 13}.Contains(trial))
+        if (new List<int>() {1, 2, 3, 15, 16, 17}.Contains(trial))
         {
             return 1;
         }
 
-        if (new List<int>() { 5, 6, 16, 17 }.Contains(trial))
+        if (new List<int>() {7, 8, 9, 21, 22, 23}.Contains(trial))
         {
             return 3;
         }
@@ -341,32 +352,35 @@ public class DeixisEvaluation : MonoBehaviour {
         return "Pessoa Da Direita, aponta para o alvo e pessoa da Esquerda diz para onde o teu colega está a apontar em voz alta.";
     }
 
-    private int _getPoleTarget(int trial)
+    private int _getPoleTarget(int trial, EvaluationPeer observer, WarpingCondition condition)
     {
-        if (trial == 1) return 16;
+        Dictionary<int, int> b1 = new Dictionary<int, int>()
+        {
+            {1, 26}, {2, 13}, {3, 16}, {4, 29}, {5, 21}, {6, 10}, {7, 19}, {8, 8}, {9, 31}
+        };
 
-        if (trial == 2) return 18;
+        Dictionary<int, int> b2 = new Dictionary<int, int>()
+        {
+            {15, 19}, {16, 10}, {17, 29}, {18, 13}, {19, 21}, {20, 26}, {21, 16}, {22, 31}, {23, 8}
+        };
 
-        if (trial == 3) return 11;
+        Dictionary<int, int> b3 = new Dictionary<int, int>()
+        {
+            {1, 13}, {2, 29}, {3, 19}, {4, 16}, {5, 26}, {6, 10}, {7, 31}, {8, 8}, {9, 21}
+        };
 
-        if (trial == 4) return 25;
+        Dictionary<int, int> b4 = new Dictionary<int, int>()
+        {
+            {15, 16}, {16, 8}, {17, 29}, {18, 10}, {19, 26}, {20, 19}, {21, 13}, {22, 31}, {23, 21}
+        };
 
-        if (trial == 5) return 28;
+        if (observer == EvaluationPeer.LEFT_VR_CLIENT  && condition == WarpingCondition.BASELINE) return b1[trial];
 
-        if (trial == 6) return 21;
+        if (observer == EvaluationPeer.RIGHT_VR_CLIENT && condition == WarpingCondition.BASELINE) return b2[trial];
 
+        if (observer == EvaluationPeer.LEFT_VR_CLIENT && condition == WarpingCondition.WARPING) return b3[trial];
 
-        if (trial == 12) return 21;
-
-        if (trial == 13) return 16;
-
-        if (trial == 14) return 25;
-
-        if (trial == 15) return 11;
-
-        if (trial == 16) return 18;
-
-        if (trial == 17) return 28;
+        if (observer == EvaluationPeer.RIGHT_VR_CLIENT && condition == WarpingCondition.WARPING) return b4[trial];
 
         return -1;
     }

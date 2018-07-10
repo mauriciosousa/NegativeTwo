@@ -56,6 +56,14 @@ public class EvaluationConfigProperties : MonoBehaviour {
         }
     }
 
+    public bool serverIsObserver
+    {
+        get
+        {
+            return _load("server.is.observer") == "TRUE";
+        }
+    }
+
     private string _load(string property)
     {
         if (File.Exists(configFilenameFullPath))
