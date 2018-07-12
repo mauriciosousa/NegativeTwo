@@ -15,9 +15,13 @@ public class Wall : MonoBehaviour {
     public Transform bottomLeft;
     public Transform bottomRight;
 
+    public DeixisNetwork network;
     public DeixisEvaluation deixisEvaluation;
     private EvaluationConfigProperties _config;
     private EvaluationPeer peer;
+
+    private bool _inSession = false;
+    private bool IAmObserver = false;
 
     void Start () {
         hideWall();
@@ -37,17 +41,30 @@ public class Wall : MonoBehaviour {
     {
         wall.GetComponent<MeshRenderer>().enabled = true;
 
-        if (peer == EvaluationPeer.SERVER) observer = _config.serverIsObserver;
+        //if (peer == EvaluationPeer.SERVER) observer = _config.serverIsObserver;
 
-        if (observer)
+        if (peer == EvaluationPeer.SERVER)
         {
             cursor.GetComponent<MeshRenderer>().enabled = true;
-        }
-        else
-        {
             target.transform.position = _getTarget(trial, evaluationPeer, condition);
             target.GetComponent<MeshRenderer>().enabled = true;
         }
+        else
+        {
+            if (observer)
+            {
+                cursor.GetComponent<MeshRenderer>().enabled = true;
+            }
+            else
+            {
+                target.transform.position = _getTarget(trial, evaluationPeer, condition);
+                target.GetComponent<MeshRenderer>().enabled = true;
+            }
+        }
+
+        cursor.transform.localPosition = new Vector3(0, -2f, cursor.transform.localPosition.z);
+        IAmObserver = observer;
+        _inSession = true;
     }
 
     public void hideWall()
@@ -55,10 +72,29 @@ public class Wall : MonoBehaviour {
         wall.GetComponent<MeshRenderer>().enabled = false;
         cursor.GetComponent<MeshRenderer>().enabled = false;
         target.GetComponent<MeshRenderer>().enabled = false;
+
+        IAmObserver = false;
+        _inSession = false;
     }
 
     void Update () {
 
+        bool joyClick = false;
+        if (Input.GetKey(KeyCode.Joystick1Button0)) joyClick = true;
+        if (Input.GetKey(KeyCode.Joystick1Button1)) joyClick = true;
+        if (Input.GetKey(KeyCode.Joystick2Button0)) joyClick = true;
+        if (Input.GetKey(KeyCode.Joystick2Button1)) joyClick = true;
+
+        if (joyClick)
+        {
+            Debug.Log("joyclick");
+            if (_inSession && IAmObserver)
+            {
+                network.UpdateWallCursor(new Vector2(cursor.transform.localPosition.x, cursor.transform.localPosition.y));
+            }
+        }
+
+        /*  */
 
         if (Input.GetKeyDown(KeyCode.W))
         {
@@ -114,6 +150,14 @@ public class Wall : MonoBehaviour {
             }
         }
 	}
+
+    internal void updateWallCursor(Vector2 position)
+    {
+        if (peer == EvaluationPeer.SERVER)
+        {
+            cursor.transform.localPosition = new Vector3(position.x, position.y, cursor.transform.localPosition.z);
+        }
+    }
 
     private GameObject _generateTargetAround(Transform g, string name)
     {

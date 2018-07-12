@@ -6,8 +6,8 @@ using UnityEngine;
 public enum EvaluationPeer
 {
     SERVER,
-    LEFT_VR_CLIENT,
-    RIGHT_VR_CLIENT
+    LEFT,
+    RIGHT
 }
 
 public enum EvaluationTask
@@ -35,7 +35,6 @@ public enum PointingExercise
 public class DeixisEvaluation : MonoBehaviour {
 
     public EvaluationPeer peer;
-    public EvaluationPeer emulatePeer;
 
     private EvaluationConfigProperties _config;
     private ServerConsole _console;
@@ -43,7 +42,10 @@ public class DeixisEvaluation : MonoBehaviour {
 
 
     public Pole pole;
+    public PoleLog poleLog;
+
     public Wall wall;
+    public WallLog wallLog;
 
 
     public WarpingCondition condition = WarpingCondition.BASELINE;
@@ -79,7 +81,6 @@ public class DeixisEvaluation : MonoBehaviour {
     void Start() {
         _config = GetComponent<EvaluationConfigProperties>();
         peer = _config.Peer;
-        emulatePeer = peer;
         _bodies = GameObject.Find("BodiesManager").GetComponent<BodiesManager>();
         _network = GetComponent<DeixisNetwork>();
         _console = GetComponent<ServerConsole>();
@@ -88,12 +89,6 @@ public class DeixisEvaluation : MonoBehaviour {
         redBox.normal.background = MakeTex(2, 2, new Color(255f / 255f, 59f / 255f, 48f / 255f));
         greenBox = new GUIStyle();
         greenBox.normal.background = MakeTex(2, 2, new Color(76f / 255f, 217f / 255f, 100f / 255f));
-
-        if (peer == EvaluationPeer.SERVER)
-        {
-            emulatePeer = EvaluationPeer.LEFT_VR_CLIENT;
-            //GameObject.Find("MainHead").GetComponent<HeadCameraController>().enabled = false;
-        }
     }
 
     void Update() {
@@ -177,11 +172,25 @@ public class DeixisEvaluation : MonoBehaviour {
         {
             if (GUI.Button(new Rect(left + 10, top + 2 * lineHeight, width - 20, 1.5f * lineHeight), "NEXT"))
             {
+                if (_getExercise(trial) == PointingExercise.POLE)
+                {
+                    poleLog.Record(trial, condition.ToString(), _getObserver(trial).ToString(), _getPoleTarget(trial, _getObserver(trial), condition));
+                }
+
+                if (_getExercise(trial) == PointingExercise.WALL)
+                {
+                    wallLog.Record(trial, condition.ToString(), _getObserver(trial).ToString(), wall.target.transform.position, wall.cursor.transform.position);
+                }
+
                 if (trial == maxTrials)
                 {
                     trial = 0;
                     reset();
                     _network.reset();
+
+                    poleLog.EndRecordingSession();
+                    wallLog.EndRecordingSession();
+
                 }
                 else
                 {
@@ -214,7 +223,10 @@ public class DeixisEvaluation : MonoBehaviour {
         // Instruction
         if (trial > 0 && trial <= maxTrials)
         {
-            GUI.Box(new Rect(Screen.width / 3 - 20, 0, (Screen.width / 3) + 30, Screen.height / 2 + 20), " ");
+            GUI.Box(new Rect(Screen.width / 3 - 20, 0, (Screen.width / 3) + 30, 80), " ");
+            GUI.Box(new Rect(Screen.width / 3 - 20, 0, (Screen.width / 3) + 30, 80), " ");
+            GUI.Box(new Rect(Screen.width / 3 - 20, 0, (Screen.width / 3) + 30, 80), " ");
+
             GUI.Label(new Rect(Screen.width / 3, 10, (Screen.width / 3), Screen.height - 10), _getInstruction(trial), instructionStyle);
         }
     }
@@ -229,7 +241,6 @@ public class DeixisEvaluation : MonoBehaviour {
     private void _setupTrial(int trial, WarpingCondition condition)
     {
         bool observer = peer == _getObserver(trial);
-        print("OBSERVER = " + observer);
 
         Debug.Log("STARTING: " + trial + " " + condition);
         //Debug.Log("trial = " + trial + ", Observer = " + _getObserver(trial) + ", Exercise = " + _getExercise(trial) + ", Arm = " + _getArm(trial) + ", distance = " + _getDistance(trial) + "m" + ", target = " + _getPoleTarget(trial, _getObserver(trial), condition));
@@ -237,10 +248,14 @@ public class DeixisEvaluation : MonoBehaviour {
         if (_getExercise(trial) == PointingExercise.POLE)
         {
             pole.createAPole(trial, _getDistance(trial), _getPoleTarget(trial, _getObserver(trial), condition), observer, condition);
+
+            if (trial == 1 && peer == EvaluationPeer.SERVER) poleLog.StartRecordingSession();
         }
         if (_getExercise(trial) == PointingExercise.WALL)
         {
             wall.createWall(trial, observer, _getObserver(trial), condition);
+
+            if (trial == 10 && peer == EvaluationPeer.SERVER) wallLog.StartRecordingSession();
         }
 
         _network.StartMessage(trial, condition);
@@ -309,9 +324,9 @@ public class DeixisEvaluation : MonoBehaviour {
 
         if (trial <= 14)
         {
-            return EvaluationPeer.LEFT_VR_CLIENT;
+            return EvaluationPeer.LEFT;
         }
-        return EvaluationPeer.RIGHT_VR_CLIENT;
+        return EvaluationPeer.RIGHT;
     }
 
     private PointingExercise _getExercise(int trial)
@@ -374,13 +389,13 @@ public class DeixisEvaluation : MonoBehaviour {
             {15, 16}, {16, 8}, {17, 29}, {18, 10}, {19, 26}, {20, 19}, {21, 13}, {22, 31}, {23, 21}
         };
 
-        if (observer == EvaluationPeer.LEFT_VR_CLIENT  && condition == WarpingCondition.BASELINE) return b1[trial];
+        if (observer == EvaluationPeer.LEFT  && condition == WarpingCondition.BASELINE) return b1[trial];
 
-        if (observer == EvaluationPeer.RIGHT_VR_CLIENT && condition == WarpingCondition.BASELINE) return b2[trial];
+        if (observer == EvaluationPeer.RIGHT && condition == WarpingCondition.BASELINE) return b2[trial];
 
-        if (observer == EvaluationPeer.LEFT_VR_CLIENT && condition == WarpingCondition.WARPING) return b3[trial];
+        if (observer == EvaluationPeer.LEFT && condition == WarpingCondition.WARPING) return b3[trial];
 
-        if (observer == EvaluationPeer.RIGHT_VR_CLIENT && condition == WarpingCondition.WARPING) return b4[trial];
+        if (observer == EvaluationPeer.RIGHT && condition == WarpingCondition.WARPING) return b4[trial];
 
         return -1;
     }

@@ -64,13 +64,13 @@ public class BodiesManager : MonoBehaviour
     {
         canApplyHeadPosition = false;
 
-        if (_evaluation.peer == EvaluationPeer.LEFT_VR_CLIENT && LeftHuman != null)
+        if (_evaluation.peer == EvaluationPeer.LEFT && LeftHuman != null)
         {
             canApplyHeadPosition = true;
             return transform.position = LeftHuman.body.Joints[BodyJointType.head];
         }
 
-        if (_evaluation.peer == EvaluationPeer.RIGHT_VR_CLIENT && RightHuman != null)
+        if (_evaluation.peer == EvaluationPeer.RIGHT && RightHuman != null)
         {
             canApplyHeadPosition = true;
             return transform.position = RightHuman.body.Joints[BodyJointType.head];
@@ -101,7 +101,7 @@ public class BodiesManager : MonoBehaviour
 
     internal int remoteHead()
     {
-        if (_evaluation.peer == EvaluationPeer.LEFT_VR_CLIENT)
+        if (_evaluation.peer == EvaluationPeer.LEFT)
         {
             return LeftHuman == null ? 0 : 1;
         }
@@ -160,7 +160,7 @@ public class BodiesManager : MonoBehaviour
         }
         else
         {
-            if (_evaluation.peer == EvaluationPeer.RIGHT_VR_CLIENT)
+            if (_evaluation.peer == EvaluationPeer.RIGHT)
             {
                 UnityEngine.XR.InputTracking.Recenter();
             }
@@ -178,7 +178,7 @@ public class BodiesManager : MonoBehaviour
         }
         else
         {
-            if (_evaluation.peer == EvaluationPeer.LEFT_VR_CLIENT)
+            if (_evaluation.peer == EvaluationPeer.LEFT)
             {
                 UnityEngine.XR.InputTracking.Recenter();
             }
@@ -216,7 +216,7 @@ public class BodiesManager : MonoBehaviour
 
     internal Vector3 getLocalHead()
     {
-        if (_evaluation.peer == EvaluationPeer.LEFT_VR_CLIENT)
+        if (_evaluation.peer == EvaluationPeer.LEFT)
             return LeftHuman == null ? Vector3.zero : LeftHuman.body.Joints[BodyJointType.head];
         else
             return RightHuman == null ? Vector3.zero : RightHuman.body.Joints[BodyJointType.head];
