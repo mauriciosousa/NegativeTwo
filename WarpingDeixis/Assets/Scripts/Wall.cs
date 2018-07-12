@@ -153,6 +153,7 @@ public class Wall : MonoBehaviour {
 
     internal void updateWallCursor(float x, float y)
     {
+        Debug.Log("Receiving Cursor Updates");
         if (peer == EvaluationPeer.SERVER)
         {
             cursor.transform.localPosition = new Vector3(x, y, cursor.transform.localPosition.z);

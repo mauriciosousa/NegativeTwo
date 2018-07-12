@@ -123,7 +123,7 @@ public class DeixisNetwork : MonoBehaviour {
     [RPC]
     void RPC_UpdateWallCursor(float x, float y)
     {
-        if (_peer != EvaluationPeer.SERVER)
+        if (_peer == EvaluationPeer.SERVER)
         {
             _wall.updateWallCursor(x, y);
         }
@@ -131,6 +131,6 @@ public class DeixisNetwork : MonoBehaviour {
 
     public void UpdateWallCursor(float x, float y)
     {
-        _networkView.RPC("RPC_UpdateWallCursor", RPCMode.Server, x, y);
+        _networkView.RPC("RPC_UpdateWallCursor", RPCMode.Others, x, y);
     }
 }
