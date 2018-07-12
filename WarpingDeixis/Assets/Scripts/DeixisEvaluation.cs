@@ -43,9 +43,11 @@ public class DeixisEvaluation : MonoBehaviour {
 
     public Pole pole;
     public PoleLog poleLog;
+    public BoxCollider poleCollider;
 
     public Wall wall;
     public WallLog wallLog;
+    public BoxCollider wallCollider;
 
 
     public WarpingCondition condition = WarpingCondition.BASELINE;
@@ -232,6 +234,15 @@ public class DeixisEvaluation : MonoBehaviour {
 
             GUI.Label(new Rect(Screen.width / 3, 10, (Screen.width / 3), Screen.height - 10), _getInstruction(trial), instructionStyle);
         }
+    }
+
+    internal Collider getCollider()
+    {
+        if (_getExercise(trial) == PointingExercise.POLE)
+        {
+            return poleCollider;
+        }
+        return wallCollider;
     }
 
     public void reset()

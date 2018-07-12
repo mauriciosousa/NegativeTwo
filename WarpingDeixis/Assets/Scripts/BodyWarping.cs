@@ -32,12 +32,11 @@ public class PointingDistortionInfo
 public class BodyWarping : MonoBehaviour {
 
     public BodiesManager bodies;
-    public Evaluation evaluation;
-    public NetworkCommunication network;
-
-    public GameObject wall;
-
     private Human _human;
+
+    public DeixisEvaluation deixisEvaluation;
+    public DeixisNetwork deixisNetwork;
+    public EvaluationConfigProperties config;
 
     public GameObject leftBody;
     public GameObject rightBody;
@@ -55,6 +54,8 @@ public class BodyWarping : MonoBehaviour {
     private bool applyWarp = false;
     public bool overrideApplyWarp = false;
 
+    public Collider collider;
+
     void Start ()
     {
         _human = null;
@@ -65,16 +66,13 @@ public class BodyWarping : MonoBehaviour {
 
     void Update ()
     {
-        if (network.evaluationPeerType != EvaluationPeertype.CLIENT) return;
+        if (config.Peer == EvaluationPeer.SERVER) return;
 
+        applyWarp = deixisEvaluation.condition == WarpingCondition.WARPING;
+        collider = deixisEvaluation.getCollider();
 
-        
-
-
-        applyWarp = overrideApplyWarp || (evaluation.taskInProgress && evaluation.condition == EvaluationCondition.DEICTICS_CORRECTION);
-        
         GameObject go = null;
-        if (evaluation.clientPosition == EvaluationPosition.ON_THE_LEFT)
+        if (config.Peer == EvaluationPeer.LEFT)
         {
             _human = bodies.RightHuman;
             go = rightBody;
@@ -87,7 +85,7 @@ public class BodyWarping : MonoBehaviour {
 
         if (_human != null && go != null)
         {
-            _applyWarp(_human, go);
+            _applyWarp(_human, go); // <----------------REVIEWWW a partir daqui
         }
 	}
 
@@ -184,7 +182,7 @@ public class BodyWarping : MonoBehaviour {
     {
         hitpoint = Vector3.zero;
         RaycastHit hit;
-        if (wall.GetComponent<Collider>().Raycast(ray, out hit, 1000.0f))
+        if (deixisEvaluation.getCollider().Raycast(ray, out hit, 1000.0f))
         {
             //print("hit = " + hit.transform.name + " " + hit.point);
             hitpoint = hit.point;
