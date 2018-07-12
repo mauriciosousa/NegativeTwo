@@ -28,7 +28,7 @@ public class PoleLog : MonoBehaviour {
         if (!File.Exists(_filename))
             File.Create(_filename).Dispose();
 
-        console.writeLine("Saving PoleLogs to " + "Pole_" + DateTime.Now.ToString("yyyy MMMM d H-mm-ss") + ".txt");
+        //console.writeLine("Saving PoleLogs to " + "Pole_" + DateTime.Now.ToString("yyyy MMMM d H-mm-ss") + ".txt");
 
         string header = "";
 

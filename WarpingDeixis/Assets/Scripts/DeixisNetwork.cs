@@ -56,12 +56,12 @@ public class DeixisNetwork : MonoBehaviour {
 
     void OnPlayerConnected(NetworkPlayer player)
     {
-        Debug.Log("New Player @ " + player.ipAddress);
+        _console.writeLine("New Player @ " + player.ipAddress);
     }
 
     void OnPlayerDisconnected(NetworkPlayer player)
     {
-        Debug.Log("Player Disconnected @ " + player.ipAddress);
+        _console.writeLine("Player Disconnected @ " + player.ipAddress);
     }
 
     [RPC]

@@ -87,7 +87,7 @@ public class Wall : MonoBehaviour {
 
         if (joyClick)
         {
-            Debug.Log("joyclick");
+            Debug.Log("joyclick " + IAmObserver);
             if (_inSession && IAmObserver)
             {
                 network.UpdateWallCursor(cursor.transform.localPosition.x, cursor.transform.localPosition.y);

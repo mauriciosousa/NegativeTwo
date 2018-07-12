@@ -28,7 +28,7 @@ public class WallLog : MonoBehaviour {
         if (!File.Exists(_filename))
             File.Create(_filename).Dispose();
 
-        console.writeLine("Saving WallLogs to " + "Wall_" + DateTime.Now.ToString("yyyy MMMM d H-mm-ss") + ".txt");
+        //console.writeLine("Saving WallLogs to " + "Wall_" + DateTime.Now.ToString("yyyy MMMM d H-mm-ss") + ".txt");
 
         string header = "";
 
