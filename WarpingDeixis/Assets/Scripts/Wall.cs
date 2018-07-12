@@ -90,7 +90,7 @@ public class Wall : MonoBehaviour {
             Debug.Log("joyclick");
             if (_inSession && IAmObserver)
             {
-                network.UpdateWallCursor(new Vector2(cursor.transform.localPosition.x, cursor.transform.localPosition.y));
+                network.UpdateWallCursor(cursor.transform.localPosition.x, cursor.transform.localPosition.y);
             }
         }
 
@@ -151,11 +151,11 @@ public class Wall : MonoBehaviour {
         }
 	}
 
-    internal void updateWallCursor(Vector2 position)
+    internal void updateWallCursor(float x, float y)
     {
         if (peer == EvaluationPeer.SERVER)
         {
-            cursor.transform.localPosition = new Vector3(position.x, position.y, cursor.transform.localPosition.z);
+            cursor.transform.localPosition = new Vector3(x, y, cursor.transform.localPosition.z);
         }
     }
 

@@ -13,6 +13,7 @@ public class DeixisNetwork : MonoBehaviour {
     private EvaluationConfigProperties _config;
     private DeixisEvaluation _evaluation;
     private Wall _wall;
+    private ServerConsole _console;
 
     public NetworkPeerType networkPeerType;
 
@@ -32,6 +33,7 @@ public class DeixisNetwork : MonoBehaviour {
         _config = GetComponent<EvaluationConfigProperties>();
         _evaluation = GetComponent<DeixisEvaluation>();
         _wall = GameObject.Find("Wall").GetComponent<Wall>();
+        _console = GetComponent<ServerConsole>();
 
         _port = _config.port;
         _address = _config.address;
@@ -39,7 +41,7 @@ public class DeixisNetwork : MonoBehaviour {
 
         if (_peer == EvaluationPeer.SERVER)
         {
-            Network.InitializeServer(2, _port, false);
+            Network.InitializeServer(4, _port, false);
         }
         else
         {
@@ -119,16 +121,16 @@ public class DeixisNetwork : MonoBehaviour {
     }
 
     [RPC]
-    void RPC_UpdateWallCursor(Vector2 position)
+    void RPC_UpdateWallCursor(float x, float y)
     {
         if (_peer != EvaluationPeer.SERVER)
         {
-            _wall.updateWallCursor(position);
+            _wall.updateWallCursor(x, y);
         }
     }
 
-    public void UpdateWallCursor(Vector2 position)
+    public void UpdateWallCursor(float x, float y)
     {
-        _networkView.RPC("RPC_UpdateWallCursor", RPCMode.Server, position);
+        _networkView.RPC("RPC_UpdateWallCursor", RPCMode.Server, x, y);
     }
 }

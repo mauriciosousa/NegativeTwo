@@ -97,13 +97,16 @@ public class DeixisEvaluation : MonoBehaviour {
 
     internal void start(int trial, WarpingCondition condition)
     {
+        Debug.Log("Start Trial");
         this.trial = trial;
         this.condition = condition;
+        _setupTrial(trial, condition);
     }
 
     internal void end()
     {
-        trial = 0;
+        pole.destroyCurrent();
+        wall.destroyCurrent();
     }
 
     void OnGUI()
@@ -258,7 +261,7 @@ public class DeixisEvaluation : MonoBehaviour {
             if (trial == 10 && peer == EvaluationPeer.SERVER) wallLog.StartRecordingSession();
         }
 
-        _network.StartMessage(trial, condition);
+        if (peer == EvaluationPeer.SERVER) _network.StartMessage(trial, condition);
     }
 
 
