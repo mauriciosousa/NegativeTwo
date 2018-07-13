@@ -44,10 +44,14 @@ public class Pole : MonoBehaviour {
 
         EvaluationPeer pointer = deixisEvaluation.getObserver(task);
         Transform t;
-        if (pointer == EvaluationPeer.LEFT) t = leftHumanPosition;
-        else t = rightHumanPosition;
+        if (pointer == EvaluationPeer.LEFT)
+            t = leftHumanPosition;
+        else
+            t = rightHumanPosition;
+
         Vector3 pos = transform.position;
         transform.position = new Vector3(t.position.x, pos.y, pos.z);
+
 
 
         if (peer == EvaluationPeer.SERVER) observer = _config.serverIsObserver;
