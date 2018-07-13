@@ -96,84 +96,83 @@ public class BodyWarping : MonoBehaviour {
 
     private void _applyWarp(Human human, GameObject go)
     {
-        return;
         if (go == null) return;
 
-        Vector3 head = go.transform.Find("HEAD").position;
+        Vector3 head = go.transform.Find(BodyJointType.head.ToString()).position;
 
-        Vector3 leftShoulder = go.transform.Find("LEFTSHOULDER").position;
-        Vector3 leftTip = go.transform.Find("LEFTHANDTIP").position;
+        Vector3 leftShoulder = go.transform.Find(BodyJointType.leftShoulder.ToString()).position;
+        Vector3 leftHandTip = go.transform.Find(BodyJointType.leftHandTip.ToString()).position;
 
-        Vector3 rightShoulder = go.transform.Find("RIGHTSHOULDER").position;
-        Vector3 rightTip = go.transform.Find("RIGHTHANDTIP").position;
+        Vector3 rightShoulder = go.transform.Find(BodyJointType.rightShoulder.ToString()).position;
+        Vector3 rightHandTip = go.transform.Find(BodyJointType.rightHandTip.ToString()).position;
 
         if (float.IsPositiveInfinity(lastRightHandPos.x))
         {
-            lastRightHandPos = rightTip;
+            lastRightHandPos = rightHandTip;
         }
 
         if (float.IsPositiveInfinity(lastLeftHandPos.x))
         {
-            lastLeftHandPos = leftTip;
+            lastLeftHandPos = leftHandTip;
         }
 
         Vector3 leftHit;
-        bool leftPointing = _isPointingToWall(new Ray(leftTip, leftTip - head), out leftHit);
+        bool leftPointing = _isPointingToWall(new Ray(leftHandTip, leftHandTip - head), out leftHit);
         Vector3 rightHit;
-        bool rightPointing = _isPointingToWall(new Ray(rightTip, rightTip - head), out rightHit);
+        bool rightPointing = _isPointingToWall(new Ray(rightHandTip, rightHandTip - head), out rightHit);
 
-        Transform leftHand_d = go.transform.Find("LEFTHAND_D");
-        leftHand_d.position = leftTip;
+        Transform leftHand_d = go.transform.Find(BodyJointType.leftHandTip.ToString() + "_WARP");
+        leftHand_d.position = leftHandTip;
 
-        Transform rightHand_d = go.transform.Find("RIGHTHAND_D");
-        rightHand_d.position = rightTip;
+        Transform rightHand_d = go.transform.Find(BodyJointType.rightHandTip.ToString() + "_WARP");
+        rightHand_d.position = rightHandTip;
 
         Matrix4x4 m = Matrix4x4.identity;
 
         // Left Pointing
 
         
-        if (applyWarp) m = _correctPointing(leftShoulder, leftTip, head, leftPointing, leftHit, ref lastLeftHandPos);
+        if (applyWarp) m = _correctPointing(leftShoulder, leftHandTip, head, leftPointing, leftHit, ref lastLeftHandPos);
 
         leftHand_d.position = m.MultiplyPoint(leftHand_d.position);
 
         leftPointingInfo.matrix = m;
-        leftPointingInfo.midPoint = (leftShoulder + leftTip) * 0.5f;
+        leftPointingInfo.midPoint = (leftShoulder + leftHandTip) * 0.5f;
         leftPointingInfo.distance = 0.15f;//(leftPointingB - leftPointingA).magnitude * 0.5f + 0.1f;
-        leftPointingInfo.Shoulder = go.transform.Find("LEFTSHOULDER").transform.position;
-        leftPointingInfo.Elbow = go.transform.Find("LEFTELBOW").transform.position;
-        leftPointingInfo.Wrist = go.transform.Find("LEFTWRIST").transform.position;
-        leftPointingInfo.Hand = go.transform.Find("LEFTHAND").transform.position;
-        leftPointingInfo.HandTip = go.transform.Find("LEFTHANDTIP").transform.position;
+        leftPointingInfo.Shoulder = go.transform.Find(BodyJointType.leftShoulder.ToString()).transform.position;
+        leftPointingInfo.Elbow = go.transform.Find(BodyJointType.leftElbow.ToString()).transform.position;
+        leftPointingInfo.Wrist = go.transform.Find(BodyJointType.leftWrist.ToString()).transform.position;
+        leftPointingInfo.Hand = go.transform.Find(BodyJointType.leftHand.ToString()).transform.position;
+        leftPointingInfo.HandTip = go.transform.Find(BodyJointType.leftHandTip.ToString()).transform.position;
         leftPointingInfo.pointing = leftPointing;// true;
 
         // Right Pointing
 
-        if (applyWarp) m = _correctPointing(rightShoulder, rightTip, head, rightPointing, rightHit, ref lastRightHandPos);
+        if (applyWarp) m = _correctPointing(rightShoulder, rightHandTip, head, rightPointing, rightHit, ref lastRightHandPos);
 
         rightHand_d.position = m.MultiplyPoint(rightHand_d.position);
 
         rightPointingInfo.matrix = m;
-        rightPointingInfo.midPoint = (rightShoulder + rightTip) * 0.5f;
+        rightPointingInfo.midPoint = (rightShoulder + rightHandTip) * 0.5f;
         rightPointingInfo.distance = 0.15f;//(rightPointingB - rightPointingA).magnitude * 0.5f + 0.1f;
-        rightPointingInfo.Shoulder = go.transform.Find("RIGHTSHOULDER").transform.position;
-        rightPointingInfo.Elbow = go.transform.Find("RIGHTELBOW").transform.position;
-        rightPointingInfo.Wrist = go.transform.Find("RIGHTWRIST").transform.position;
-        rightPointingInfo.Hand = go.transform.Find("RIGHTHAND").transform.position;
-        rightPointingInfo.HandTip = go.transform.Find("RIGHTHANDTIP").transform.position;
+        rightPointingInfo.Shoulder = go.transform.Find(BodyJointType.rightShoulder.ToString()).transform.position;
+        rightPointingInfo.Elbow = go.transform.Find(BodyJointType.rightElbow.ToString()).transform.position;
+        rightPointingInfo.Wrist = go.transform.Find(BodyJointType.rightWrist.ToString()).transform.position;
+        rightPointingInfo.Hand = go.transform.Find(BodyJointType.rightHand.ToString()).transform.position;
+        rightPointingInfo.HandTip = go.transform.Find(BodyJointType.rightHandTip.ToString()).transform.position;
         rightPointingInfo.pointing = rightPointing;// true;
 
         if (overrideApplyWarp)
         {
             if (leftPointing)
             {
-                Debug.DrawLine(head, leftTip, Color.cyan);
+                Debug.DrawLine(head, leftHandTip, Color.cyan);
                 Debug.DrawLine(head, leftHand_d.position, Color.cyan);
             }
 
             if (rightPointing)
             {
-                Debug.DrawLine(head, rightTip, Color.cyan);
+                Debug.DrawLine(head, rightHandTip, Color.cyan);
                 Debug.DrawLine(head, rightHand_d.position, Color.cyan);
             }
         }
