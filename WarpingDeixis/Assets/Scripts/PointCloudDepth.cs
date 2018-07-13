@@ -212,7 +212,7 @@ public class PointCloudDepth : MonoBehaviour
 
         MeshRenderer[] renderers = GetComponentsInChildren<MeshRenderer>();
 
-        BodyWarping m = GameObject.Find("Main").GetComponent<BodyWarping>();
+        BodyWarping m = GameObject.Find("DeixisEvaluation").GetComponent<BodyWarping>();
 
         for (int i = 0; i < renderers.Length; i++)
         {

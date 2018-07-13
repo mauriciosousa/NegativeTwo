@@ -25,6 +25,9 @@ public class Pole : MonoBehaviour {
     private EvaluationConfigProperties _config;
     private EvaluationPeer peer;
 
+    public Transform leftHumanPosition;
+    public Transform rightHumanPosition;
+
     void Start ()
     {
         poleCells = new List<GameObject>();
@@ -33,15 +36,24 @@ public class Pole : MonoBehaviour {
         peer = _config.Peer;
     }
 
+
+
     public void createAPole(int task, float distance, int target, bool observer, WarpingCondition condition)
     {
+        transform.position = Vector3.zero;
+
+        EvaluationPeer pointer = deixisEvaluation.getObserver(task);
+        Transform t;
+        if (pointer == EvaluationPeer.LEFT) t = leftHumanPosition;
+        else t = rightHumanPosition;
+        Vector3 pos = transform.position;
+        transform.position = new Vector3(t.position.x, pos.y, pos.z);
+
 
         if (peer == EvaluationPeer.SERVER) observer = _config.serverIsObserver;
-
+        
 
         distance += GameObject.Find("leftHumanPosition").transform.position.z; 
-
-        transform.position = Vector3.zero;
 
         print("Creating Pole for " + task.ToString() + " at " + distance);
 

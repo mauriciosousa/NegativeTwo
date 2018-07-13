@@ -296,7 +296,7 @@ public class DeixisEvaluation : MonoBehaviour {
         GUI.Box(new Rect(left + 5, top + 1.5f * lineHeight, width / 4 - 5, 5), "", leftHumanLeftHandPointing ? greenBox : redBox);
         GUI.Box(new Rect(left + width / 4, top + 1.5f * lineHeight, width / 4 - 5, 5), "", leftHumanRightHandPointing ? greenBox : redBox);
         GUI.Box(new Rect(left + width / 2, top + 1.5f * lineHeight, width / 4 - 5, 5), "", rightHumanLeftHandPointing ? greenBox : redBox);
-        GUI.Box(new Rect(left + width / 2 + width / 4 - 5, top + 1.5f * lineHeight, width / 4, 5), "", leftHumanRightHandPointing ? greenBox : redBox);
+        GUI.Box(new Rect(left + width / 2 + width / 4 - 5, top + 1.5f * lineHeight, width / 4, 5), "", rightHumanRightHandPointing ? greenBox : redBox);
 
 
         // CONDITION
