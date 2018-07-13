@@ -43,7 +43,7 @@ public class Pole : MonoBehaviour {
         transform.position = Vector3.zero;
 
         EvaluationPeer pointer = deixisEvaluation.getObserver(task);
-        Debug.LogError(pointer.ToString());
+
         Transform t;
         if (pointer == EvaluationPeer.LEFT)
             t = leftHumanPosition;
