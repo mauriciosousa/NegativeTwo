@@ -6,6 +6,7 @@ using UnityEngine;
 public class Wall : MonoBehaviour {
 
     public GameObject wall;
+    public GameObject wallCollider;
     public GameObject cursor;
     public GameObject target;
 
@@ -102,7 +103,7 @@ public class Wall : MonoBehaviour {
                 if (pointingArm == PointingArm.LEFT || pointingArm == PointingArm.RIGHT)
                 {
                     cursor.transform.position = hitpoint;
-                    cursor.transform.localPosition = new Vector3(cursor.transform.localPosition.x, cursor.transform.localPosition.y, -0.06f);
+                    //cursor.transform.localPosition = new Vector3(cursor.transform.localPosition.x, cursor.transform.localPosition.y, -0.06f);
 
                     network.UpdateWallCursor(cursor.transform.localPosition.x, cursor.transform.localPosition.y);
                 }

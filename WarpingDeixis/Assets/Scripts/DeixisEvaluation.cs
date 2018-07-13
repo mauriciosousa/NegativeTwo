@@ -75,6 +75,8 @@ public class DeixisEvaluation : MonoBehaviour {
     public GameObject leftHumanGameObject;
     public GameObject rightHumanGameObject;
 
+    
+
     public GUIStyle titleFontStyle;
     public GUIStyle conditionFontStyle;
     public GUIStyle instructionStyle;
