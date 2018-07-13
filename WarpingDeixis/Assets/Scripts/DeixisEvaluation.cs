@@ -491,9 +491,6 @@ public class DeixisEvaluation : MonoBehaviour {
 
     public EvaluationPeer getObserver(int trial)
     {
-        //if (peer == EvaluationPeer.SERVER) return EvaluationPeer.LEFT_VR_CLIENT;
-
-
         if (trial <= 14)
         {
             return EvaluationPeer.LEFT;
