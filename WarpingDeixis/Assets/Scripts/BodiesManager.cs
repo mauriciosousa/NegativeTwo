@@ -224,13 +224,16 @@ public class BodiesManager : MonoBehaviour
 
     private void updateBody(Human human, GameObject go)
     {
-        Vector3 head = human.body.Joints[BodyJointType.head];
-        Vector3 leftHand = human.body.Joints[BodyJointType.leftHand];
-        Vector3 rightHand = human.body.Joints[BodyJointType.rightHand];
-
         if (go != null)// && go.activeSelf)
         {
+            
+            foreach (BodyJointType b in (BodyJointType[])Enum.GetValues(typeof(BodyJointType)))
+            {
+                go.transform.Find(b.ToString()).localPosition = human.body.Joints[b];
+            }
 
+
+            /**
             go.transform.Find("HEAD").localPosition = head;
             go.transform.Find("LEFTHAND").localPosition = leftHand;
             go.transform.Find("RIGHTHAND").localPosition = rightHand;
@@ -252,9 +255,11 @@ public class BodiesManager : MonoBehaviour
             go.transform.Find("RIGHTFOOT").localPosition = human.body.Joints[BodyJointType.rightFoot];
             go.transform.Find("LEFTHANDTIP").localPosition = human.body.Joints[BodyJointType.leftHandTip];
             go.transform.Find("RIGHTHANDTIP").localPosition = human.body.Joints[BodyJointType.rightHandTip];
+            **/
         }
     }
 
+    /**
     private void _renderServerBody(Human human, GameObject go)
     {
         if (human == null)
@@ -288,5 +293,5 @@ public class BodiesManager : MonoBehaviour
             go.transform.Find("RIGHTHANDTIP").localPosition = human.body.Joints[BodyJointType.rightHandTip];
         }
 
-    }
+    }**/
 }

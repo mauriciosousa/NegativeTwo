@@ -102,11 +102,18 @@ public class Wall : MonoBehaviour {
 
                 if (pointingArm == PointingArm.LEFT || pointingArm == PointingArm.RIGHT)
                 {
+
+
+
+
                     cursor.transform.position = hitpoint;
                     //cursor.transform.localPosition = new Vector3(cursor.transform.localPosition.x, cursor.transform.localPosition.y, -0.06f);
 
                     network.UpdateWallCursor(cursor.transform.localPosition.x, cursor.transform.localPosition.y);
                 }
+
+                Debug.Log("" + peer + " used " + pointingArm + " hit " + hitpoint);
+
             }
         }
 

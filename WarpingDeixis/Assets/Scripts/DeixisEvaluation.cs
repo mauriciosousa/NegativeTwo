@@ -136,24 +136,24 @@ public class DeixisEvaluation : MonoBehaviour {
             humanGO = rightHumanGameObject;
         }
 
-        Vector3 head = humanGO.transform.Find("HEAD").position;
+        Vector3 head = humanGO.transform.Find(BodyJointType.head.ToString()).position;
         Vector3 tip;
         if (arm == PointingArm.LEFT)
         {
-            tip = humanGO.transform.Find("LEFTHANDTIP").position;
+            tip = humanGO.transform.Find(BodyJointType.leftHandTip.ToString()).position;
         }
         else
         {
-            tip = humanGO.transform.Find("RIGHTHANDTIP").position;
+            tip = humanGO.transform.Find(BodyJointType.rightHandTip.ToString()).position;
         }
 
         Ray ray = new Ray(tip, tip - head);
         RaycastHit hit;
-            if (getCollider().Raycast(ray, out hit, 1000.0f))
-            {
-                hitpoint = hit.point;
-                return true;
-            }
+        if (getCollider().Raycast(ray, out hit, 1000.0f))
+        {
+            hitpoint = hit.point;
+            return true;
+        }
 
         return false;
     }
@@ -161,18 +161,28 @@ public class DeixisEvaluation : MonoBehaviour {
     public PointingArm getPointingArm(EvaluationPeer peer, out Vector3 hitpoint)
     {
         hitpoint = Vector3.zero;
+        Vector3 leftHit = hitpoint;
+        Vector3 rightHit = hitpoint;
 
-        bool left = isHumanPointing(peer, PointingArm.LEFT, out hitpoint);
-        bool right = isHumanPointing(peer, PointingArm.RIGHT, out hitpoint);
+        bool left = isHumanPointing(peer, PointingArm.LEFT, out leftHit);
+        bool right = isHumanPointing(peer, PointingArm.RIGHT, out rightHit);
 
         if (left && right)
             return PointingArm.BOTH;
-        else if (left)
+
+        if (left)
+        {
+            hitpoint = leftHit;
             return PointingArm.LEFT;
-        else if (right)
+        }
+
+        if (right)
+        {
+            hitpoint = rightHit;
             return PointingArm.RIGHT;
-        else
-            return PointingArm.NONE;
+        }
+
+        return PointingArm.NONE;
     }
 
     private bool _isPointing(Ray ray, out Vector3 hitpoint)
