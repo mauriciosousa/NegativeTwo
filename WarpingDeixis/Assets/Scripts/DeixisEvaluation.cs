@@ -85,6 +85,12 @@ public class DeixisEvaluation : MonoBehaviour {
     public Texture backIcon;
     public Texture forwardIcon;
 
+    public Vector3 pointerHeadIndexHit;
+    public Vector3 pointerElbowIndexHit;
+    public Transform pointerHeadIndexTransform;
+    public Transform pointerElbowIndexTransform;
+    public float vDistance = 0f;
+
     void Start() {
         _config = GetComponent<EvaluationConfigProperties>();
         peer = _config.Peer;
@@ -96,10 +102,59 @@ public class DeixisEvaluation : MonoBehaviour {
         redBox.normal.background = MakeTex(2, 2, new Color(255f / 255f, 59f / 255f, 48f / 255f));
         greenBox = new GUIStyle();
         greenBox.normal.background = MakeTex(2, 2, new Color(76f / 255f, 217f / 255f, 100f / 255f));
+
+
+        pointerHeadIndexTransform.gameObject.GetComponent<Renderer>().enabled = peer == EvaluationPeer.SERVER;
+        pointerElbowIndexTransform.gameObject.GetComponent<Renderer>().enabled = peer == EvaluationPeer.SERVER;
+
     }
 
     void Update() {
 
+        pointerHeadIndexHit = Vector3.zero;
+        pointerElbowIndexHit = Vector3.zero;
+
+        if (leftHuman != null && rightHuman != null && trial > 0)
+        {
+            EvaluationPeer pointer = getObserver(trial) == EvaluationPeer.LEFT ? EvaluationPeer.LEFT : EvaluationPeer.RIGHT;
+            GameObject pointerGO = pointer == EvaluationPeer.LEFT ? leftHumanGameObject : rightHumanGameObject;
+
+            Vector3 head_index_hitpoint = Vector3.zero;
+            PointingArm pointingArm = getPointingArm(pointer, out head_index_hitpoint);
+
+            if (pointingArm == PointingArm.LEFT || pointingArm == PointingArm.RIGHT)
+            {
+
+                Vector3 elbow_index_hitpoint = Vector3.zero;
+                Vector3 elbow;
+                Vector3 index;
+
+                if (pointingArm == PointingArm.LEFT)
+                {
+                    elbow = pointerGO.transform.Find(BodyJointType.leftElbow.ToString()).transform.position;
+                    index = pointerGO.transform.Find(BodyJointType.leftHandTip.ToString()).transform.position;
+                }
+                else
+                {
+                    elbow = pointerGO.transform.Find(BodyJointType.rightElbow.ToString()).transform.position;
+                    index = pointerGO.transform.Find(BodyJointType.rightHandTip.ToString()).transform.position;
+                }
+
+                Ray ray = new Ray(index, index - elbow);
+                RaycastHit hit;
+                if (getCollider().Raycast(ray, out hit, 1000.0f))
+                {
+                    elbow_index_hitpoint = hit.point;
+                }
+
+                pointerHeadIndexHit = head_index_hitpoint;
+                pointerElbowIndexHit = elbow_index_hitpoint;
+            }
+
+            pointerHeadIndexTransform.position = pointerHeadIndexHit;
+            pointerElbowIndexTransform.position = pointerElbowIndexHit;
+            vDistance = Vector3.Distance(pointerHeadIndexHit, pointerElbowIndexHit);
+        }
     }
 
     internal void start(int trial, WarpingCondition condition)

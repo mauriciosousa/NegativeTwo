@@ -96,6 +96,7 @@ public class BodyWarping : MonoBehaviour {
 
     private void _applyWarp(Human human, GameObject go)
     {
+        return;
         if (go == null) return;
 
         Vector3 head = go.transform.Find("HEAD").position;
