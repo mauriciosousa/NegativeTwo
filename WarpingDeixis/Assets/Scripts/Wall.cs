@@ -23,6 +23,8 @@ public class Wall : MonoBehaviour {
     private bool _inSession = false;
     private bool IAmObserver = false;
 
+    private int trial = 0;
+
     void Start () {
         hideWall();
 
@@ -39,6 +41,8 @@ public class Wall : MonoBehaviour {
 
     public void createWall(int trial, bool observer, EvaluationPeer evaluationPeer, WarpingCondition condition)
     {
+        this.trial = trial;
+
         wall.GetComponent<MeshRenderer>().enabled = true;
 
         //if (peer == EvaluationPeer.SERVER) observer = _config.serverIsObserver;
@@ -87,10 +91,21 @@ public class Wall : MonoBehaviour {
 
         if (joyClick)
         {
-            Debug.Log("joyclick " + IAmObserver);
+            //Debug.Log("joyclick " + IAmObserver);
             if (_inSession && IAmObserver)
             {
-                network.UpdateWallCursor(cursor.transform.localPosition.x, cursor.transform.localPosition.y);
+
+                EvaluationPeer peer = deixisEvaluation.getObserver(trial);
+                Vector3 hitpoint;
+                PointingArm pointingArm = deixisEvaluation.getPointingArm(peer, out hitpoint);
+
+                if (pointingArm == PointingArm.LEFT || pointingArm == PointingArm.RIGHT)
+                {
+                    cursor.transform.position = hitpoint;
+                    cursor.transform.localPosition = new Vector3(cursor.transform.localPosition.x, cursor.transform.localPosition.y, -0.06f);
+
+                    network.UpdateWallCursor(cursor.transform.localPosition.x, cursor.transform.localPosition.y);
+                }
             }
         }
 

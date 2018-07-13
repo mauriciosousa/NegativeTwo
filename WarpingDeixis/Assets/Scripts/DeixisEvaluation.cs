@@ -72,6 +72,9 @@ public class DeixisEvaluation : MonoBehaviour {
         }
     }
 
+    public GameObject leftHumanGameObject;
+    public GameObject rightHumanGameObject;
+
     public GUIStyle titleFontStyle;
     public GUIStyle conditionFontStyle;
     public GUIStyle instructionStyle;
@@ -111,6 +114,79 @@ public class DeixisEvaluation : MonoBehaviour {
         wall.destroyCurrent();
     }
 
+
+
+    public bool isHumanPointing(EvaluationPeer peer, PointingArm arm, out Vector3 hitpoint)
+    {
+        hitpoint = Vector3.zero;
+
+        GameObject humanGO;
+        if (peer == EvaluationPeer.LEFT)
+        {
+            if (leftHuman == null) return false;
+
+            humanGO = leftHumanGameObject;
+        }
+        else
+        {
+            if (rightHuman == null) return false;
+
+            humanGO = rightHumanGameObject;
+        }
+
+        Vector3 head = humanGO.transform.Find("HEAD").position;
+        Vector3 tip;
+        if (arm == PointingArm.LEFT)
+        {
+            tip = humanGO.transform.Find("LEFTHANDTIP").position;
+        }
+        else
+        {
+            tip = humanGO.transform.Find("RIGHTHANDTIP").position;
+        }
+
+        Ray ray = new Ray(tip, tip - head);
+        RaycastHit hit;
+            if (getCollider().Raycast(ray, out hit, 1000.0f))
+            {
+                hitpoint = hit.point;
+                return true;
+            }
+
+        return false;
+    }
+
+    public PointingArm getPointingArm(EvaluationPeer peer, out Vector3 hitpoint)
+    {
+        hitpoint = Vector3.zero;
+
+        bool left = isHumanPointing(peer, PointingArm.LEFT, out hitpoint);
+        bool right = isHumanPointing(peer, PointingArm.RIGHT, out hitpoint);
+
+        if (left && right)
+            return PointingArm.BOTH;
+        else if (left)
+            return PointingArm.LEFT;
+        else if (right)
+            return PointingArm.RIGHT;
+        else
+            return PointingArm.NONE;
+    }
+
+    private bool _isPointing(Ray ray, out Vector3 hitpoint)
+    {
+        hitpoint = Vector3.zero;
+        RaycastHit hit;
+        if (getCollider().Raycast(ray, out hit, 1000.0f))
+        {
+            hitpoint = hit.point;
+            return true;
+        }
+
+        return false;
+    }
+    
+
     void OnGUI()
     {
         if (peer != EvaluationPeer.SERVER) return;
@@ -140,6 +216,21 @@ public class DeixisEvaluation : MonoBehaviour {
             _setupHumans(TypeOfHuman.RightHuman);
         }
         GUI.Box(new Rect(left + width / 2, top + 1.5f * lineHeight, width / 2 - 5, 5), "", (rightHuman != null) ? greenBox : redBox);
+
+        // pointing data
+
+        Vector3 hit;
+        bool leftHumanLeftHandPointing = isHumanPointing(EvaluationPeer.LEFT, PointingArm.LEFT, out hit);
+        bool leftHumanRightHandPointing = isHumanPointing(EvaluationPeer.LEFT, PointingArm.RIGHT, out hit);
+        bool rightHumanLeftHandPointing = isHumanPointing(EvaluationPeer.RIGHT, PointingArm.LEFT, out hit);
+        bool rightHumanRightHandPointing = isHumanPointing(EvaluationPeer.RIGHT, PointingArm.RIGHT, out hit);
+
+        top += 6;
+        GUI.Box(new Rect(left + 5, top + 1.5f * lineHeight, width / 4 - 5, 5), "", leftHumanLeftHandPointing ? greenBox : redBox);
+        GUI.Box(new Rect(left + width / 4, top + 1.5f * lineHeight, width / 4 - 5, 5), "", leftHumanRightHandPointing ? greenBox : redBox);
+        GUI.Box(new Rect(left + width / 2, top + 1.5f * lineHeight, width / 4 - 5, 5), "", rightHumanLeftHandPointing ? greenBox : redBox);
+        GUI.Box(new Rect(left + width / 2 + width / 4 - 5, top + 1.5f * lineHeight, width / 4, 5), "", leftHumanRightHandPointing ? greenBox : redBox);
+
 
         // CONDITION
         top += 4 * lineHeight; left += 10;
@@ -179,12 +270,12 @@ public class DeixisEvaluation : MonoBehaviour {
             {
                 if (_getExercise(trial) == PointingExercise.POLE)
                 {
-                    poleLog.Record(trial, condition.ToString(), _getObserver(trial).ToString(), _getPoleTarget(trial, _getObserver(trial), condition));
+                    poleLog.Record(trial, condition.ToString(), getObserver(trial).ToString(), _getPoleTarget(trial, getObserver(trial), condition));
                 }
 
                 if (_getExercise(trial) == PointingExercise.WALL)
                 {
-                    wallLog.Record(trial, condition.ToString(), _getObserver(trial).ToString(), wall.target.transform.position, wall.cursor.transform.position);
+                    wallLog.Record(trial, condition.ToString(), getObserver(trial).ToString(), wall.target.transform.position, wall.cursor.transform.position);
                 }
 
                 if (trial == maxTrials)
@@ -254,20 +345,20 @@ public class DeixisEvaluation : MonoBehaviour {
 
     private void _setupTrial(int trial, WarpingCondition condition)
     {
-        bool observer = peer == _getObserver(trial);
+        bool observer = peer == getObserver(trial);
 
         Debug.Log("STARTING: " + trial + " " + condition);
         //Debug.Log("trial = " + trial + ", Observer = " + _getObserver(trial) + ", Exercise = " + _getExercise(trial) + ", Arm = " + _getArm(trial) + ", distance = " + _getDistance(trial) + "m" + ", target = " + _getPoleTarget(trial, _getObserver(trial), condition));
 
         if (_getExercise(trial) == PointingExercise.POLE)
         {
-            pole.createAPole(trial, _getDistance(trial), _getPoleTarget(trial, _getObserver(trial), condition), observer, condition);
+            pole.createAPole(trial, _getDistance(trial), _getPoleTarget(trial, getObserver(trial), condition), observer, condition);
 
             if (trial == 1 && peer == EvaluationPeer.SERVER) poleLog.StartRecordingSession();
         }
         if (_getExercise(trial) == PointingExercise.WALL)
         {
-            wall.createWall(trial, observer, _getObserver(trial), condition);
+            wall.createWall(trial, observer, getObserver(trial), condition);
 
             if (trial == 10 && peer == EvaluationPeer.SERVER) wallLog.StartRecordingSession();
         }
@@ -331,7 +422,7 @@ public class DeixisEvaluation : MonoBehaviour {
         return result;
     }
 
-    private EvaluationPeer _getObserver(int trial)
+    public EvaluationPeer getObserver(int trial)
     {
         //if (peer == EvaluationPeer.SERVER) return EvaluationPeer.LEFT_VR_CLIENT;
 

@@ -34,7 +34,8 @@ public enum PointingArm
 {
     NONE,
     LEFT,
-    RIGHT
+    RIGHT,
+    BOTH
 }
 
 public class Evaluation : MonoBehaviour {
