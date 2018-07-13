@@ -42,7 +42,7 @@ public class Pole : MonoBehaviour {
     {
         transform.position = Vector3.zero;
 
-        EvaluationPeer pointer = deixisEvaluation.getObserver(task);
+        EvaluationPeer pointer = deixisEvaluation.getObserver(task) == EvaluationPeer.LEFT ? EvaluationPeer.RIGHT : EvaluationPeer.LEFT;
 
         Transform t;
         if (pointer == EvaluationPeer.LEFT)
