@@ -53,6 +53,7 @@ public class BodyWarping : MonoBehaviour {
 
     private bool applyWarp = false;
     public bool overrideApplyWarp = false;
+    public bool applyWarp_overrideValue = false;
 
     void Start ()
     {
@@ -68,6 +69,8 @@ public class BodyWarping : MonoBehaviour {
 
         applyWarp = deixisEvaluation.condition == WarpingCondition.WARPING;
 
+        if (overrideApplyWarp) applyWarp = applyWarp_overrideValue;
+
         GameObject go = null;
         if (config.Peer == EvaluationPeer.LEFT)
         {
@@ -82,8 +85,12 @@ public class BodyWarping : MonoBehaviour {
 
         if (applyWarp && _human != null && go != null)
         {
-            Debug.Log("APPLYing WARP");
             _applyWarp(_human, go); // <----------------REVIEWWW a partir daqui
+        }
+        else
+        {
+            rightPointingInfo.matrix = Matrix4x4.identity;
+            leftPointingInfo.matrix = Matrix4x4.identity;
         }
 	}
 
