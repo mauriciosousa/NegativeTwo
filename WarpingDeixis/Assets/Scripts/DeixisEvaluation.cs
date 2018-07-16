@@ -104,8 +104,8 @@ public class DeixisEvaluation : MonoBehaviour {
         greenBox.normal.background = MakeTex(2, 2, new Color(76f / 255f, 217f / 255f, 100f / 255f));
 
 
-        pointerHeadIndexTransform.gameObject.GetComponent<Renderer>().enabled = peer == EvaluationPeer.SERVER;
-        pointerElbowIndexTransform.gameObject.GetComponent<Renderer>().enabled = peer == EvaluationPeer.SERVER;
+        //pointerHeadIndexTransform.gameObject.GetComponent<Renderer>().enabled = peer == EvaluationPeer.SERVER;
+        //pointerElbowIndexTransform.gameObject.GetComponent<Renderer>().enabled = peer == EvaluationPeer.SERVER;
 
     }
 

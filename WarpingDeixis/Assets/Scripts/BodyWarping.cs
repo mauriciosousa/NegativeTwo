@@ -54,8 +54,6 @@ public class BodyWarping : MonoBehaviour {
     private bool applyWarp = false;
     public bool overrideApplyWarp = false;
 
-    public Collider collider;
-
     void Start ()
     {
         _human = null;
@@ -69,7 +67,6 @@ public class BodyWarping : MonoBehaviour {
         if (config.Peer == EvaluationPeer.SERVER) return;
 
         applyWarp = deixisEvaluation.condition == WarpingCondition.WARPING;
-        collider = deixisEvaluation.getCollider();
 
         GameObject go = null;
         if (config.Peer == EvaluationPeer.LEFT)
