@@ -37,13 +37,15 @@ public class PoleLog : MonoBehaviour {
         header += "CONDITION" + CSVSeparator;
         header += "OBSERVER" + CSVSeparator;
         header += "TARGET" + CSVSeparator;
+        header += "OBSERVED_TARGET" + CSVSeparator;
+        header += "ERROR_DISTANCE" + CSVSeparator;
 
         _writeLine(header, _filename);
 
         __inSession__ = true;
     }
 
-    public void Record(int task, string condition, string observer, int target)
+    public void Record(int task, string condition, string observer, int target, int observedPoleTarget)
     {
         if (!__inSession__) return;
 
@@ -54,6 +56,12 @@ public class PoleLog : MonoBehaviour {
         line += condition + CSVSeparator;
         line += observer + CSVSeparator;
         line += target + CSVSeparator;
+        line += observedPoleTarget + CSVSeparator;
+
+        Vector3 pTarget = GameObject.Find("pole" + target).transform.position;
+        Vector3 oTarget = GameObject.Find("pole" + observedPoleTarget).transform.position;
+
+        line += Vector3.Distance(pTarget, oTarget);
 
         _writeLine(line, _filename);
     }

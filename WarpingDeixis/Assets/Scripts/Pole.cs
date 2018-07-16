@@ -281,5 +281,45 @@ public static class PoleNumbersDics
 
         return -1;
     }
+
+    public static int revert(int index, int trial, WarpingCondition condition)
+    {
+
+        if (new List<int>() { 1, 2, 3, 4, 5, 6, 7, 8, 9 }.Contains(trial) && condition == WarpingCondition.BASELINE)
+        {
+            return KeyByValue(shuffledA, index);
+        }
+
+        if (new List<int>() { 15, 16, 17, 18, 19, 20, 21, 22, 23 }.Contains(trial) && condition == WarpingCondition.BASELINE)
+        {
+            return KeyByValue(shuffledB, index);
+        }
+
+        if (new List<int>() { 1, 2, 3, 4, 5, 6, 7, 8, 9 }.Contains(trial) && condition == WarpingCondition.WARPING)
+        {
+            return KeyByValue(shuffledC, index);
+        }
+
+        if (new List<int>() { 15, 16, 17, 18, 19, 20, 21, 22, 23 }.Contains(trial) && condition == WarpingCondition.WARPING)
+        {
+            return KeyByValue(shuffledD, index);
+        }
+
+        return -1;
+    }
+
+    public static int KeyByValue(Dictionary<int, int> dict, int val)
+    {
+        int key = -1;
+        foreach (KeyValuePair<int, int> pair in dict)
+        {
+            if (pair.Value == val)
+            {
+                key = pair.Key;
+                break;
+            }
+        }
+        return key;
+    }
 }
 

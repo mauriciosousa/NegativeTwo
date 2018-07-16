@@ -92,6 +92,8 @@ public class DeixisEvaluation : MonoBehaviour {
     public Transform pointerElbowIndexTransform;
     public float vDistance = 0f;
 
+    private string observedPoleTarget = "";
+
     void Start() {
         _config = GetComponent<EvaluationConfigProperties>();
         peer = _config.Peer;
@@ -358,43 +360,60 @@ public class DeixisEvaluation : MonoBehaviour {
 
         if (trial > 0 && trial <= maxTrials)
         {
-            if (GUI.Button(new Rect(left + 10, top + 2 * lineHeight, width - 20, 1.5f * lineHeight), "NEXT"))
+            bool canShowNEXT = true;
+            if (_getExercise(trial) == PointingExercise.POLE)
             {
-                if (peer == EvaluationPeer.SERVER)
+                observedPoleTarget = GUI.TextField(new Rect(left + 10, top + 2 * lineHeight, 50, lineHeight), observedPoleTarget);
+                top += 2 * lineHeight;
+
+                int oTarget = 0;
+                bool parsed = int.TryParse(observedPoleTarget, out oTarget);
+                canShowNEXT = parsed && oTarget > 0 && oTarget < 38;
+            }
+
+            if (canShowNEXT)
+            {
+                if (GUI.Button(new Rect(left + 10, top + 2 * lineHeight, width - 20, 1.5f * lineHeight), "NEXT"))
                 {
-                    pointersLog.EndRecordingSession();   
-                }
 
-                if (_getExercise(trial) == PointingExercise.POLE)
-                {
-                    poleLog.Record(trial, condition.ToString(), getObserver(trial).ToString(), _getPoleTarget(trial, getObserver(trial), condition));
-                }
+                    if (peer == EvaluationPeer.SERVER)
+                    {
+                        pointersLog.EndRecordingSession();
+                    }
 
-                if (_getExercise(trial) == PointingExercise.WALL)
-                {
-                    wallLog.Record(trial, condition.ToString(), getObserver(trial).ToString(), wall.target.transform.position, wall.cursor.transform.position);
-                }
+                    if (_getExercise(trial) == PointingExercise.POLE)
+                    {
+                        poleLog.Record(trial, condition.ToString(), getObserver(trial).ToString(), _getPoleTarget(trial, getObserver(trial), condition), PoleNumbersDics.revert(int.Parse(observedPoleTarget), trial, condition));
+                        observedPoleTarget = "";
+                    }
 
-                if (trial == maxTrials)
-                {
-                    trial = 0;
-                    reset();
-                    _network.reset();
+                    if (_getExercise(trial) == PointingExercise.WALL)
+                    {
+                        wallLog.Record(trial, condition.ToString(), getObserver(trial).ToString(), wall.target.transform.position, wall.cursor.transform.position);
+                    }
 
-                    poleLog.EndRecordingSession();
-                    wallLog.EndRecordingSession();
+                    if (trial == maxTrials)
+                    {
+                        trial = 0;
+                        reset();
+                        _network.reset();
 
-                }
-                else
-                {
-                    _network.EndMessage();
-                    pole.destroyCurrent();
-                    wall.destroyCurrent();
+                        poleLog.EndRecordingSession();
+                        wallLog.EndRecordingSession();
 
-                    trial += 1;
-                    _setupTrial(trial, condition);
+                    }
+                    else
+                    {
+                        _network.EndMessage();
+                        pole.destroyCurrent();
+                        wall.destroyCurrent();
+
+                        trial += 1;
+                        _setupTrial(trial, condition);
+                    }
                 }
             }
+
         }
         else
         {
