@@ -152,13 +152,26 @@ public class DeixisEvaluation : MonoBehaviour {
                 pointerHeadIndexHit = head_index_hitpoint;
                 pointerElbowIndexHit = elbow_index_hitpoint;
 
+                Vector3 target = Vector3.zero;
+
+                if (_getExercise(trial) == PointingExercise.POLE)
+                {
+                    int t = _getPoleTarget(trial, getObserver(trial), condition);
+                    target = GameObject.Find("pole" + t).transform.position;
+                }
+                else
+                {
+                    target = GameObject.Find("TARGET").transform.position;
+                }
+
+
                 pointersLog.Record(trial, condition.ToString(), pointingArm,
-                    pointerGO.transform.Find(BodyJointType.head.ToString()).transform.position, elbow, index, pointerHeadIndexHit, pointerElbowIndexHit);
+                    pointerGO.transform.Find(BodyJointType.head.ToString()).transform.position, elbow, index, pointerHeadIndexHit, pointerElbowIndexHit, Vector3.Distance(pointerHeadIndexHit, target), Vector3.Distance(pointerElbowIndexHit, target));
             }
             else
             {
                 pointersLog.Record(trial, condition.ToString(), pointingArm,
-                    Vector3.zero, Vector3.zero, Vector3.zero, Vector3.zero, Vector3.zero);
+                    Vector3.zero, Vector3.zero, Vector3.zero, Vector3.zero, Vector3.zero, 0f, 0f);
             }
 
             pointerHeadIndexTransform.position = pointerHeadIndexHit;

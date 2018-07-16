@@ -72,7 +72,7 @@ public class PointersLog : MonoBehaviour
         __inSession__ = true;
     }
 
-    public void Record(int task, string condition, PointingArm arm, Vector3 head, Vector3 elbow, Vector3 handtip, Vector3 pointerHeadIndexHit, Vector3 pointerElbowIndexHit)
+    public void Record(int task, string condition, PointingArm arm, Vector3 head, Vector3 elbow, Vector3 handtip, Vector3 pointerHeadIndexHit, Vector3 pointerElbowIndexHit, float pointerHeadIndexHit_toTarget, float pointerElbowIndexHit_toTarget)
     {
         if (!__inSession__) return;
 
@@ -105,6 +105,10 @@ public class PointersLog : MonoBehaviour
             line += pointerElbowIndexHit.x + CSVSeparator;
             line += pointerElbowIndexHit.y + CSVSeparator;
             line += pointerElbowIndexHit.z + CSVSeparator;
+
+            line += pointerHeadIndexHit_toTarget + CSVSeparator;
+            line += pointerElbowIndexHit_toTarget + CSVSeparator;
+            
 
             _lines.Add(line);
 
