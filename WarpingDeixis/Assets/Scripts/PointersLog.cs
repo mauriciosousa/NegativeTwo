@@ -67,7 +67,7 @@ public class PointersLog : MonoBehaviour
 
         _lastRecording = DateTime.Now;
 
-        console.writeLineRed("Recording...Start");
+        //console.writeLineRed("Recording...Start");
 
         __inSession__ = true;
     }
@@ -120,7 +120,7 @@ public class PointersLog : MonoBehaviour
     {
         File.WriteAllLines(_filename, _lines.ToArray(), Encoding.UTF8);
 
-        console.writeLineRed("Recording...End");
+        //console.writeLineRed("Recording...End");
 
         _lines.Clear();
         _filename = null;

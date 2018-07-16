@@ -8,8 +8,11 @@ public class VRCameraController : MonoBehaviour {
 
     public Vector3 threshold;
 
+    public EvaluationConfigProperties config;
+
     void LateUpdate()
     {
+        if (config.Peer == EvaluationPeer.SERVER) return;
 
         this.transform.localPosition = -childGO.transform.localPosition + threshold; /*new Vector3((-UnityEngine.XR.InputTracking.GetLocalPosition(UnityEngine.XR.XRNode.CenterEye).x),
                  (-UnityEngine.XR.InputTracking.GetLocalPosition(UnityEngine.XR.XRNode.CenterEye).y),

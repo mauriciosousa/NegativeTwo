@@ -1,41 +1,41 @@
-center_w1 (-0.2, 1.4, 2.6)
-center_w2 (0.2, 1.6, 2.6)
-center_w3 (0.1, 1.6, 2.6)
-center_w4 (0.0, 1.0, 2.6)
-topLeft_w1 (-0.9, 1.7, 2.6)
-topLeft_w2 (-0.8, 1.9, 2.6)
-topLeft_w3 (-0.6, 2.0, 2.6)
-topLeft_w4 (-0.9, 2.0, 2.6)
-topRight_w1 (0.7, 2.2, 2.6)
-topRight_w2 (1.0, 2.3, 2.6)
-topRight_w3 (0.8, 1.9, 2.6)
-topRight_w4 (0.7, 1.9, 2.6)
-bottomLeft_w1 (-1.0, 1.5, 2.6)
-bottomLeft_w2 (-1.1, 0.8, 2.6)
-bottomLeft_w3 (-0.9, 1.1, 2.6)
-bottomLeft_w4 (-0.6, 1.2, 2.6)
-bottomRight_w1 (0.9, 1.0, 2.6)
-bottomRight_w2 (0.6, 1.1, 2.6)
-bottomRight_w3 (1.3, 1.4, 2.6)
-bottomRight_w4 (1.1, 0.9, 2.6)
+center_w1 (-0.2, 1.2, 2.6)
+center_w2 (-0.1, 1.1, 2.6)
+center_w3 (0.0, 1.4, 2.6)
+center_w4 (0.0, 1.5, 2.6)
+topLeft_w1 (-0.7, 2.1, 2.6)
+topLeft_w2 (-0.9, 2.5, 2.6)
+topLeft_w3 (-0.8, 2.0, 2.6)
+topLeft_w4 (-1.0, 2.2, 2.6)
+topRight_w1 (1.1, 1.6, 2.6)
+topRight_w2 (0.6, 1.8, 2.6)
+topRight_w3 (1.1, 1.8, 2.6)
+topRight_w4 (1.2, 1.6, 2.6)
+bottomLeft_w1 (-1.0, 1.4, 2.6)
+bottomLeft_w2 (-0.8, 1.4, 2.6)
+bottomLeft_w3 (-0.8, 1.0, 2.6)
+bottomLeft_w4 (-1.0, 0.9, 2.6)
+bottomRight_w1 (1.3, 1.1, 2.6)
+bottomRight_w2 (0.9, 0.9, 2.6)
+bottomRight_w3 (0.6, 0.9, 2.6)
+bottomRight_w4 (0.9, 1.1, 2.6)
 
-public Vector3 center_w1 = new Vector3(-0.1798496f, 1.388596f, 2.575f);
-public Vector3 center_w2 = new Vector3(0.2393779f, 1.569755f, 2.575f);
-public Vector3 center_w3 = new Vector3(0.07586742f, 1.552207f, 2.575f);
-public Vector3 center_w4 = new Vector3(0.00348684f, 1.032613f, 2.575f);
-public Vector3 topLeft_w1 = new Vector3(-0.8982405f, 1.653912f, 2.575f);
-public Vector3 topLeft_w2 = new Vector3(-0.7911618f, 1.884994f, 2.575f);
-public Vector3 topLeft_w3 = new Vector3(-0.6061193f, 1.960249f, 2.575f);
-public Vector3 topLeft_w4 = new Vector3(-0.9442142f, 2.017196f, 2.575f);
-public Vector3 topRight_w1 = new Vector3(0.7185954f, 2.232494f, 2.575f);
-public Vector3 topRight_w2 = new Vector3(0.9918004f, 2.305739f, 2.575f);
-public Vector3 topRight_w3 = new Vector3(0.7897538f, 1.855848f, 2.575f);
-public Vector3 topRight_w4 = new Vector3(0.7402495f, 1.877652f, 2.575f);
-public Vector3 bottomLeft_w1 = new Vector3(-0.9857493f, 1.462909f, 2.575f);
-public Vector3 bottomLeft_w2 = new Vector3(-1.051283f, 0.7611822f, 2.575f);
-public Vector3 bottomLeft_w3 = new Vector3(-0.9214287f, 1.128704f, 2.575f);
-public Vector3 bottomLeft_w4 = new Vector3(-0.6065137f, 1.198214f, 2.575f);
-public Vector3 bottomRight_w1 = new Vector3(0.9459625f, 1.022236f, 2.575f);
-public Vector3 bottomRight_w2 = new Vector3(0.5777413f, 1.131206f, 2.575f);
-public Vector3 bottomRight_w3 = new Vector3(1.34024f, 1.356322f, 2.575f);
-public Vector3 bottomRight_w4 = new Vector3(1.084203f, 0.945923f, 2.575f);
+public Vector3 center_w1 = new Vector3(-0.1992121f, 1.233536f, 2.575f);
+public Vector3 center_w2 = new Vector3(-0.1164015f, 1.059084f, 2.575f);
+public Vector3 center_w3 = new Vector3(-0.008557988f, 1.394859f, 2.575f);
+public Vector3 center_w4 = new Vector3(0.0270493f, 1.506756f, 2.575f);
+public Vector3 topLeft_w1 = new Vector3(-0.6983782f, 2.137043f, 2.575f);
+public Vector3 topLeft_w2 = new Vector3(-0.861446f, 2.463918f, 2.575f);
+public Vector3 topLeft_w3 = new Vector3(-0.7539912f, 1.984167f, 2.575f);
+public Vector3 topLeft_w4 = new Vector3(-1.033797f, 2.20014f, 2.575f);
+public Vector3 topRight_w1 = new Vector3(1.062458f, 1.587875f, 2.575f);
+public Vector3 topRight_w2 = new Vector3(0.6402149f, 1.814029f, 2.575f);
+public Vector3 topRight_w3 = new Vector3(1.104659f, 1.833387f, 2.575f);
+public Vector3 topRight_w4 = new Vector3(1.187434f, 1.571221f, 2.575f);
+public Vector3 bottomLeft_w1 = new Vector3(-0.9832235f, 1.384787f, 2.575f);
+public Vector3 bottomLeft_w2 = new Vector3(-0.8076959f, 1.392075f, 2.575f);
+public Vector3 bottomLeft_w3 = new Vector3(-0.8192883f, 1.002325f, 2.575f);
+public Vector3 bottomLeft_w4 = new Vector3(-0.9848635f, 0.9493963f, 2.575f);
+public Vector3 bottomRight_w1 = new Vector3(1.287709f, 1.142479f, 2.575f);
+public Vector3 bottomRight_w2 = new Vector3(0.9019038f, 0.938807f, 2.575f);
+public Vector3 bottomRight_w3 = new Vector3(0.5672501f, 0.8905221f, 2.575f);
+public Vector3 bottomRight_w4 = new Vector3(0.8851271f, 1.129341f, 2.575f);

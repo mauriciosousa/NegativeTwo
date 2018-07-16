@@ -1,6 +1,6 @@
 server.address=192.168.0.100
 server.port=5000
-deixis.peer=LEFT
+//deixis.peer=LEFT
 //deixis.peer=RIGHT
-//deixis.peer=SERVER
+deixis.peer=SERVER
 server.is.observer=TRUE

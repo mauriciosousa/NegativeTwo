@@ -63,6 +63,10 @@ public class PoleLog : MonoBehaviour {
 
         line += Vector3.Distance(pTarget, oTarget);
 
+        console.writeLine("target = " + target);
+        console.writeLine("observer target = " + observedPoleTarget);
+        console.writeLine("error distance = " + Vector3.Distance(pTarget, oTarget));
+
         _writeLine(line, _filename);
     }
 

@@ -7,6 +7,8 @@ using UnityEngine;
 public class CameraControl : MonoBehaviour
 {
 
+    public EvaluationConfigProperties config;
+
     public Transform target;
     public float distance = 5.0f;
     public float xSpeed = 120.0f;
@@ -29,10 +31,14 @@ public class CameraControl : MonoBehaviour
 
         /*if (GetComponent<Rigidbody>())
             GetComponent<Rigidbody>().freezeRotation = true;*/
+
+        if (config.Peer != EvaluationPeer.SERVER) gameObject.SetActive(false);
     }
 
     void LateUpdate()
     {
+        if (config.Peer != EvaluationPeer.SERVER) return;
+
         if (target)
         {
 

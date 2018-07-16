@@ -401,6 +401,9 @@ public class DeixisEvaluation : MonoBehaviour {
                         poleLog.EndRecordingSession();
                         wallLog.EndRecordingSession();
 
+                        _console.writeLineRed("------------------------------------------------------------------------");
+                        _console.writeLineRed("   condition " + condition + ": DONE");
+                        _console.writeLineRed("------------------------------------------------------------------------");
                     }
                     else
                     {
@@ -596,7 +599,30 @@ public class DeixisEvaluation : MonoBehaviour {
 
     private string _getInstruction(int trial)
     {
-        return "Pessoa Da Direita, aponta para o alvo e pessoa da Esquerda diz para onde o teu colega está a apontar em voz alta.";
+        if (new List<int>() { 1, 2, 3, 4, 5, 6, 7, 8, 9 }.Contains(trial))
+        {
+            return "<Nome da Direita>, aponta para o alvo no poste.\n\n<Nome da Esquerda>, diz-me em voz alta o numero para onde o teu colega está a apontar.";
+        }
+
+        if (new List<int>() { 15, 16,17,18,19,20,21,22,23 }.Contains(trial))
+        {
+            return "<Nome da Esquerda>, aponta para o alvo no poste.\n\n<Nome da Direita>, diz-me em voz alta o numero para onde o teu colega está a apontar.";
+        }
+
+        if (new List<int>() { 10, 11, 12, 13, 14 }.Contains(trial))
+        {
+            return "<Nome da Direita>, aponta para o alvo na parede.\n\n<Nome da Esquerda>, com o cursor, indica para onde o teu colega está a apontar.";
+        }
+
+        if (new List<int>() { 24, 25, 26, 27, 28 }.Contains(trial))
+        {
+            return "<Nome da Direita>, aponta para o alvo na parede.\n\n<Nome da Esquerda>, com o cursor, indica para onde o teu colega está a apontar.";
+        }
+
+
+
+
+        return "lol";
     }
 
     private int _getPoleTarget(int trial, EvaluationPeer observer, WarpingCondition condition)

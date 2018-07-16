@@ -65,7 +65,8 @@ public class WallLog : MonoBehaviour {
         line += target.x + CSVSeparator + target.y + CSVSeparator + target.z + CSVSeparator;
         line += cursor.x + CSVSeparator + cursor.y + CSVSeparator + cursor.z + CSVSeparator;
         line += Vector3.Distance(target, cursor);
-
+        
+        console.writeLine("error distance = " + Vector3.Distance(target, cursor));
 
         _writeLine(line, _filename);
     }

@@ -11,9 +11,18 @@ public class HeadCameraController : MonoBehaviour
 
     public BodiesManager _bodies;
 
+    public EvaluationConfigProperties config;
+
+    void Start()
+    {
+
+    }
+
     void Update()
     {
-        //this.transform.position = new Vector3(0, 1, 0); return;
+        if (config.Peer == EvaluationPeer.SERVER) return;
+
+            //this.transform.position = new Vector3(0, 1, 0); return;
 
         bool canApplyHeadPosition;
         Vector3 headposition = _bodies.getHeadPosition(out canApplyHeadPosition);
