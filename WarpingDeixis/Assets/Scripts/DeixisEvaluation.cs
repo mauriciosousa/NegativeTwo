@@ -417,6 +417,8 @@ public class DeixisEvaluation : MonoBehaviour {
         Debug.Log("STARTING: " + trial + " " + condition);
         //Debug.Log("trial = " + trial + ", Observer = " + _getObserver(trial) + ", Exercise = " + _getExercise(trial) + ", Arm = " + _getArm(trial) + ", distance = " + _getDistance(trial) + "m" + ", target = " + _getPoleTarget(trial, _getObserver(trial), condition));
 
+        if (peer == EvaluationPeer.SERVER) _console.writeLineGreen("t = " + trial + ", Observer is " + getObserver(trial));
+
         if (_getExercise(trial) == PointingExercise.POLE)
         {
             pole.createAPole(trial, _getDistance(trial), _getPoleTarget(trial, getObserver(trial), condition), observer, condition);

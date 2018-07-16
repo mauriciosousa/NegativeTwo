@@ -80,8 +80,9 @@ public class BodyWarping : MonoBehaviour {
             go = leftBody;
         }
 
-        if (_human != null && go != null)
+        if (applyWarp && _human != null && go != null)
         {
+            Debug.Log("APPLYing WARP");
             _applyWarp(_human, go); // <----------------REVIEWWW a partir daqui
         }
 	}
