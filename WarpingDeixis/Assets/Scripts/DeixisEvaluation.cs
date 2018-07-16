@@ -49,6 +49,7 @@ public class DeixisEvaluation : MonoBehaviour {
     public WallLog wallLog;
     public BoxCollider wallCollider;
 
+    public PointersLog pointersLog;
 
     public WarpingCondition condition = WarpingCondition.BASELINE;
     private int trial = 0;
@@ -97,6 +98,7 @@ public class DeixisEvaluation : MonoBehaviour {
         _bodies = GameObject.Find("BodiesManager").GetComponent<BodiesManager>();
         _network = GetComponent<DeixisNetwork>();
         _console = GetComponent<ServerConsole>();
+        pointersLog = GetComponent<PointersLog>();
 
         redBox = new GUIStyle();
         redBox.normal.background = MakeTex(2, 2, new Color(255f / 255f, 59f / 255f, 48f / 255f));
@@ -149,11 +151,21 @@ public class DeixisEvaluation : MonoBehaviour {
 
                 pointerHeadIndexHit = head_index_hitpoint;
                 pointerElbowIndexHit = elbow_index_hitpoint;
+
+                pointersLog.Record(trial, condition.ToString(), pointingArm,
+                    pointerGO.transform.Find(BodyJointType.head.ToString()).transform.position, elbow, index, pointerHeadIndexHit, pointerElbowIndexHit);
+            }
+            else
+            {
+                pointersLog.Record(trial, condition.ToString(), pointingArm,
+                    Vector3.zero, Vector3.zero, Vector3.zero, Vector3.zero, Vector3.zero);
             }
 
             pointerHeadIndexTransform.position = pointerHeadIndexHit;
             pointerElbowIndexTransform.position = pointerElbowIndexHit;
             vDistance = Vector3.Distance(pointerHeadIndexHit, pointerElbowIndexHit);
+
+            
         }
     }
 
@@ -335,6 +347,11 @@ public class DeixisEvaluation : MonoBehaviour {
         {
             if (GUI.Button(new Rect(left + 10, top + 2 * lineHeight, width - 20, 1.5f * lineHeight), "NEXT"))
             {
+                if (peer == EvaluationPeer.SERVER)
+                {
+                    pointersLog.EndRecordingSession();   
+                }
+
                 if (_getExercise(trial) == PointingExercise.POLE)
                 {
                     poleLog.Record(trial, condition.ToString(), getObserver(trial).ToString(), _getPoleTarget(trial, getObserver(trial), condition));
@@ -417,19 +434,31 @@ public class DeixisEvaluation : MonoBehaviour {
         Debug.Log("STARTING: " + trial + " " + condition);
         //Debug.Log("trial = " + trial + ", Observer = " + _getObserver(trial) + ", Exercise = " + _getExercise(trial) + ", Arm = " + _getArm(trial) + ", distance = " + _getDistance(trial) + "m" + ", target = " + _getPoleTarget(trial, _getObserver(trial), condition));
 
-        if (peer == EvaluationPeer.SERVER) _console.writeLineGreen("t = " + trial + ", Observer is " + getObserver(trial));
+        if (peer == EvaluationPeer.SERVER)
+        {
+            _console.writeLineGreen("t = " + trial + ", Observer is " + getObserver(trial));
+
+            pointersLog.StartRecordingSession(trial);
+        }
+
 
         if (_getExercise(trial) == PointingExercise.POLE)
         {
             pole.createAPole(trial, _getDistance(trial), _getPoleTarget(trial, getObserver(trial), condition), observer, condition);
 
-            if (trial == 1 && peer == EvaluationPeer.SERVER) poleLog.StartRecordingSession();
+            if (trial == 1 && peer == EvaluationPeer.SERVER)
+            {
+                poleLog.StartRecordingSession();
+            }
         }
         if (_getExercise(trial) == PointingExercise.WALL)
         {
             wall.createWall(trial, observer, getObserver(trial), condition);
 
-            if (trial == 10 && peer == EvaluationPeer.SERVER) wallLog.StartRecordingSession();
+            if (trial == 10 && peer == EvaluationPeer.SERVER)
+            {
+                wallLog.StartRecordingSession();
+            }
         }
 
         if (peer == EvaluationPeer.SERVER) _network.StartMessage(trial, condition);
