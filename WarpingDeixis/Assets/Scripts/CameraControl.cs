@@ -32,7 +32,7 @@ public class CameraControl : MonoBehaviour
         /*if (GetComponent<Rigidbody>())
             GetComponent<Rigidbody>().freezeRotation = true;*/
 
-        if (config.Peer != EvaluationPeer.SERVER) gameObject.SetActive(false);
+        //if (config.Peer != EvaluationPeer.SERVER) gameObject.SetActive(false);
     }
 
     void LateUpdate()

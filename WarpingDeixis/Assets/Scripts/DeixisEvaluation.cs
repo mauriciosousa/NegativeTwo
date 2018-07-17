@@ -126,7 +126,7 @@ public class DeixisEvaluation : MonoBehaviour {
             Vector3 head_index_hitpoint = Vector3.zero;
             PointingArm pointingArm = getPointingArm(pointer, out head_index_hitpoint);
 
-            if (pointingArm == PointingArm.LEFT || pointingArm == PointingArm.RIGHT)
+            if (pointingArm != PointingArm.BOTH && pointingArm != PointingArm.NONE)
             {
 
                 Vector3 elbow_index_hitpoint = Vector3.zero;
@@ -143,6 +143,7 @@ public class DeixisEvaluation : MonoBehaviour {
                     elbow = pointerGO.transform.Find(BodyJointType.rightElbow.ToString()).transform.position;
                     index = pointerGO.transform.Find(BodyJointType.rightHandTip.ToString()).transform.position;
                 }
+             
 
                 Ray ray = new Ray(index, index - elbow);
                 RaycastHit hit;
@@ -178,6 +179,7 @@ public class DeixisEvaluation : MonoBehaviour {
 
             pointerHeadIndexTransform.position = pointerHeadIndexHit;
             pointerElbowIndexTransform.position = pointerElbowIndexHit;
+            
             vDistance = Vector3.Distance(pointerHeadIndexHit, pointerElbowIndexHit);
 
             
