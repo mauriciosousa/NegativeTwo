@@ -55,6 +55,8 @@ public class BodyWarping : MonoBehaviour {
     public bool overrideApplyWarp = false;
     public bool applyWarp_overrideValue = false;
 
+    public Transform HeadPivot;
+
     void Start ()
     {
         _human = null;
@@ -103,7 +105,8 @@ public class BodyWarping : MonoBehaviour {
     {
         if (go == null) return;
 
-        Vector3 head = go.transform.Find(BodyJointType.head.ToString()).position;
+        //Vector3 head = go.transform.Find(BodyJointType.head.ToString()).position;
+        Vector3 head = HeadPivot.position;
 
         Vector3 leftShoulder = go.transform.Find(BodyJointType.leftShoulder.ToString()).position;
         Vector3 leftHandTip = go.transform.Find(BodyJointType.leftHandTip.ToString()).position;
@@ -171,14 +174,14 @@ public class BodyWarping : MonoBehaviour {
         {
             if (leftPointing)
             {
-                Debug.DrawLine(head, leftHandTip, Color.cyan);
-                Debug.DrawLine(head, leftHand_d.position, Color.cyan);
+                //Debug.DrawLine(head, leftHandTip, Color.cyan);
+                //Debug.DrawLine(head, leftHand_d.position, Color.cyan);
             }
 
             if (rightPointing)
             {
-                Debug.DrawLine(head, rightHandTip, Color.cyan);
-                Debug.DrawLine(head, rightHand_d.position, Color.cyan);
+                //Debug.DrawLine(head, rightHandTip, Color.cyan);
+                //Debug.DrawLine(head, rightHand_d.position, Color.cyan);
             }
         }
     }
