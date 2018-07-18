@@ -599,6 +599,11 @@ public class DeixisEvaluation : MonoBehaviour {
         return 2;
     }
 
+    public int getDistance()
+    {
+        return _getDistance(trial);
+    }
+
     private string _getInstruction(int trial)
     {
         if (new List<int>() { 1, 2, 3, 4, 5, 6, 7, 8, 9 }.Contains(trial))

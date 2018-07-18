@@ -55,8 +55,6 @@ public class BodyWarping : MonoBehaviour {
     public bool overrideApplyWarp = false;
     public bool applyWarp_overrideValue = false;
 
-    public Transform HeadPivot;
-
     void Start ()
     {
         _human = null;
@@ -101,18 +99,34 @@ public class BodyWarping : MonoBehaviour {
         return bodies.getLocalHead();
     }
 
+    public float BayesianCorrection(float d, float y0, float yGeo)
+    {
+        //Values from table S1 from Herbort and Kunde paper.
+        float w = 0;
+        if (d == 1) w = 0.082f;
+        if (d == 2) w = 0.249f;
+        if (d == 3) w = 0.410f;
+
+        return (Mathf.Pow(d, -2) * (1 - w) * yGeo + w * y0) / (Mathf.Pow(d, -2) * (1 - w) + w);
+       
+  }
     private void _applyWarp(Human human, GameObject go)
     {
         if (go == null) return;
 
-        //Vector3 head = go.transform.Find(BodyJointType.head.ToString()).position;
-        Vector3 head = HeadPivot.position;
+        Vector3 head = go.transform.Find("head").Find("headPivot").position;
 
         Vector3 leftShoulder = go.transform.Find(BodyJointType.leftShoulder.ToString()).position;
         Vector3 leftHandTip = go.transform.Find(BodyJointType.leftHandTip.ToString()).position;
+        Vector3 leftHand = go.transform.Find(BodyJointType.leftHand.ToString()).position;
+        Vector3 leftElbow = go.transform.Find(BodyJointType.leftElbow.ToString()).position;
+
 
         Vector3 rightShoulder = go.transform.Find(BodyJointType.rightShoulder.ToString()).position;
         Vector3 rightHandTip = go.transform.Find(BodyJointType.rightHandTip.ToString()).position;
+        Vector3 rightHand = go.transform.Find(BodyJointType.rightHand.ToString()).position;
+        Vector3 rightElbow = go.transform.Find(BodyJointType.rightElbow.ToString()).position;
+
 
         if (float.IsPositiveInfinity(lastRightHandPos.x))
         {
@@ -125,9 +139,15 @@ public class BodyWarping : MonoBehaviour {
         }
 
         Vector3 leftHit;
-        bool leftPointing = _isPointingToWall(new Ray(leftHandTip, leftHandTip - head), out leftHit);
+        bool leftPointing = _isPointingToWall(new Ray(leftHandTip, leftHandTip - head), out leftHit); // A
         Vector3 rightHit;
         bool rightPointing = _isPointingToWall(new Ray(rightHandTip, rightHandTip - head), out rightHit);
+
+        Vector3 leftHit_Ygeo;
+        bool leftPointing_Ygeo = _isPointingToWall(new Ray(leftHandTip, leftHandTip - leftElbow), out leftHit_Ygeo); // B
+        Vector3 rightHit_Ygeo;
+        bool rightPointing_Ygeo = _isPointingToWall(new Ray(rightHandTip, rightHandTip - rightElbow), out rightHit_Ygeo);
+
 
         Transform leftHand_d = go.transform.Find(BodyJointType.leftHandTip.ToString() + "_WARP");
         leftHand_d.position = leftHandTip;
@@ -138,9 +158,12 @@ public class BodyWarping : MonoBehaviour {
         Matrix4x4 m = Matrix4x4.identity;
 
         // Left Pointing
+        float d = deixisEvaluation.getDistance(); 
 
-        
-        if (applyWarp) m = _correctPointing(leftShoulder, leftHandTip, head, leftPointing, leftHit, ref lastLeftHandPos);
+        float yBayesian = BayesianCorrection(d, leftShoulder.y, leftHit_Ygeo.y); //C
+        Vector3 leftHit_Bayesian = new Vector3(leftHit_Ygeo.x, yBayesian, leftHit_Ygeo.z);
+
+        if (applyWarp) m = _correctPointing(leftShoulder, leftHandTip, leftPointing, leftHit, leftHit_Bayesian, ref lastLeftHandPos);
 
         leftHand_d.position = m.MultiplyPoint(leftHand_d.position);
 
@@ -155,8 +178,10 @@ public class BodyWarping : MonoBehaviour {
         leftPointingInfo.pointing = leftPointing;// true;
 
         // Right Pointing
+        yBayesian = BayesianCorrection(d, rightShoulder.y, rightHit_Ygeo.y);
+        Vector3 rightHit_Bayesian = new Vector3(rightHit_Ygeo.x, yBayesian, rightHit_Ygeo.z);
 
-        if (applyWarp) m = _correctPointing(rightShoulder, rightHandTip, head, rightPointing, rightHit, ref lastRightHandPos);
+        if (applyWarp) m = _correctPointing(rightShoulder, rightHandTip, rightPointing, rightHit, rightHit_Bayesian, ref lastRightHandPos);
 
         rightHand_d.position = m.MultiplyPoint(rightHand_d.position);
 
@@ -174,14 +199,18 @@ public class BodyWarping : MonoBehaviour {
         {
             if (leftPointing)
             {
-                //Debug.DrawLine(head, leftHandTip, Color.cyan);
-                //Debug.DrawLine(head, leftHand_d.position, Color.cyan);
+                Debug.DrawLine(head, leftHit, Color.cyan);
+                Debug.DrawLine(leftElbow, leftHit_Ygeo, Color.green);
+                Debug.DrawLine(leftElbow, leftHit_Bayesian, Color.red);
+                //Debug.DrawLine(leftHand, leftHit, Color.yellow);
             }
 
             if (rightPointing)
             {
-                //Debug.DrawLine(head, rightHandTip, Color.cyan);
-                //Debug.DrawLine(head, rightHand_d.position, Color.cyan);
+                Debug.DrawLine(head, rightHit, Color.cyan);
+                Debug.DrawLine(rightElbow, rightHit_Ygeo, Color.green);
+                Debug.DrawLine(rightElbow, rightHit_Bayesian, Color.red);
+                //Debug.DrawLine(rightHand, rightHit, Color.yellow);
             }
         }
     }
@@ -200,32 +229,36 @@ public class BodyWarping : MonoBehaviour {
         return false;
     }
 
-    private Matrix4x4 _correctPointing(Vector3 elbow, Vector3 tip, Vector3 head, bool isPointing, Vector3 hit, ref Vector3 lastHandPosition)
+    private Matrix4x4 _correctPointing(Vector3 pivot, Vector3 tip, bool isPointing, Vector3 A, Vector3 BorC, ref Vector3 lastHandPosition)
     {
-        Vector3 oldVector = tip - elbow;
+        Vector3 oldVector = BorC - pivot;
+        //oldVector = pivot + oldVector.normalized * Vector3.Distance(tip, pivot);
+        //Vector3 oldVector = tip - pivot;
         Vector3 newVector = oldVector;
-        Vector3 newHandPosition;
+      //  Vector3 newHandPosition;
+
         if (isPointing)
         {
-            newVector = hit - elbow;
+            newVector = A - pivot;
 
-            Vector3 reflectedHandPosition = elbow + newVector.normalized * Vector3.Distance(tip, elbow);
-            newHandPosition = _constraintHandDisplacement(reflectedHandPosition, lastHandPosition);
+           // Vector3 reflectedHandPosition = pivot + newVector.normalized * Vector3.Distance(tip, pivot);
+            //newHandPosition = reflectedHandPosition;
+            // newHandPosition = _constraintHandDisplacement(reflectedHandPosition, lastHandPosition);
         }
-        else
-        {
-            //rightPointingInfo.pointing = false;
+        //else
+        //{
+        //    //rightPointingInfo.pointing = false;
+        //   // newHandPosition = tip;
+        //    newHandPosition = _constraintHandDisplacement(tip, lastHandPosition);
+        //}
 
-            newHandPosition = _constraintHandDisplacement(tip, lastHandPosition);
-        }
-
-        lastHandPosition = newHandPosition;
-        newVector = newHandPosition - elbow;
+       // lastHandPosition = newHandPosition;
+       // newVector = newHandPosition - pivot;
 
         Vector3 axis = Vector3.Cross(oldVector, newVector);
         float angle = Vector3.Angle(oldVector, newVector);
 
-        return Matrix4x4.Translate(elbow) * Matrix4x4.TRS(Vector3.zero, Quaternion.AngleAxis(angle, axis), Vector3.one) * Matrix4x4.Translate(-elbow);
+        return Matrix4x4.Translate(pivot) * Matrix4x4.TRS(Vector3.zero, Quaternion.AngleAxis(angle, axis), Vector3.one) * Matrix4x4.Translate(-pivot);
 
     }
 
