@@ -26,6 +26,8 @@ public class Wall : MonoBehaviour {
 
     private int trial = 0;
 
+    private float targetZ = 0f;
+
     void Start () {
         hideWall();
 
@@ -37,6 +39,8 @@ public class Wall : MonoBehaviour {
 
         _config = deixisEvaluation.GetComponent<EvaluationConfigProperties>();
         peer = _config.Peer;
+
+        targetZ = target.transform.position.z;
     }
 
 
@@ -63,6 +67,7 @@ public class Wall : MonoBehaviour {
             else
             {
                 target.transform.position = _getTarget(trial, evaluationPeer, condition);
+                target.transform.position = new Vector3(target.transform.position.x, target.transform.position.y, targetZ);
                 target.GetComponent<MeshRenderer>().enabled = true;
             }
         }
