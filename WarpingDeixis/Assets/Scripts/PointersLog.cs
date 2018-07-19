@@ -21,13 +21,18 @@ public class PointersLog : MonoBehaviour
 
     private DateTime _lastRecording;
 
-    public bool log;
+    private bool _logPointer = false;
+
+    void Start()
+    {
+        _logPointer = _config.LogPointer;
+    }
 
     public void StartRecordingSession(int trial)
     {
         if (_config.Peer != EvaluationPeer.SERVER) return;
 
-        if (!log) return;
+        if (!_logPointer) return;
 
         _lines = new List<string>();
 
@@ -78,7 +83,7 @@ public class PointersLog : MonoBehaviour
 
     public void Record(int task, string condition, PointingArm arm, Vector3 head, Vector3 elbow, Vector3 handtip, Vector3 pointerHeadIndexHit, Vector3 pointerElbowIndexHit, float pointerHeadIndexHit_toTarget, float pointerElbowIndexHit_toTarget)
     {
-        if (!log) return;
+        if (!_logPointer) return;
 
         if (!__inSession__) return;
 
@@ -125,7 +130,7 @@ public class PointersLog : MonoBehaviour
 
     public void EndRecordingSession()
     {
-        if (!log) return;
+        if (!_logPointer) return;
 
         File.WriteAllLines(_filename, _lines.ToArray(), Encoding.UTF8);
 

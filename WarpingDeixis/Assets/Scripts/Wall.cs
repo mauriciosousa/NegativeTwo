@@ -101,6 +101,8 @@ public class Wall : MonoBehaviour {
             if (_inSession && IAmObserver)
             {
 
+                Debug.Log("Cursor click");
+
                 EvaluationPeer peer = deixisEvaluation.getObserver(trial);
                 Vector3 hitpoint;
                 PointingArm pointingArm = deixisEvaluation.getPointingArm(peer, out hitpoint);

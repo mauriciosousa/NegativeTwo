@@ -64,6 +64,14 @@ public class EvaluationConfigProperties : MonoBehaviour {
         }
     }
 
+    public bool LogPointer
+    {
+        get
+        {
+            return _load("log.pointer") == "TRUE";
+        }
+    }
+
     private string _load(string property)
     {
         if (File.Exists(configFilenameFullPath))
